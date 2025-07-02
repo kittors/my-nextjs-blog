@@ -1,8 +1,50 @@
 @import "tailwindcss";
 
-:root {
+:root,
+html.light {
   --background: #ffffff;
   --foreground: #171717;
+
+  --color-primary-default: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-primary-dark: #2563eb;
+  --color-secondary: #8b5cf6;
+
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  /* 亮色模式下的浅灰 */
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+}
+
+/* 暗黑模式的 CSS 变量 (当 <html> 上有 .dark 类时生效) */
+html.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  --color-primary-default: #60a5fa;
+  --color-primary-light: #818cf8;
+  --color-primary-dark: #3b82f6;
+  --color-secondary: #a78bfa;
+
+  --color-neutral-50: #111827;
+  --color-neutral-100: #1f2937;
+  --color-neutral-200: #374151;
+  /* 修正：暗黑模式下的浅灰，作为悬停背景 */
+  --color-neutral-300: #4b5563;
+  --color-neutral-400: #6b7280;
+  --color-neutral-500: #9ca3af;
+  --color-neutral-600: #d1d5db;
+  --color-neutral-700: #e5e7eb;
+  /* 修正：暗黑模式下的深灰 */
+  --color-neutral-800: #f3f4f6;
+  --color-neutral-900: #f9fafb;
 }
 
 @theme inline {
@@ -10,6 +52,21 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  --color-primary-default: var(--color-primary-default);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary);
+  --color-neutral-50: var(--color-neutral-50);
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,6 +74,43 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+
+/*
+   新增：自定义高斯模糊类
+   这些类将用于在 Header 背景层应用 filter: blur()
+*/
+.blur-px {
+  filter: blur(1px);
+}
+
+.blur-xs {
+  filter: blur(2px);
+}
+
+.blur-sm {
+  filter: blur(4px);
+}
+
+.blur-md {
+  filter: blur(8px);
+}
+
+.blur-lg {
+  filter: blur(16px);
+}
+
+.blur-xl {
+  filter: blur(24px);
+}
+
+.blur-2xl {
+  filter: blur(40px);
+}
+
+.blur-3xl {
+  filter: blur(64px);
 }
 
 body {
