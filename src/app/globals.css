@@ -1,58 +1,68 @@
 @import "tailwindcss";
 
+/*
+   亮色模式的 CSS 变量 (默认值，并在 <html> 上有 .light 类时生效)
+   这里定义了亮色主题下的所有基础颜色变量。
+*/
 :root,
 html.light {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fcfcfc; /* 亮色背景：稍微暖一点的白色，避免纯白刺眼 */
+  --foreground: #333333; /* 亮色前景色：更纯粹的深灰，提供良好对比度 */
 
-  --color-primary-default: #3b82f6;
+  --color-primary-default: #3b82f6; /* 保持蓝色，可根据喜好调整 */
   --color-primary-light: #60a5fa;
   --color-primary-dark: #2563eb;
-  --color-secondary: #8b5cf6;
+  --color-secondary: #8b5cf6; /* 保持紫色，作为次要强调色 */
 
-  --color-neutral-50: #f9fafb;
-  --color-neutral-100: #f3f4f6;
-  --color-neutral-200: #e5e7eb;
-  /* 亮色模式下的浅灰 */
-  --color-neutral-300: #d1d5db;
-  --color-neutral-400: #9ca3af;
-  --color-neutral-500: #6b7280;
-  --color-neutral-600: #4b5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1f2937;
-  --color-neutral-900: #111827;
+  /* 调整中性色系列，使其在亮色模式下更柔和、更具层次感 */
+  --color-neutral-50: #f8f8f8;   /* 最浅的灰，用于背景或边框 */
+  --color-neutral-100: #f0f0f0;  /* 浅灰 */
+  --color-neutral-200: #e0e0e0;  /* 适用于亮色模式下的悬停背景、边框 */
+  --color-neutral-300: #d0d0d0;
+  --color-neutral-400: #a0a0a0;
+  --color-neutral-500: #707070;
+  --color-neutral-600: #505050;  /* 默认文本色 */
+  --color-neutral-700: #404040;  /* 较深文本色 */
+  --color-neutral-800: #303030;  /* 标题色 */
+  --color-neutral-900: #202020;  /* 最深标题色 */
 }
 
-/* 暗黑模式的 CSS 变量 (当 <html> 上有 .dark 类时生效) */
+/*
+   暗黑模式的 CSS 变量 (当 <html> 上有 .dark 类时生效)
+   这里定义了暗黑主题下的所有基础颜色变量，会覆盖亮色模式的定义。
+*/
 html.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #1B1C1D; /* 用户指定的暗黑背景色 */
+  --foreground: #e0e0e0; /* 暗黑前景色：浅灰，与深色背景形成良好对比 */
 
-  --color-primary-default: #60a5fa;
+  --color-primary-default: #60a5fa; /* 暗黑模式下的 primary 稍微亮一些，确保可见性 */
   --color-primary-light: #818cf8;
   --color-primary-dark: #3b82f6;
   --color-secondary: #a78bfa;
 
-  --color-neutral-50: #111827;
-  --color-neutral-100: #1f2937;
-  --color-neutral-200: #374151;
-  /* 修正：暗黑模式下的浅灰，作为悬停背景 */
-  --color-neutral-300: #4b5563;
-  --color-neutral-400: #6b7280;
-  --color-neutral-500: #9ca3af;
-  --color-neutral-600: #d1d5db;
-  --color-neutral-700: #e5e7eb;
-  /* 修正：暗黑模式下的深灰 */
-  --color-neutral-800: #f3f4f6;
-  --color-neutral-900: #f9fafb;
+  /* 调整中性色系列，使其在暗黑模式下更适应深色背景，并提供足够的对比度 */
+  --color-neutral-50: #2a2b2c;   /* 暗黑模式下的浅灰，用于背景或边框 */
+  --color-neutral-100: #3a3b3c;
+  --color-neutral-200: #4a4b4c;   /* 适用于暗黑模式下的悬停背景、边框，比背景亮 */
+  --color-neutral-300: #5a5b5c;
+  --color-neutral-400: #7a7b7c;
+  --color-neutral-500: #9a9b9c;
+  --color-neutral-600: #bababa;  /* 默认文本色 */
+  --color-neutral-700: #cacaca;  /* 较深文本色 */
+  --color-neutral-800: #dadada;  /* 标题色 */
+  --color-neutral-900: #eaeaea;  /* 最深标题色 */
 }
 
+/*
+   @theme inline 规则将上述 CSS 变量映射到 Tailwind 的主题系统。
+   这样，你就可以在组件中使用 `theme('colors.background')` 或 `bg-background` 等 Tailwind 类。
+*/
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
+
   --color-primary-default: var(--color-primary-default);
   --color-primary-light: var(--color-primary-light);
   --color-primary-dark: var(--color-primary-dark);
@@ -69,52 +79,29 @@ html.dark {
   --color-neutral-900: var(--color-neutral-900);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+.blur-px { filter: blur(1px); }
+.blur-xs { filter: blur(2px); }
+.blur-sm { filter: blur(4px); }
+.blur-md { filter: blur(8px); }
+.blur-lg { filter: blur(16px); }
+.blur-xl { filter: blur(24px); }
+.blur-2xl { filter: blur(40px); }
+.blur-3xl { filter: blur(64px); }
 
-
-/*
-   新增：自定义高斯模糊类
-   这些类将用于在 Header 背景层应用 filter: blur()
-*/
-.blur-px {
-  filter: blur(1px);
-}
-
-.blur-xs {
-  filter: blur(2px);
-}
-
-.blur-sm {
-  filter: blur(4px);
-}
-
-.blur-md {
-  filter: blur(8px);
-}
-
-.blur-lg {
-  filter: blur(16px);
-}
-
-.blur-xl {
-  filter: blur(24px);
-}
-
-.blur-2xl {
-  filter: blur(40px);
-}
-
-.blur-3xl {
-  filter: blur(64px);
-}
-
+/* 全局自定义样式，这些将覆盖 Tailwind 的默认设置或添加额外规则 */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif; /* 确保字体设置正确 */
+  line-height: 1.6;
+  /* 添加平滑过渡，让主题切换更自然 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 确保你的 `prose` 样式和其他组件样式也使用了 theme('colors.foreground') 等方式，
+   而不是硬编码颜色值，这样它们才能响应主题切换。
+*/
+.prose {
+  color: theme('colors.foreground');
+  /* ... 其他 .prose 样式 ... */
 }

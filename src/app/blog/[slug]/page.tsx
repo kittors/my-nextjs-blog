@@ -38,10 +38,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <Heading level={1} className="text-4xl text-red-600 mb-4">
           文章未找到
         </Heading>
-        <Text className="text-lg text-gray-700">
+        <Text className="text-lg text-neutral-700"> {/* 修正：使用 text-neutral-700 */}
           抱歉，您请求的文章不存在。
         </Text>
-        <Link href="/" className="text-blue-600 hover:underline mt-6 inline-block">
+        <Link href="/" className="text-primary hover:underline mt-6 inline-block"> {/* 修正：使用 text-primary */}
           返回首页
         </Link>
       </div>
@@ -51,17 +51,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <article className="container mx-auto px-4 py-12 max-w-3xl">
       {/* 返回首页链接 */}
-      <Link href="/" className="text-blue-600 hover:underline mb-8 inline-block">
-        &larr; 返回所有文章
+      <Link href="/" className="text-primary hover:underline mb-8 inline-block flex items-center group"> {/* 修正：使用 text-primary，并增加 flex/group 样式 */}
+        <svg className="w-5 h-5 mr-2 -translate-x-1 group-hover:-translate-x-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        返回所有文章
       </Link>
 
       {/* 文章标题 */}
-      <Heading level={1} className="text-4xl font-extrabold text-gray-900 mb-4">
+      <Heading level={1} className="text-4xl font-extrabold text-neutral-900 mb-4"> {/* 修正：使用 text-neutral-900 */}
         {post.title}
       </Heading>
 
       {/* 文章元数据 */}
-      <div className="text-gray-600 text-sm mb-8 border-b pb-4">
+      <div className="text-neutral-500 text-sm mb-8 border-b border-neutral-200 pb-4"> {/* 修正：使用 text-neutral-500 和 border-neutral-200 */}
         <Text as="span" className="mr-4">
           作者: {post.author}
         </Text>
@@ -71,9 +72,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       </div>
 
       {/* 文章内容 */}
-      {/* `dangerouslySetInnerHTML` 用于渲染 HTML 字符串，请确保内容是安全的 */}
       <div
-        className="prose prose-lg max-w-none text-gray-800 leading-relaxed"
+        className="prose prose-lg max-w-none text-neutral-800 leading-relaxed" // 修正：使用 text-neutral-800
         dangerouslySetInnerHTML={{ __html: post.contentHtml }}
       />
     </article>
