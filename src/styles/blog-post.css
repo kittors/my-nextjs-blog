@@ -355,18 +355,34 @@ html.dark .prose hr {
   border-top-color: var(--color-neutral-700);
 }
 
+/* 核心修正：表格样式 */
 .prose table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse; /* 消除单元格间距 */
   margin-top: 1.5em;
   margin-bottom: 1.5em;
   color: var(--foreground);
+  /* 核心修正：增加表格外边框宽度和颜色，并添加阴影 */
+  border: 1px solid var(--color-neutral-300); /* 表格外边框 */
+  border-radius: 0.5rem; /* 圆角 */
+  overflow: hidden; /* 确保圆角和边框在内容溢出时也生效 */
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1); /* 添加阴影 */
+}
+
+html.dark .prose table {
+  /* 核心修正：暗黑模式下表格外边框颜色 */
+  border-color: var(--color-neutral-600);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.3),
+    0 2px 4px -2px rgb(0 0 0 / 0.2); /* 暗黑模式下阴影 */
 }
 
 .prose th,
 .prose td {
-  border: 1px solid var(--color-neutral-200);
-  padding: 0.75em 1em;
+  border: 1px solid var(--color-neutral-200); /* 单元格边框 */
+  padding: 0.75em 1em; /* 单元格内边距 */
   text-align: left;
 }
 
@@ -376,12 +392,79 @@ html.dark .prose td {
 }
 
 .prose th {
-  background-color: var(--color-neutral-100);
+  background-color: var(--color-neutral-100); /* 表头背景色 */
   font-weight: 600;
+  color: var(--color-neutral-800); /* 表头文本颜色 */
 }
 
 html.dark .prose th {
+  /* 核心修正：暗黑模式下表头背景和文本颜色 */
+  background-color: var(--color-neutral-100); /* 保持较暗的背景 */
+  color: var(--color-neutral-900); /* 更改为更暗的文本颜色，确保可读性 */
+}
+
+/* 核心修正：任务列表样式 */
+.prose ul.contains-task-list {
+  list-style-type: none; /* 移除无序列表的默认圆点 */
+  padding-left: 0; /* 移除默认的左内边距 */
+}
+
+.prose ul.contains-task-list .task-list-item {
+  display: flex; /* 使用 flex 布局对齐 checkbox 和文本 */
+  align-items: flex-start; /* 顶部对齐 */
+  margin-bottom: 0.5em; /* 任务项之间的间距 */
+}
+
+.prose ul.contains-task-list .task-list-item input[type='checkbox'] {
+  margin-right: 0.5em; /* checkbox 和文本之间的间距 */
+  /* 自定义 checkbox 样式 */
+  -webkit-appearance: none; /* 移除默认外观 */
+  -moz-appearance: none;
+  appearance: none;
+  width: 1.25em; /* 宽度 */
+  height: 1.25em; /* 高度 */
+  border: 1px solid var(--color-neutral-400); /* 边框 */
+  border-radius: 0.25em; /* 圆角 */
+  background-color: var(--background); /* 背景色 */
+  cursor: default; /* 禁用点击，因为是 disabled */
+  flex-shrink: 0; /* 防止 checkbox 缩小 */
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+html.dark .prose ul.contains-task-list .task-list-item input[type='checkbox'] {
+  border-color: var(--color-neutral-500);
   background-color: var(--color-neutral-800);
+}
+
+.prose ul.contains-task-list .task-list-item input[type='checkbox']:checked {
+  background-color: var(--color-primary-default); /* 选中时的背景色 */
+  border-color: var(--color-primary-default); /* 选中时的边框色 */
+  /* 简单的勾选标记 */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+html.dark .prose ul.contains-task-list .task-list-item input[type='checkbox']:checked {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary-light);
+}
+
+.prose code {
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  background-color: var(--color-neutral-100);
+  padding: 0.2em 0.4em;
+  border-radius: 0.3em;
+  color: var(--color-neutral-800);
+}
+
+html.dark .prose code {
+  background-color: var(--color-neutral-800);
+  color: var(--color-neutral-100);
 }
 
 /* 核心修正：为行内代码添加单色背景，不影响代码块 */

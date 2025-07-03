@@ -11,6 +11,7 @@ import { createHighlighter, type Highlighter } from 'shiki';
 import { type Root as HastRoot } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
 import { toString } from 'hast-util-to-string'; // 导入 hast-util-to-string 用于提取纯文本
+import remarkGfm from 'remark-gfm'; // 核心修正：导入 remark-gfm
 
 // 定义文章大纲条目的接口
 export interface TocEntry {
@@ -173,10 +174,11 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   // 创建统一的处理器实例
   const processor = unified()
     .use(remarkParse)
+    .use(remarkGfm) // 核心修正：添加 remark-gfm 插件以支持 GFM 语法
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
     .use(() => extractHeadings(headings))
-    .use(normalizeCodeLanguage) // 核心修正：在 rehypePrettyCode 之前添加语言标准化插件
+    .use(normalizeCodeLanguage)
     .use(rehypePrettyCode, prettyCodeOptions);
 
   // 正确地分步执行解析和转换
@@ -222,6 +224,7 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
     // 然后再用正则表达式去除剩余的 Markdown 链接、图片等语法
     const markdownToPlainText = unified()
       .use(remarkParse) // 解析 Markdown
+      .use(remarkGfm) // 核心修正：添加 remark-gfm 插件以支持 GFM 语法
       .use(() => (tree: MdastRoot) => {
         // 遍历 AST，移除不必要的节点，例如链接和图片
         visit(

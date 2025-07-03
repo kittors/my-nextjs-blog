@@ -41,6 +41,7 @@
     "hast-util-to-string": "^3.0.1",
     "mdast": "^3.0.0",
     "prettier": "^3.6.2",
+    "remark-gfm": "^4.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
