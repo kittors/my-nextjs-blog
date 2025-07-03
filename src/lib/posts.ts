@@ -6,7 +6,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
-import { visit, SKIP } from 'unist-util-visit'; // 核心修正：导入 SKIP
+import { visit, SKIP } from 'unist-util-visit';
 import { createHighlighter, type Highlighter } from 'shiki';
 import { type Root as HastRoot } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
@@ -92,6 +92,38 @@ function extractHeadings(headings: TocEntry[]) {
 }
 
 /**
+ * 新增 rehype 插件：标准化代码块的语言类名。
+ * 将 `<code>` 标签上的 `language-` 类名转换为小写，以兼容 Shiki 的语言识别。
+ */
+function normalizeCodeLanguage() {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', node => {
+      // 查找 <code> 标签，并确保它有 className 属性且为数组
+      if (
+        node.tagName === 'code' &&
+        node.properties?.className &&
+        Array.isArray(node.properties.className)
+      ) {
+        const classNames = node.properties.className as string[];
+        const languageClassIndex = classNames.findIndex(cls => cls.startsWith('language-'));
+
+        if (languageClassIndex !== -1) {
+          const originalLangClass = classNames[languageClassIndex];
+          // 提取语言标识符并转换为小写
+          const langIdentifier = originalLangClass.substring('language-'.length);
+          const normalizedLangClass = `language-${langIdentifier.toLowerCase()}`;
+
+          // 更新类名数组
+          classNames[languageClassIndex] = normalizedLangClass;
+          // 重新赋值回 properties，确保 HAST 树的更新
+          node.properties.className = classNames;
+        }
+      }
+    });
+  };
+}
+
+/**
  * 获取所有博客文章的元数据，并按日期降序排序。
  * @returns {BlogPostMetadata[]} 排序后的博客文章元数据数组。
  */
@@ -144,6 +176,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
     .use(() => extractHeadings(headings))
+    .use(normalizeCodeLanguage) // 核心修正：在 rehypePrettyCode 之前添加语言标准化插件
     .use(rehypePrettyCode, prettyCodeOptions);
 
   // 正确地分步执行解析和转换
