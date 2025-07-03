@@ -1,8 +1,16 @@
 // src/contexts/ToastContext.tsx
-"use client";
+'use client';
 
 // 核心修正 1: 从 React 中导入 useMemo
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from 'react';
 import { createPortal } from 'react-dom';
 import Toast from '@/components/atoms/Toast';
 
@@ -36,17 +44,16 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     setIsMounted(true);
   }, []);
 
-  const showToast = useCallback((
-    message: string,
-    type: ToastType = 'default',
-    duration: number = 3000
-  ) => {
-    const id = Date.now(); // 使用时间戳作为唯一 ID
-    setToasts((prevToasts) => [...prevToasts, { id, message, type, duration }]);
-  }, []);
+  const showToast = useCallback(
+    (message: string, type: ToastType = 'default', duration: number = 3000) => {
+      const id = Date.now(); // 使用时间戳作为唯一 ID
+      setToasts(prevToasts => [...prevToasts, { id, message, type, duration }]);
+    },
+    []
+  );
 
   const removeToast = useCallback((id: number) => {
-    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
   }, []);
 
   // 核心修正 2: 使用 useMemo 包装 context 的 value。
@@ -54,28 +61,32 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   // `useMemo` 则确保了包含 `showToast` 的这个 value 对象本身的引用也是稳定的。
   // 这样，当 ToastProvider 因内部状态 `toasts` 改变而重渲染时，
   // 消费此 context 的子组件（如 BlogPostContent）不会因为 context value 的引用变化而重渲染。
-  const contextValue = useMemo(() => ({
-    showToast
-  }), [showToast]);
+  const contextValue = useMemo(
+    () => ({
+      showToast,
+    }),
+    [showToast]
+  );
 
   return (
     // 核心修正 3: 将 memoized 的 contextValue 传递给 Provider。
     <ToastContext.Provider value={contextValue}>
       {children}
-      {isMounted && createPortal(
-        <div className="toast-container">
-          {toasts.map((toast) => (
-            <Toast
-              key={toast.id}
-              message={toast.message}
-              type={toast.type}
-              duration={toast.duration}
-              onClose={() => removeToast(toast.id)}
-            />
-          ))}
-        </div>,
-        document.body
-      )}
+      {isMounted &&
+        createPortal(
+          <div className="toast-container">
+            {toasts.map(toast => (
+              <Toast
+                key={toast.id}
+                message={toast.message}
+                type={toast.type}
+                duration={toast.duration}
+                onClose={() => removeToast(toast.id)}
+              />
+            ))}
+          </div>,
+          document.body
+        )}
     </ToastContext.Provider>
   );
 };

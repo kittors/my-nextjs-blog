@@ -46,11 +46,7 @@ const Header: React.FC<HeaderProps> = ({
   if (isBlur) {
     baseHeaderClasses.push('header-blur');
   } else {
-    baseHeaderClasses.push(
-      'bg-background',
-      'border-neutral-200',
-      'shadow-soft'
-    );
+    baseHeaderClasses.push('bg-background', 'border-neutral-200', 'shadow-soft');
   }
 
   const finalHeaderClasses = baseHeaderClasses.join(' ');
@@ -68,7 +64,10 @@ const Header: React.FC<HeaderProps> = ({
   const renderLogo = () => {
     if (logo.type === 'text') {
       return (
-        <h1 className="text-2xl font-bold tracking-tight" style={{ width: logo.width === 'auto' ? 'auto' : logo.width }}>
+        <h1
+          className="text-2xl font-bold tracking-tight"
+          style={{ width: logo.width === 'auto' ? 'auto' : logo.width }}
+        >
           {/* 核心修正：为 Logo 链接添加了丰富的悬停效果 */}
           <Link
             href="/"
@@ -86,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({
         </h1>
       );
     } else if (logo.type === 'image') {
-      const imgWidth = logo.width ? (parseInt(logo.width) || 100) : 100;
+      const imgWidth = logo.width ? parseInt(logo.width) || 100 : 100;
       const imgHeight = imgWidth / (16 / 9);
 
       return (
@@ -109,7 +108,9 @@ const Header: React.FC<HeaderProps> = ({
     <header className={finalHeaderClasses}>
       <nav className={`container mx-auto ${navClasses} h-full`}>
         {renderLogo()}
-        <div className={`flex items-center ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}>
+        <div
+          className={`flex items-center ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}
+        >
           <ThemeToggle />
         </div>
       </nav>

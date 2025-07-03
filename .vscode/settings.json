@@ -1,0 +1,45 @@
+// .vscode/settings.json
+// VS Code 工作区设置，用于确保在保存时自动格式化代码。
+// 这有助于在开发过程中保持代码风格的一致性，减少手动格式化的工作。
+{
+  // 启用保存时格式化。
+  "editor.formatOnSave": true,
+  // 默认格式化程序，这里指定为 Prettier。
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // 为特定语言设置默认格式化程序。
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[less]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // 确保在保存时，文件末尾总有一个新行。
+  "files.insertFinalNewline": true
+}

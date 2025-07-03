@@ -4,41 +4,26 @@
 
 ## ✨ 核心技术栈 (Core Technologies)
 
-- **框架 (Framework):** [Next.js](https://nextjs.org/ "null") 15 (App Router)
-    
-- **语言 (Language):** [TypeScript](https://www.typescriptlang.org/ "null")
-    
-- **UI 库 (UI Library):** [React](https://react.dev/ "null") 19
-    
-- **样式 (Styling):** [Tailwind CSS](https://tailwindcss.com/ "null") 4
-    
+- **框架 (Framework):** [Next.js](https://nextjs.org/ 'null') 15 (App Router)
+- **语言 (Language):** [TypeScript](https://www.typescriptlang.org/ 'null')
+- **UI 库 (UI Library):** [React](https://react.dev/ 'null') 19
+- **样式 (Styling):** [Tailwind CSS](https://tailwindcss.com/ 'null') 4
 - **Markdown 解析:**
-    
-    - `gray-matter`: 解析 Markdown frontmatter 元数据。
-        
-    - `unified`, `remark-parse`, `remark-rehype`: 将 Markdown 转换为 HTML (HAST)。
-        
+  - `gray-matter`: 解析 Markdown frontmatter 元数据。
+  - `unified`, `remark-parse`, `remark-rehype`: 将 Markdown 转换为 HTML (HAST)。
 - **代码高亮 (Syntax Highlighting):**
-    
-    - `shiki` & `rehype-pretty-code`: 提供美观、高性能的服务端代码高亮。
-        
-- **图标 (Icons):** [Lucide React](https://lucide.dev/ "null")
-    
+  - `shiki` & `rehype-pretty-code`: 提供美观、高性能的服务端代码高亮。
+- **图标 (Icons):** [Lucide React](https://lucide.dev/ 'null')
 - **开发工具 (Dev Tools):** ESLint, Prettier (通过编辑器集成)
-    
 
 ## 📂 项目结构 (Project Structure)
 
 项目遵循原子设计理念，将组件拆分为不同的层级，存放于 `src/components` 目录下：
 
 - **`atoms` (原子):** 最基础的、不可再分的 UI 元素，如 `Button`, `Heading`, `Text`, `PostImage`。
-    
 - **`molecules` (分子):** 由原子组合而成的简单 UI 组件，如 `BlogPostCard`, `ThemeToggle`, `ImagePreview`。
-    
 - **`organisms` (组织):** 由原子和分子构成的更复杂的、独立的页面区域，如 `Header`, `Footer`, `BlogList`, `TableOfContents`。
-    
 - **`templates` (模板):** 定义页面的整体布局结构，如 `PageContainer`, `BlogPostContent`。
-    
 
 这种结构使得组件的复用性、可测试性和可维护性都大大提高。
 
@@ -49,7 +34,7 @@
 **1. 克隆仓库**
 
 ```
-git clone <your-repository-url>
+git clone https://github.com/kittors/my-nextjs-blog
 cd my-nextjs-blog
 ```
 
@@ -75,28 +60,20 @@ yarn install
 pnpm dev
 ```
 
-现在，在浏览器中打开 [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000 "null") 即可看到你的博客网站。
+现在，在浏览器中打开 [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000 'null') 即可看到你的博客网站。
 
 **4. 添加新文章** 只需在 `posts` 目录下创建一个新的 `.md` 文件，并按照现有文章的格式填写 `frontmatter` 即可。
 
 ## 🌟 当前版本功能 (Key Features)
 
 - **Markdown 文章:** 所有博客文章均由 `posts` 目录下的 Markdown 文件驱动。
-    
 - **动态路由:** 根据 Markdown 文件名自动生成文章页面。
-    
 - **服务端代码高亮:** 使用 Shiki 实现高性能、美观的代码语法高亮。
-    
 - **明暗主题切换:** 支持亮色与暗色模式，并能记忆用户偏好，无刷新闪烁。
-    
 - **文章大纲 (TOC):** 自动生成文章大纲，并根据滚动位置高亮当前章节。
-    
 - **图片预览:** 点击文章中的图片可进行放大、缩小和旋转预览。
-    
 - **原子化组件设计:** 结构清晰，易于扩展和维护。
-    
 - **响应式布局:** 完美适配桌面、平板和移动设备。
-    
 
 ## 🌱 未来开发与版本控制 (Future Development & Branching)
 

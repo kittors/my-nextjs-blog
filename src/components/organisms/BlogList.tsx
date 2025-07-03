@@ -1,5 +1,5 @@
 // src/components/organisms/BlogList.tsx
-"use client";
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { BlogPostMetadata } from '@/lib/posts';
 import BlogPostCard from '@/components/molecules/BlogPostCard';
@@ -24,7 +24,7 @@ const LazyBlogPostCard: React.FC<{ post: BlogPostMetadata }> = ({ post }) => {
   useEffect(() => {
     // 创建一个 Intersection Observer 实例
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         // 当目标元素（我们的卡片占位符）与视口交叉时
         if (entries[0].isIntersecting) {
           setIsVisible(true); // 设置状态为可见，触发实际组件的渲染
@@ -57,7 +57,6 @@ const LazyBlogPostCard: React.FC<{ post: BlogPostMetadata }> = ({ post }) => {
   );
 };
 
-
 /**
  * BlogList 组件：用于展示所有博客文章的列表。
  * 遵循原子设计原则，它是一个组织组件，由 BlogPostCard 分子组件组成。
@@ -89,7 +88,7 @@ const BlogList: React.FC<BlogListProps> = ({ posts }) => {
           核心优化：现在我们渲染的是 LazyBlogPostCard 组件，
           而不是直接渲染 BlogPostCard。懒加载逻辑被封装在了 LazyBlogPostCard 内部。
         */}
-        {sortedPosts.map((post) => (
+        {sortedPosts.map(post => (
           <LazyBlogPostCard key={post.slug} post={post} />
         ))}
       </div>

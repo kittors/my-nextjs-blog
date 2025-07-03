@@ -20,7 +20,9 @@
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
   border: 1px solid transparent;
   width: max-content;
   max-width: 90vw;
@@ -35,38 +37,38 @@
 
 /* Toast 类型：Success */
 .toast--success {
-  background-color: #F0FDF4;
-  border-color: #A7F3D0;
-  color: #15803D;
+  background-color: #f0fdf4;
+  border-color: #a7f3d0;
+  color: #15803d;
 }
 html.dark .toast--success {
   background-color: #143621;
-  border-color: #15803D;
-  color: #A7F3D0;
+  border-color: #15803d;
+  color: #a7f3d0;
 }
 
 /* Toast 类型：Warning */
 .toast--warning {
-  background-color: #FEFCE8;
-  border-color: #FDE68A;
-  color: #B45309;
+  background-color: #fefce8;
+  border-color: #fde68a;
+  color: #b45309;
 }
 html.dark .toast--warning {
   background-color: #423006;
-  border-color: #B45309;
-  color: #FDE68A;
+  border-color: #b45309;
+  color: #fde68a;
 }
 
 /* Toast 类型：Error */
 .toast--error {
-  background-color: #FEF2F2;
-  border-color: #FECACA;
-  color: #B91C1C;
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
 }
 html.dark .toast--error {
   background-color: #450a0a;
-  border-color: #B91C1C;
-  color: #FECACA;
+  border-color: #b91c1c;
+  color: #fecaca;
 }
 
 /* Toast 动画 */

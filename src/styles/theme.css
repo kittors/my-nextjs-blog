@@ -28,7 +28,7 @@ html.light {
    暗黑模式的 CSS 变量 (当 <html> 上有 .dark 类时生效)
 */
 html.dark {
-  --background: #1B1C1D;
+  --background: #1b1c1d;
   --background-rgb: 27, 28, 29; /* 新增：供 rgba() 使用的 RGB 值 */
   --foreground: #e0e0e0;
   --color-primary-default: #60a5fa;

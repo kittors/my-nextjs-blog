@@ -1,5 +1,5 @@
 // src/contexts/ThemeContext.tsx
-"use client";
+'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
@@ -9,7 +9,7 @@ type Theme = 'light' | 'dark';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-  isThemeInitialized: boolean; 
+  isThemeInitialized: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -30,7 +30,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, []);
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => {
+    setTheme(prevTheme => {
       const newTheme = prevTheme === 'light' ? 'dark' : 'light';
       return newTheme;
     });

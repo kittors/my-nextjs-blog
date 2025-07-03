@@ -1,5 +1,5 @@
 // src/components/molecules/ProgressBar.tsx
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react'; // 导入 useState
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -21,7 +21,8 @@ const ProgressBar: React.FC = () => {
 
   // 路由开始变化时显示进度条
   useEffect(() => {
-    if (isMounted) { // 确保只在客户端挂载后执行
+    if (isMounted) {
+      // 确保只在客户端挂载后执行
       NProgress.start();
       //console.log('NProgress START: path changed to', pathname, searchParams.toString());
     }
@@ -29,7 +30,8 @@ const ProgressBar: React.FC = () => {
 
   // 在组件首次渲染（客户端）和每次路由/数据加载完成后调用 NProgress.done()
   useEffect(() => {
-    if (isMounted) { // 确保只在客户端挂载后执行
+    if (isMounted) {
+      // 确保只在客户端挂载后执行
       const timer = setTimeout(() => {
         NProgress.done();
         //console.log('NProgress DONE: after mount/render or path changed and content drawn');

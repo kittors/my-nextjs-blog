@@ -11,20 +11,17 @@ description: 这是关于我的第一篇博客文章的描述。
 
 ## 子标题
 
-* 列表项 1
-* 列表项 2
+- 列表项 1
+- 列表项 2
 
-**加粗文本** 和 *斜体文本*。
+**加粗文本** 和 _斜体文本_。
 
-
-``` typescript
+```typescript
 let arr = 123123;
 console.log(arr);
-
 ```
 
-``` typescript
+```typescript
 let arr = 123123;
 console.log(arr);
-
 ```

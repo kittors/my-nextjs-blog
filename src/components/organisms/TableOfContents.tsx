@@ -1,5 +1,5 @@
 // src/components/organisms/TableOfContents.tsx
-"use client";
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { type TocEntry } from '@/lib/posts';
@@ -29,8 +29,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
       if (isClickScrolling.current) {
         return;
       }
-      
-      entries.forEach((entry) => {
+
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           setActiveId(entry.target.id);
         }
@@ -45,7 +45,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
     });
 
     const elements = headings.map(({ id }) => document.getElementById(id)).filter(Boolean);
-    elements.forEach((el) => observer.current?.observe(el!));
+    elements.forEach(el => observer.current?.observe(el!));
 
     return () => observer.current?.disconnect();
   }, [headings]);
@@ -61,7 +61,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
     if (targetElement) {
       // 核心修正 2: 精确计算滚动位置，减去 Header 的高度和偏移量
       const targetPosition = targetElement.offsetTop - HEADER_OFFSET;
-      
+
       window.scrollTo({
         top: targetPosition,
         behavior: 'smooth',
@@ -73,7 +73,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
     // 这个延时确保了平滑滚动有足够的时间完成，避免了 observer 立即覆盖点击设置的状态
     setTimeout(() => {
       isClickScrolling.current = false;
-    }, 800); 
+    }, 800);
   };
 
   if (headings.length === 0) {
@@ -88,7 +88,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
           <li key={id} className={`level-${level}`}>
             <a
               href={`#${id}`}
-              onClick={(e) => handleLinkClick(e, id)}
+              onClick={e => handleLinkClick(e, id)}
               className={activeId === id ? 'active' : ''}
             >
               {text}

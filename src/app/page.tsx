@@ -18,10 +18,14 @@ export default async function HomePage() {
     <main className="container mx-auto px-4 py-8">
       {/* 网站主标题 */}
       <section className="text-center mb-12 py-10">
-        <Heading level={1} className="text-5xl text-neutral-900 mb-4 tracking-tight"> {/* 修正：使用 text-neutral-900 */}
+        <Heading level={1} className="text-5xl text-neutral-900 mb-4 tracking-tight">
+          {' '}
+          {/* 修正：使用 text-neutral-900 */}
           我的个人博客
         </Heading>
-        <Text className="text-lg text-neutral-700 max-w-xl mx-auto"> {/* 修正：使用 text-neutral-700 */}
+        <Text className="text-lg text-neutral-700 max-w-xl mx-auto">
+          {' '}
+          {/* 修正：使用 text-neutral-700 */}
           分享我的思考、技术和生活。
         </Text>
       </section>

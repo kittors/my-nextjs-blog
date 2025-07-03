@@ -21,7 +21,7 @@ export interface TocEntry {
 // 定义博客文章元数据的接口
 export interface BlogPostMetadata {
   slug: string;
-  title:string;
+  title: string;
   date: string;
   author: string;
   description: string;
@@ -58,7 +58,7 @@ function getTextFromNode(node: any): string {
 
 function extractHeadings(headings: TocEntry[]) {
   return (tree: HastRoot) => {
-    visit(tree, 'element', (node) => {
+    visit(tree, 'element', node => {
       if (['h1', 'h2', 'h3'].includes(node.tagName)) {
         const text = getTextFromNode(node);
         if (node.properties?.id) {
@@ -75,14 +75,19 @@ function extractHeadings(headings: TocEntry[]) {
 
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
-  const allPostsMetadata = fileNames.map((fileName) => {
+  const allPostsMetadata = fileNames.map(fileName => {
     const slug = fileName.replace(/\.md$/, '');
     const fullPath = path.join(postsDirectory, fileName);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const matterResult = matter(fileContents);
     return {
       slug,
-      ...(matterResult.data as { title: string; date: string; author: string; description: string }),
+      ...(matterResult.data as {
+        title: string;
+        date: string;
+        author: string;
+        description: string;
+      }),
     };
   });
   return allPostsMetadata.sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -91,7 +96,7 @@ export function getSortedPostsMetadata(): BlogPostMetadata[] {
 export async function getPostBySlug(slug: string): Promise<BlogPost> {
   const decodedSlug = decodeURIComponent(slug);
   const fullPath = path.join(postsDirectory, `${decodedSlug}.md`);
-  
+
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
   const headings: TocEntry[] = [];
@@ -128,7 +133,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
 
 export function getAllPostSlugs(): { slug: string }[] {
   const fileNames = fs.readdirSync(postsDirectory);
-  return fileNames.map((fileName) => ({
+  return fileNames.map(fileName => ({
     slug: fileName.replace(/\.md$/, ''),
   }));
 }

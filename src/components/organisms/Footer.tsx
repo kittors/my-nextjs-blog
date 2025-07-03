@@ -26,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({
   isVisible = true,
   text,
   backgroundColor = 'bg-background', // 默认使用主题背景色
-  textColor = 'text-foreground',       // 默认使用主题前景色
+  textColor = 'text-foreground', // 默认使用主题前景色
 }) => {
   // 如果设置为不可见，则不渲染任何内容
   if (!isVisible) {
@@ -39,9 +39,9 @@ const Footer: React.FC<FooterProps> = ({
   const footerClasses = [
     backgroundColor,
     textColor,
-    'p-6',          // 提供足够的内边距，确保内容不会紧贴边缘
-    'text-center',  // 高效地实现单行文本的水平居中
-    'border-t',     // 在页脚顶部添加一条分割线，以区分主内容
+    'p-6', // 提供足够的内边距，确保内容不会紧贴边缘
+    'text-center', // 高效地实现单行文本的水平居中
+    'border-t', // 在页脚顶部添加一条分割线，以区分主内容
     'border-neutral-200', // 定义分割线的颜色
     'dark:border-neutral-800', // 适配暗黑模式下的边框颜色
   ].join(' ');

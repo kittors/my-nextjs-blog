@@ -19,7 +19,7 @@ export async function generateStaticParams() {
 
 export default async function BlogPostPage(props: BlogPostPageProps) {
   const slug = props.params.slug;
-  
+
   // getPostBySlug 现在返回包含 HAST 树和 headings 的对象
   const { content, headings, ...postMeta } = await getPostBySlug(slug);
 
@@ -31,9 +31,7 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
         <Heading level={1} className="text-4xl text-red-600 mb-4">
           文章未找到
         </Heading>
-        <Text className="text-lg text-neutral-700">
-          抱歉，您请求的文章不存在。
-        </Text>
+        <Text className="text-lg text-neutral-700">抱歉，您请求的文章不存在。</Text>
         <Link href="/" className="text-primary hover:underline mt-6 inline-block">
           返回首页
         </Link>
@@ -42,7 +40,5 @@ export default async function BlogPostPage(props: BlogPostPageProps) {
   }
 
   // 将 post 和 headings 都传递给客户端组件
-  return (
-    <BlogPostContent post={post} headings={headings} />
-  );
+  return <BlogPostContent post={post} headings={headings} />;
 }

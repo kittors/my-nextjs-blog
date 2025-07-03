@@ -1,5 +1,5 @@
 // src/components/atoms/Toast.tsx
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Info } from 'lucide-react';

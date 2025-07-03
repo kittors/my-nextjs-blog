@@ -1,5 +1,5 @@
 // src/components/molecules/ImagePreview.tsx
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { X, ZoomIn, ZoomOut, RotateCw, RotateCcw } from 'lucide-react';
@@ -58,7 +58,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
 
   return (
     <div className="image-preview-backdrop" onClick={onClose}>
-      <div className="image-preview-content" onClick={(e) => e.stopPropagation()}>
+      <div className="image-preview-content" onClick={e => e.stopPropagation()}>
         {/* 优化点：移除了 onLoad 事件和相关的 JavaScript 计算。
           现在，图片的初始尺寸完全由 CSS 控制。
           .image-preview-content 提供了最大可用空间 (90vw, 80vh)。
@@ -75,12 +75,22 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
           }}
         />
       </div>
-      <div className="image-preview-toolbar" onClick={(e) => e.stopPropagation()}>
-        <button onClick={handleZoomIn} aria-label="放大"><ZoomIn /></button>
-        <button onClick={handleZoomOut} aria-label="缩小"><ZoomOut /></button>
-        <button onClick={handleRotateLeft} aria-label="向左旋转"><RotateCcw /></button>
-        <button onClick={handleRotateRight} aria-label="向右旋转"><RotateCw /></button>
-        <button onClick={onClose} aria-label="关闭"><X /></button>
+      <div className="image-preview-toolbar" onClick={e => e.stopPropagation()}>
+        <button onClick={handleZoomIn} aria-label="放大">
+          <ZoomIn />
+        </button>
+        <button onClick={handleZoomOut} aria-label="缩小">
+          <ZoomOut />
+        </button>
+        <button onClick={handleRotateLeft} aria-label="向左旋转">
+          <RotateCcw />
+        </button>
+        <button onClick={handleRotateRight} aria-label="向右旋转">
+          <RotateCw />
+        </button>
+        <button onClick={onClose} aria-label="关闭">
+          <X />
+        </button>
       </div>
     </div>
   );

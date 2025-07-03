@@ -1,5 +1,5 @@
 // src/components/templates/BlogPostContent.tsx
-"use client";
+'use client';
 
 import React, { useRef, useEffect, memo, useState, createElement, Fragment } from 'react';
 // 为生产环境导入 jsx 和 jsxs
@@ -58,17 +58,18 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     .stringify(post.content);
 
   // 核心修正：为元数据提供默认值
-  const title = post.title || "无标题文章";
-  const author = post.author || "匿名作者";
+  const title = post.title || '无标题文章';
+  const author = post.author || '匿名作者';
   const dateObj = post.date ? new Date(post.date) : null;
-  const displayDate = dateObj && !isNaN(dateObj.getTime())
-    ? dateObj.toLocaleDateString("zh-CN")
-    : "未知日期";
+  const displayDate =
+    dateObj && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('zh-CN') : '未知日期';
 
   // 复制按钮的逻辑
   useEffect(() => {
     if (!articleContentRef.current) return;
-    const codeFigures = articleContentRef.current.querySelectorAll('figure[data-rehype-pretty-code-figure]');
+    const codeFigures = articleContentRef.current.querySelectorAll(
+      'figure[data-rehype-pretty-code-figure]'
+    );
     codeFigures.forEach(figure => {
       const preElement = figure.querySelector('pre');
       if (!preElement) return;
@@ -97,7 +98,9 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
           await navigator.clipboard.writeText(codeElement.innerText);
           showToast('代码已复制到剪贴板！', 'success');
           button.dataset.copied = 'true';
-          setTimeout(() => { delete button.dataset.copied; }, 2000);
+          setTimeout(() => {
+            delete button.dataset.copied;
+          }, 2000);
         } catch (err) {
           console.error('无法复制代码: ', err);
           showToast('复制失败，请手动复制。', 'error');
@@ -113,8 +116,24 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
       <div className="container mx-auto px-4 py-12">
         <div className="blog-layout">
           <article className="max-w-3xl">
-            <Link href="/" className="text-primary hover:underline mb-8 inline-block flex items-center group">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <Link
+              href="/"
+              className="text-primary hover:underline mb-8 inline-block flex items-center group"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                ></path>
+              </svg>
               返回所有文章
             </Link>
 
@@ -123,7 +142,9 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
             </Heading>
 
             <div className="text-neutral-500 text-sm mb-8 border-b border-neutral-200 pb-4">
-              <Text as="span" className="mr-4">作者: {author}</Text>
+              <Text as="span" className="mr-4">
+                作者: {author}
+              </Text>
               <Text as="span">日期: {displayDate}</Text>
             </div>
 

@@ -1,14 +1,14 @@
 /* src/app/globals.css */
 
 /* 引入 Tailwind CSS 基础样式 */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* 引入拆分后的自定义样式模块 */
-@import "../styles/theme.css";
-@import "../styles/code-highlight.css";
-@import "../styles/toast.css";
-@import "../styles/nprogress.css";
-@import "../styles/blog-post.css"; /* 新增：导入文章页面的专属样式 */
+@import '../styles/theme.css';
+@import '../styles/code-highlight.css';
+@import '../styles/toast.css';
+@import '../styles/nprogress.css';
+@import '../styles/blog-post.css'; /* 新增：导入文章页面的专属样式 */
 
 /*
   保留最核心的、真正“全局”的 body 样式。
@@ -19,7 +19,9 @@ body {
   color: var(--foreground);
   font-family: 'Inter', sans-serif;
   line-height: 1.6;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .prose {

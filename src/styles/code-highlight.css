@@ -8,8 +8,12 @@
   border: 1px solid var(--color-neutral-200);
   overflow: hidden;
   background-color: var(--shiki-light-bg, #ffffff);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  transition: border-color 0.3s, background-color 0.3s;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition:
+    border-color 0.3s,
+    background-color 0.3s;
 }
 
 html.dark .prose figure[data-rehype-pretty-code-figure] {
@@ -83,7 +87,11 @@ html.dark .prose figure[data-rehype-pretty-code-figure] code span {
   color: var(--color-neutral-500);
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
 }
 
 html.dark .copy-button {
@@ -103,5 +111,9 @@ html.dark .copy-button:hover {
   color: var(--color-neutral-200);
 }
 
-.copy-button[data-copied='true'] .copy-icon { display: none; }
-.copy-button:not([data-copied='true']) .check-icon { display: none; }
+.copy-button[data-copied='true'] .copy-icon {
+  display: none;
+}
+.copy-button:not([data-copied='true']) .check-icon {
+  display: none;
+}

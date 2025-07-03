@@ -1,5 +1,5 @@
 // src/components/templates/PageContainer.tsx
-"use client";
+'use client';
 
 import React from 'react';
 import Header from '@/components/organisms/Header';
@@ -32,7 +32,7 @@ const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
     // 布局会自动适应，无需修改组件代码。
     paddingTopClass = headerConfig.height.replace('h-', 'pt-');
   }
-  
+
   return (
     <ThemeProvider>
       <ToastProvider>
@@ -55,9 +55,7 @@ const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
           {/* 将动态计算出的 padding-top 类应用到 main 元素。
               这样，当 Header 固定在顶部时，主内容区会获得正确的上边距，防止被遮挡。
            */}
-          <main className={`flex-grow ${paddingTopClass}`}>
-            {children}
-          </main>
+          <main className={`flex-grow ${paddingTopClass}`}>{children}</main>
 
           <Footer
             isVisible={footerConfig.isVisible}
