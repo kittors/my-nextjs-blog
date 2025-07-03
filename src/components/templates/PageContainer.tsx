@@ -32,7 +32,10 @@ const PageContainer: React.FC<PageContainerProps> = ({ children, allPostsForSear
   // 动态计算 main 元素的上边距。
   let paddingTopClass = '';
   if (headerConfig.isFixed && headerConfig.height) {
-    paddingTopClass = headerConfig.height.replace('h-', 'pt-');
+    // 核心修正：现在 Header 的总高度由 height 属性直接控制，
+    // 内部 padding 已经移动到 <nav> 元素，不影响 Header 容器的总高度。
+    // 因此，直接使用 headerConfig.height 对应的 pt- 值即可。
+    paddingTopClass = headerConfig.height.replace('h-', 'pt-'); // 例如 'h-16' -> 'pt-16'
   }
 
   // 监听快捷键打开/关闭搜索模态框

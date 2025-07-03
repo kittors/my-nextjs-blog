@@ -177,6 +177,8 @@ html.dark {
 .header-icon-button {
   color: var(--header-icon-color);
   transition: color 0.2s; /* 添加过渡效果 */
+  /* 核心优化：添加指针样式 */
+  cursor: pointer;
 }
 
 .header-icon-button:hover {

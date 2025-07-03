@@ -23,10 +23,11 @@ const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
+      // 核心优化：添加 cursor-pointer 类，确保鼠标悬停时显示指针
       className={`p-2 rounded-full text-foreground transition-colors duration-200
                  hover:bg-neutral-200 /* 亮色模式下的 hover 背景 */
                  theme-toggle-hover-effect /* 自定义类处理暗色模式下的 hover 背景 */
-                 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                 ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       aria-label="切换主题"
       disabled={isDisabled} // 设置 disabled 属性
       title={isDisabled ? '已配置为同步系统主题，无法手动切换' : '切换主题'} // 添加提示

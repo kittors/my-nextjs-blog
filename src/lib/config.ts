@@ -30,7 +30,7 @@ export interface FooterConfig {
 export interface ThemeConfig {
   // 是否默认与系统主题偏好同步。
   // 如果为 true，页面将始终跟随系统主题，且不允许手动切换。
-  // 如果为 false，页面将允许手动切换，但默认跟随系统主题。
+  // 如果为 false，将允许手动切换，但默认跟随系统主题。
   defaultToSystemPreference: boolean;
   // 如果不默认与系统同步，或者系统偏好不可用时，使用的初始主题。
   // 当 defaultToSystemPreference 为 false 且 localStorage 无主题时生效。
@@ -42,10 +42,10 @@ export interface SearchConfig {
   // 搜索模态框的快捷键，例如 'k' 表示 Cmd/Ctrl + K
   hotkey: string;
   // 是否在 Header 中显示搜索快捷键提示
-  showHotkeyDisplay: boolean; // 新增配置项
+  showHotkeyDisplay: boolean;
 }
 
-// 新增：定义 GitHub 配置的接口
+// 定义 GitHub 配置的接口
 export interface GithubConfig {
   isVisible: boolean; // 是否显示 GitHub 图标
   url: string; // GitHub 地址
@@ -57,7 +57,7 @@ export interface AppConfig {
   footer: FooterConfig;
   theme: ThemeConfig;
   search: SearchConfig;
-  github: GithubConfig; // 新增 GitHub 配置
+  github: GithubConfig;
 }
 
 /**
