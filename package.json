@@ -38,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
     "hast": "^1.0.0",
+    "hast-util-to-string": "^3.0.1",
     "mdast": "^3.0.0",
     "prettier": "^3.6.2",
     "tailwindcss": "^4",

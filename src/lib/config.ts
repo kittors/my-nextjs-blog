@@ -37,11 +37,18 @@ export interface ThemeConfig {
   initialTheme: 'light' | 'dark' | 'system';
 }
 
+// 新增：定义搜索配置的接口
+export interface SearchConfig {
+  // 搜索模态框的快捷键，例如 'k' 表示 Cmd/Ctrl + K
+  hotkey: string;
+}
+
 // 定义应用程序的整体配置接口
 export interface AppConfig {
   header: HeaderConfig;
   footer: FooterConfig;
   theme: ThemeConfig; // 新增：主题配置
+  search: SearchConfig; // 新增：搜索配置
 }
 
 /**
@@ -73,5 +80,9 @@ export const appConfig: AppConfig = {
   theme: {
     defaultToSystemPreference: false, // 根据需求，此项控制是否始终同步系统
     initialTheme: 'system', // 当 defaultToSystemPreference 为 false 且无 localStorage 时，默认跟随系统
+  },
+  // 新增：搜索的默认配置
+  search: {
+    hotkey: 'k', // 默认快捷键 Cmd/Ctrl + K
   },
 };

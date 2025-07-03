@@ -9,6 +9,7 @@
 @import '../styles/toast.css';
 @import '../styles/nprogress.css';
 @import '../styles/blog-post.css'; /* 新增：导入文章页面的专属样式 */
+@import '../styles/search.css'; /* 新增：导入搜索模态框的样式 */
 
 /*
   保留最核心的、真正“全局”的 body 样式。
