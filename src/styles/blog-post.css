@@ -130,10 +130,9 @@ html.dark .back-to-top-button:hover {
   transform: translateY(0);
 }
 
-/* --- 新增样式 --- */
-
 /* 博客文章图片容器 */
 .post-image-container {
+  display: block;
   margin: 2em 0;
 }
 
@@ -170,8 +169,9 @@ html.dark .back-to-top-button:hover {
 
 /* 图片预览内容区 */
 .image-preview-content {
-  max-width: 90vw;
-  max-height: 80vh;
+  /* 核心修正：将最大尺寸调小，以使默认预览尺寸变小 */
+  max-width: 60vw;
+  max-height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;

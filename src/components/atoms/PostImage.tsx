@@ -14,11 +14,14 @@ interface PostImageProps {
  * PostImage 组件：一个原子级别的 UI 组件。
  * 它封装了 Next.js 的 Image 组件，专门用于博客文章内容中。
  * 实现了懒加载、圆角样式，并提供了点击事件处理。
+ * 核心修正：根元素从 <div> 改为 <span>，以避免 hydration 错误。
  * @param {PostImageProps} props - 组件属性。
  */
 const PostImage: React.FC<PostImageProps> = ({ src, alt, onClick }) => {
   return (
-    <div className="post-image-container">
+    // 使用 span 代替 div，使其可以合法地嵌套在 <p> 标签内。
+    // 相应的 CSS 会将其渲染为块级元素。
+    <span className="post-image-container">
       <Image
         src={src}
         alt={alt}
@@ -29,7 +32,7 @@ const PostImage: React.FC<PostImageProps> = ({ src, alt, onClick }) => {
         className="post-image"
         onClick={() => onClick(src)}
       />
-    </div>
+    </span>
   );
 };
 
