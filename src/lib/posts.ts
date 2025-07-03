@@ -6,8 +6,10 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeStringify from 'rehype-stringify';
-import { Element } from 'hast';
 import { createHighlighter, type Highlighter } from 'shiki';
+// 核心修正：移除不再需要的 'unist-util-visit' 和 HAST 类型，因为我们将不再手动操作 AST。
+// import { visit } from 'unist-util-visit';
+// import { type Root, type Element } from 'hast';
 
 // 定义博客文章元数据的接口
 export interface BlogPostMetadata {
@@ -25,9 +27,6 @@ export interface BlogPost extends BlogPostMetadata {
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
-// 终极解决方案：创建一个全局单例的 Highlighter
-// 这可以确保 Highlighter 只被初始化一次，并在多次调用 getPostBySlug 之间共享。
-// 这是在无服务器环境或构建流程中使用 Shiki 的最高效、最可靠的方式。
 let highlighter: Highlighter;
 async function getSingletonHighlighter() {
   if (!highlighter) {
@@ -39,6 +38,9 @@ async function getSingletonHighlighter() {
   return highlighter;
 }
 
+// 核心修正：完全移除自定义的 `rehypeCodeHeader` 插件。
+// 这个插件是导致之前不稳定的根源。现在，服务器端只负责生成纯净的高亮代码，
+// 将所有与头部相关的 UI 操作完全交给客户端处理，以确保稳定性和可预测性。
 
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
@@ -55,39 +57,26 @@ export function getSortedPostsMetadata(): BlogPostMetadata[] {
   return allPostsMetadata.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
-/**
- * 根据文章的 slug 获取单篇博客文章的完整内容。
- * 使用 rehype-pretty-code 在服务器端生成带语法高亮的 HTML。
- * @param {string} slug - 文章的唯一标识符（slug）。
- * @returns {Promise<BlogPost>} 包含文章元数据和高亮后的 HTML 内容。
- */
 export async function getPostBySlug(slug: string): Promise<BlogPost> {
   const fullPath = path.join(postsDirectory, `${slug}.md`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
 
-  // 配置 rehype-pretty-code
   const prettyCodeOptions: Partial<RehypePrettyCodeOptions> = {
-    // 核心修正：根据 TypeScript 错误提示，将属性名从 `highlighter` 改为 `getHighlighter`。
-    // 我们直接传递创建单例实例的异步函数，这符合 getHighlighter 的期望类型。
     getHighlighter: getSingletonHighlighter,
-    theme: {
-      light: 'vitesse-light',
-      dark: 'vitesse-dark',
-    },
-    onVisitLine(node: Element) {
-      // 防止空行在 `display: grid` 模式下被折叠
+    theme: { light: 'vitesse-light', dark: 'vitesse-dark' },
+    onVisitLine(node) { // 类型可以从 rehype-pretty-code 推断
       if (node.children.length === 0) {
         node.children = [{ type: 'text', value: ' ' }];
       }
     },
   };
 
-  // 处理 Markdown
   const processedContent = await unified()
     .use(remarkParse)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypePrettyCode, prettyCodeOptions)
+    // 核心修正：从处理管道中移除 .use(rehypeCodeHeader)。
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 

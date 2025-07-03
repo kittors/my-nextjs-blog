@@ -3,9 +3,9 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderLogoConfig } from '@/lib/config';
-import ThemeToggle from '@/components/molecules/ThemeToggle'; // 导入 ThemeToggle 组件
+import ThemeToggle from '@/components/molecules/ThemeToggle';
 
-// 定义 Header 组件的 Props 类型
+// Props 类型定义保持不变
 interface HeaderProps {
   isVisible?: boolean;
   isFixed?: boolean;
@@ -13,13 +13,11 @@ interface HeaderProps {
   logo: HeaderLogoConfig;
   logoPosition: 'left' | 'center' | 'right';
   isBlur?: boolean;
-  blurStrength?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  // blurStrength prop 不再需要，因为样式被硬编码在 .header-blur 类中
 }
 
 /**
  * Header 组件：网站的顶部导航栏。
- * 这是一个纯粹的展示性组件，其外观和行为由传入的 props 决定。
- * 通过移除 forwardRef，我们简化了组件的 API，因为它不再需要被外部测量。
  * @param {HeaderProps} props - 组件属性。
  */
 const Header: React.FC<HeaderProps> = ({
@@ -29,42 +27,45 @@ const Header: React.FC<HeaderProps> = ({
   logo,
   logoPosition = 'left',
   isBlur = false,
-  blurStrength = 'md',
 }) => {
   if (!isVisible) {
     return null;
   }
 
+  // 基础样式保持不变
   const baseHeaderClasses = [
     'text-foreground',
     'p-4',
-    'shadow-soft',
     'border-b',
-    'border-neutral-200',
     'w-full',
     'z-50',
     height,
     isFixed ? 'fixed top-0' : 'relative',
-    'overflow-hidden',
+    'transition-all duration-300',
   ];
 
+  // 核心修正：不再使用一长串 Tailwind 类，而是直接应用我们自定义的 .header-blur 类
   if (isBlur) {
-    baseHeaderClasses.push(`bg-background/50`);
-    baseHeaderClasses.push(`backdrop-blur-${blurStrength}`);
+    baseHeaderClasses.push('header-blur');
   } else {
-    baseHeaderClasses.push('bg-background');
+    // 当不启用模糊时，回退到原始的实体背景样式
+    baseHeaderClasses.push(
+      'bg-background',
+      'border-neutral-200',
+      'shadow-soft'
+    );
   }
 
   const finalHeaderClasses = baseHeaderClasses.join(' ');
 
-  // 根据 Logo 位置动态调整 Flexbox 类
+  // 导航和 Logo 渲染逻辑保持不变
   let navClasses = 'flex items-center';
   if (logoPosition === 'left') {
-    navClasses += ' justify-between'; // Logo 在左，ThemeToggle 在右
+    navClasses += ' justify-between';
   } else if (logoPosition === 'center') {
-    navClasses += ' justify-center'; // Logo 居中
+    navClasses += ' justify-center';
   } else if (logoPosition === 'right') {
-    navClasses += ' justify-between flex-row-reverse'; // Logo 在右，ThemeToggle 在左
+    navClasses += ' justify-between flex-row-reverse';
   }
 
   const renderLogo = () => {
@@ -102,10 +103,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className={finalHeaderClasses}>
       <nav className={`container mx-auto ${navClasses} h-full`}>
-        {/* Logo 渲染 */}
         {renderLogo()}
-
-        {/* 右侧（或左侧）的切换按钮 */}
         <div className={`flex items-center ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}>
           <ThemeToggle />
         </div>

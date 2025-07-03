@@ -1,0 +1,107 @@
+/* src/styles/code-highlight.css */
+
+/* 代码块容器卡片样式 */
+.prose figure[data-rehype-pretty-code-figure] {
+  position: relative;
+  margin: 1.6em 0;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-neutral-200);
+  overflow: hidden;
+  background-color: var(--shiki-light-bg, #ffffff);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+html.dark .prose figure[data-rehype-pretty-code-figure] {
+  border-color: var(--color-neutral-800);
+  background-color: var(--shiki-dark-bg, #121212);
+}
+
+/* 代码块 Header 样式 */
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background-color: #f7f7f8;
+}
+
+html.dark .code-block-header {
+  border-bottom-color: var(--color-neutral-800);
+  background-color: #242526;
+}
+
+/* Header 中的语言标签样式 */
+.code-block-header .language-tag {
+  font-family: sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--color-neutral-600);
+}
+
+html.dark .code-block-header .language-tag {
+  color: var(--color-neutral-300);
+}
+
+/* <pre> 标签样式 */
+.prose figure[data-rehype-pretty-code-figure] > pre {
+  padding: 1rem 1rem 1.25rem;
+  margin: 0 !important;
+  overflow-x: auto;
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  background-color: transparent;
+}
+
+/* 核心高亮逻辑 */
+.prose figure[data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+}
+
+html.dark .prose figure[data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+}
+
+/* 复制按钮样式 */
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+html.dark .copy-button {
+  color: var(--color-neutral-400);
+}
+
+.copy-button:hover {
+  opacity: 1;
+  background-color: var(--color-neutral-200);
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+html.dark .copy-button:hover {
+  background-color: var(--color-neutral-700);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-200);
+}
+
+.copy-button[data-copied='true'] .copy-icon { display: none; }
+.copy-button:not([data-copied='true']) .check-icon { display: none; }

@@ -1,0 +1,74 @@
+/* src/styles/theme.css */
+
+/*
+   亮色模式的 CSS 变量 (默认值，并在 <html> 上有 .light 类时生效)
+*/
+:root,
+html.light {
+  --background: #fcfcfc;
+  --background-rgb: 252, 252, 252; /* 新增：供 rgba() 使用的 RGB 值 */
+  --foreground: #333333;
+  --color-primary-default: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-primary-dark: #2563eb;
+  --color-secondary: #8b5cf6;
+  --color-neutral-50: #f8f8f8;
+  --color-neutral-100: #f0f0f0;
+  --color-neutral-200: #e0e0e0;
+  --color-neutral-300: #d0d0d0;
+  --color-neutral-400: #a0a0a0;
+  --color-neutral-500: #707070;
+  --color-neutral-600: #505050;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #303030;
+  --color-neutral-900: #202020;
+}
+
+/*
+   暗黑模式的 CSS 变量 (当 <html> 上有 .dark 类时生效)
+*/
+html.dark {
+  --background: #1B1C1D;
+  --background-rgb: 27, 28, 29; /* 新增：供 rgba() 使用的 RGB 值 */
+  --foreground: #e0e0e0;
+  --color-primary-default: #60a5fa;
+  --color-primary-light: #818cf8;
+  --color-primary-dark: #3b82f6;
+  --color-secondary: #a78bfa;
+  --color-neutral-50: #2a2b2c;
+  --color-neutral-100: #3a3b3c;
+  --color-neutral-200: #4a4b4c;
+  --color-neutral-300: #5a5b5c;
+  --color-neutral-400: #7a7b7c;
+  --color-neutral-500: #9a9b9c;
+  --color-neutral-600: #bababa;
+  --color-neutral-700: #cacaca;
+  --color-neutral-800: #dadada;
+  --color-neutral-900: #eaeaea;
+}
+
+/*
+   @theme inline 规则将上述 CSS 变量映射到 Tailwind 的主题系统。
+*/
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* 新增：专门用于 Header 高斯模糊效果的自定义类 
+  这个类精确地定义了实现“毛玻璃”效果所需的所有样式。
+*/
+.header-blur {
+  /* 关键步骤 1: 背景必须是半透明的。我们使用 RGB 变量来确保主题切换时颜色正确。*/
+  background-color: rgba(var(--background-rgb), 0.75);
+
+  /* 关键步骤 2: 应用 backdrop-filter。12px 是一个比较理想的模糊半径。*/
+  -webkit-backdrop-filter: blur(12px); /* 兼容 Safari 浏览器 */
+  backdrop-filter: blur(12px);
+
+  /* 可选优化: 添加一个非常微妙的边框和阴影，增强“玻璃”的质感。*/
+  border-bottom-color: rgba(128, 128, 128, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}

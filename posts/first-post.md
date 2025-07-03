@@ -22,3 +22,9 @@ let arr = 123123;
 console.log(arr);
 
 ```
+
+``` typescript
+let arr = 123123;
+console.log(arr);
+
+```

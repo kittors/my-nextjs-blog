@@ -49,7 +49,9 @@ export const appConfig: AppConfig = {
         },
         logoPosition: 'left',
         isBlur: true, // 默认启用模糊透明效果
-        blurStrength: '3xl',
+        // 核心修正：将模糊强度从 '3xl' (过于模糊) 调整为 'lg' (16px)。
+        // 这个值通常能提供最佳的“毛玻璃”效果，既能模糊背景，又能保留轮廓感。
+        blurStrength: 'lg',
     },
     // 新增：Footer 的默认配置
     footer: {

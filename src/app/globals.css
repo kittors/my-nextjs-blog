@@ -1,183 +1,23 @@
-/* app/globals.css */
+/* src/app/globals.css */
 
+/* 引入 Tailwind CSS 基础样式 */
 @import "tailwindcss";
 
-/*
-   亮色模式的 CSS 变量 (默认值，并在 <html> 上有 .light 类时生效)
+/* 引入拆分后的自定义样式模块
+  核心修正：将路径别名 `@/styles/...` 修改为标准的相对路径。
+  `globals.css` 文件位于 `src/app/` 目录，
+  而样式文件位于 `src/styles/` 目录，
+  因此，正确的相对路径是从 `app` 目录返回上一级 (`../`) 再进入 `styles` 目录。
 */
-:root,
-html.light {
-  --background: #fcfcfc;
-  --foreground: #333333;
-  --color-primary-default: #3b82f6;
-  --color-primary-light: #60a5fa;
-  --color-primary-dark: #2563eb;
-  --color-secondary: #8b5cf6;
-  --color-neutral-50: #f8f8f8;
-  --color-neutral-100: #f0f0f0;
-  --color-neutral-200: #e0e0e0;
-  --color-neutral-300: #d0d0d0;
-  --color-neutral-400: #a0a0a0;
-  --color-neutral-500: #707070;
-  --color-neutral-600: #505050;
-  --color-neutral-700: #404040;
-  --color-neutral-800: #303030;
-  --color-neutral-900: #202020;
-}
+@import "../styles/theme.css";
+@import "../styles/code-highlight.css";
+@import "../styles/toast.css";
+@import "../styles/nprogress.css";
 
 /*
-   暗黑模式的 CSS 变量 (当 <html> 上有 .dark 类时生效)
+  保留最核心的、真正“全局”的 body 样式。
+  这确保了应用的基础字体和背景色能被正确应用。
 */
-html.dark {
-  --background: #1B1C1D;
-  --foreground: #e0e0e0;
-  --color-primary-default: #60a5fa;
-  --color-primary-light: #818cf8;
-  --color-primary-dark: #3b82f6;
-  --color-secondary: #a78bfa;
-  --color-neutral-50: #2a2b2c;
-  --color-neutral-100: #3a3b3c;
-  --color-neutral-200: #4a4b4c;
-  --color-neutral-300: #5a5b5c;
-  --color-neutral-400: #7a7b7c;
-  --color-neutral-500: #9a9b9c;
-  --color-neutral-600: #bababa;
-  --color-neutral-700: #cacaca;
-  --color-neutral-800: #dadada;
-  --color-neutral-900: #eaeaea;
-}
-
-/*
-   @theme inline 规则将上述 CSS 变量映射到 Tailwind 的主题系统。
-*/
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  /* ... 其他颜色映射 ... */
-}
-
-/*
-   ==========================================================================
-   代码块美化样式 (rehype-pretty-code) - 带 Header 版本
-   ==========================================================================
-*/
-
-/* 1. 代码块容器卡片样式 (基本不变) */
-.prose figure[data-rehype-pretty-code-figure] {
-  position: relative;
-  margin: 1.6em 0;
-  border-radius: 0.75rem;
-  border: 1px solid var(--color-neutral-200);
-  overflow: hidden;
-  background-color: var(--shiki-light-bg, #ffffff);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  transition: border-color 0.3s, background-color 0.3s;
-}
-
-html.dark .prose figure[data-rehype-pretty-code-figure] {
-  border-color: var(--color-neutral-800);
-  background-color: var(--shiki-dark-bg, #121212);
-}
-
-/* 2. 优化：代码块 Header 样式 */
-.code-block-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  /* 核心修正：减小垂直内边距，使其更紧凑 */
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--color-neutral-200);
-  background-color: #f7f7f8;
-}
-
-html.dark .code-block-header {
-  border-bottom-color: var(--color-neutral-800);
-  background-color: #242526;
-}
-
-/* 3. 优化：Header 中的语言标签样式 */
-.code-block-header .language-tag {
-  font-family: sans-serif;
-  /* 核心修正：减小字体大小 */
-  font-size: 0.75rem; /* 12px */
-  font-weight: 600;
-  text-transform: capitalize;
-  color: var(--color-neutral-600);
-}
-
-html.dark .code-block-header .language-tag {
-  color: var(--color-neutral-300);
-}
-
-/* 4. <pre> 标签重置和样式 (调整内边距以适应新的 Header) */
-.prose figure[data-rehype-pretty-code-figure] > pre {
-  padding: 1rem 1rem 1.25rem; /* 调整水平内边距以匹配 Header */
-  margin: 0 !important;
-  overflow-x: auto;
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
-  font-size: 0.875rem; /* 14px */
-  line-height: 1.7;
-  background-color: transparent;
-}
-
-/* 5. 核心高亮逻辑 (不变) */
-.prose figure[data-rehype-pretty-code-figure] code span {
-  color: var(--shiki-light);
-  font-style: var(--shiki-light-font-style);
-  font-weight: var(--shiki-light-font-weight);
-}
-
-html.dark .prose figure[data-rehype-pretty-code-figure] code span {
-  color: var(--shiki-dark);
-  font-style: var(--shiki-dark-font-style);
-  font-weight: var(--shiki-dark-font-weight);
-}
-
-/* 6. 移除：旧的悬浮语言标签样式 */
-/* .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after { ... } 已被移除 */
-
-/* 7. 优化：复制按钮样式 */
-.copy-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* 核心修正：减小按钮尺寸 */
-  width: 1.75rem; /* 28px */
-  height: 1.75rem; /* 28px */
-  padding: 0;
-  background-color: transparent;
-  border: 1px solid transparent;
-  border-radius: 0.375rem;
-  color: var(--color-neutral-500);
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
-}
-
-html.dark .copy-button {
-  color: var(--color-neutral-400);
-}
-
-.copy-button:hover {
-  opacity: 1;
-  background-color: var(--color-neutral-200);
-  border-color: var(--color-neutral-300);
-  color: var(--color-neutral-700);
-}
-
-html.dark .copy-button:hover {
-  background-color: var(--color-neutral-700);
-  border-color: var(--color-neutral-600);
-  color: var(--color-neutral-200);
-}
-
-/* 复制成功后的状态切换 (不变) */
-.copy-button[data-copied='true'] .copy-icon { display: none; }
-.copy-button:not([data-copied='true']) .check-icon { display: none; }
-
-/* 全局自定义样式，这些将覆盖 Tailwind 的默认设置或添加额外规则 */
 body {
   background: var(--background);
   color: var(--foreground);
@@ -188,16 +28,4 @@ body {
 
 .prose {
   color: theme('colors.foreground');
-}
-
-/* NProgress 样式自定义 */
-#nprogress .bar {
-  background: var(--color-primary-default);
-}
-#nprogress .peg {
-  box-shadow: 0 0 10px var(--color-primary-default), 0 0 5px var(--color-primary-default);
-}
-#nprogress .spinner-icon {
-  border-top-color: var(--color-primary-default);
-  border-left-color: var(--color-primary-default);
 }
