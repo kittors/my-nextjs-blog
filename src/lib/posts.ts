@@ -10,16 +10,17 @@ import { visit, SKIP } from 'unist-util-visit';
 import { createHighlighter, type Highlighter } from 'shiki';
 import { type Root as HastRoot } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
-import { toString } from 'hast-util-to-string'; // 导入 hast-util-to-string 用于提取纯文本
-import remarkGfm from 'remark-gfm'; // 导入 remark-gfm
-import remarkMath from 'remark-math'; // 核心修正：导入 remark-math
-import rehypeKatex from 'rehype-katex'; // 核心修正：导入 rehype-katex
+import { toString } from 'hast-util-to-string';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 // 定义文章大纲条目的接口
 export interface TocEntry {
   level: number;
   id: string;
   text: string;
+  offset: number; // 标题在 plainTextContent 中的起始偏移量
 }
 
 // 定义博客文章元数据的接口
@@ -37,10 +38,11 @@ export interface BlogPost extends BlogPostMetadata {
   headings: TocEntry[]; // 文章大纲
 }
 
-// 新增：定义用于搜索的文章数据接口
+// 定义用于搜索的文章数据接口，包含 headings
 export interface SearchablePostData {
   metadata: BlogPostMetadata;
   plainTextContent: string;
+  headings: TocEntry[]; // 添加 headings
 }
 
 const postsDirectory = path.join(process.cwd(), 'posts');
@@ -74,28 +76,28 @@ function getTextFromNode(node: any): string {
 
 /**
  * 提取文章中的标题并填充到 headings 数组中。
- * 这是一个 rehype 插件，用于遍历 HAST 树。
+ * 这个插件只负责从 HAST 树中识别标题并获取其 ID 和文本。
+ * 偏移量将在后续步骤中根据 plainTextContent 重新计算。
  * @param {TocEntry[]} headings - 用于存储提取到的标题的数组。
  */
-function extractHeadings(headings: TocEntry[]) {
+function extractHeadings(headings: Omit<TocEntry, 'offset'>[]) {
   return (tree: HastRoot) => {
     visit(tree, 'element', node => {
-      if (['h1', 'h2', 'h3'].includes(node.tagName)) {
+      // 确保节点有 ID 并且是标题标签 (h1, h2, h3)
+      if (['h1', 'h2', 'h3'].includes(node.tagName) && node.properties?.id) {
         const text = getTextFromNode(node);
-        if (node.properties?.id) {
-          headings.push({
-            level: parseInt(node.tagName.substring(1)),
-            id: String(node.properties.id),
-            text: text,
-          });
-        }
+        headings.push({
+          level: parseInt(node.tagName.substring(1)),
+          id: String(node.properties.id),
+          text: text,
+        });
       }
     });
   };
 }
 
 /**
- * 新增 rehype 插件：标准化代码块的语言类名。
+ * 标准化代码块的语言类名。
  * 将 `<code>` 标签上的 `language-` 类名转换为小写，以兼容 Shiki 的语言识别。
  */
 function normalizeCodeLanguage() {
@@ -161,7 +163,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
 
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
-  const headings: TocEntry[] = [];
+  const tempHeadings: Omit<TocEntry, 'offset'>[] = [];
 
   const prettyCodeOptions: Partial<RehypePrettyCodeOptions> = {
     getHighlighter: getSingletonHighlighter,
@@ -177,17 +179,20 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkMath) // 核心修正：添加 remark-math 插件
+    .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
-    .use(rehypeKatex) // 核心修正：添加 rehype-katex 插件
-    .use(() => extractHeadings(headings))
+    .use(rehypeKatex)
+    .use(() => extractHeadings(tempHeadings))
     .use(normalizeCodeLanguage)
     .use(rehypePrettyCode, prettyCodeOptions);
 
   // 正确地分步执行解析和转换
   const mdastTree = processor.parse(content) as MdastRoot;
   const hastTree = await processor.run(mdastTree);
+
+  // 对于 getPostBySlug，不需要精确的 offset，因为 TableOfContents 依赖 IntersectionObserver
+  const headings: TocEntry[] = tempHeadings.map(h => ({ ...h, offset: 0 }));
 
   return {
     slug,
@@ -209,7 +214,7 @@ export function getAllPostSlugs(): { slug: string }[] {
 }
 
 /**
- * 新增函数：获取所有文章的元数据和纯文本内容。
+ * 获取所有文章的元数据和纯文本内容。
  * 这个函数将在构建时运行，为客户端搜索提供数据。
  * @returns {Promise<SearchablePostData[]>} 包含所有文章可搜索数据的 Promise。
  */
@@ -223,58 +228,32 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
-    // 核心修正：在提取纯文本之前，先移除 Markdown 语法
-    // 使用 remark-parse 和 remark-stringify 来将 Markdown 转换为纯文本
-    // 然后再用正则表达式去除剩余的 Markdown 链接、图片等语法
-    const markdownToPlainText = unified()
-      .use(remarkParse) // 解析 Markdown
-      .use(remarkGfm) // 添加 remark-gfm 插件以支持 GFM 语法
-      .use(remarkMath) // 核心修正：添加 remark-math 插件
-      .use(() => (tree: MdastRoot) => {
-        // 遍历 AST，移除不必要的节点，例如链接和图片
-        visit(
-          tree,
-          ['link', 'image', 'inlineCode', 'strong', 'emphasis', 'math', 'inlineMath'], // 核心修正：添加 'math' 和 'inlineMath' 节点类型
-          (node, index, parent) => {
-            if (!parent || index === undefined) {
-              return; // 安全检查，尽管这些类型的父节点通常应该存在
-            }
+    const tempHeadings: Omit<TocEntry, 'offset'>[] = [];
 
-            if (node.type === 'inlineCode') {
-              parent.children.splice(index, 1, { type: 'text', value: node.value as string });
-              return SKIP;
-            } else if (node.type === 'strong' || node.type === 'emphasis') {
-              const childrenToSplice = Array.isArray(node.children) ? node.children : [];
-              parent.children.splice(index, 1, ...childrenToSplice);
-              return SKIP;
-            } else if (node.type === 'link' || node.type === 'image') {
-              parent.children.splice(index, 1);
-              return SKIP;
-            } else if (node.type === 'math' || node.type === 'inlineMath') {
-              // 核心修正：处理数学公式节点
-              // 对于数学公式，将其内容转换为纯文本，或者直接移除，取决于搜索需求
-              // 暂时将其内容作为纯文本保留，以便搜索到公式中的关键词（如果适用）
-              parent.children.splice(index, 1, { type: 'text', value: node.value as string });
-              return SKIP;
-            }
-          }
-        );
-      })
-      .use(remarkRehype) // 转换为 HAST
-      .use(() => (tree: HastRoot) => {
-        // 在 HAST 阶段，可以进一步清理，例如移除 HTML 标签
-        // 这里我们主要依赖 toString 来处理，但为了更彻底，可以添加更多清理逻辑
-      });
+    // 创建一个独立的处理器实例，用于提取纯文本和标题 ID
+    const textProcessor = unified()
+      .use(remarkParse)
+      .use(remarkGfm)
+      .use(remarkMath)
+      .use(remarkRehype)
+      .use(rehypeSlug)
+      .use(() => extractHeadings(tempHeadings));
 
-    const mdastTree = markdownToPlainText.parse(content) as MdastRoot;
-    const hastTree = (await markdownToPlainText.run(mdastTree)) as HastRoot;
-    let plainTextContent = toString(hastTree);
+    const mdastTreeForText = textProcessor.parse(content) as MdastRoot;
+    const hastTreeForText = (await textProcessor.run(mdastTreeForText)) as HastRoot;
+    let plainTextContent = toString(hastTreeForText);
 
-    // 进一步清理，移除可能残余的 Markdown 语法或多余的空格
+    // 移除可能残余的 Markdown 强调、删除线等符号，但保留空格以保持相对偏移
     plainTextContent = plainTextContent
-      .replace(/[`*~_]/g, '') // 移除 Markdown 强调、删除线、下划线等符号
-      .replace(/\s+/g, ' ') // 将多个连续的空格替换为单个空格
-      .trim(); // 移除首尾空格
+      .replace(/[`*~_]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // 重新计算 headings 的 offset，使其相对于 plainTextContent
+    const headings: TocEntry[] = tempHeadings.map(h => {
+      const offset = plainTextContent.indexOf(h.text);
+      return { ...h, offset: offset !== -1 ? offset : 0 };
+    });
 
     allSearchablePosts.push({
       metadata: {
@@ -282,6 +261,7 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
         ...(data as { title: string; date: string; author: string; description: string }),
       },
       plainTextContent,
+      headings,
     });
   }
 

@@ -18,12 +18,13 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPostPage(props: BlogPostPageProps) {
-  const slug = props.params.slug;
+  // 核心修正：确保 await props.params 来正确解构 slug
+  const { slug } = await props.params;
 
   // getPostBySlug 现在返回包含 HAST 树和 headings 的对象
   const { content, headings, ...postMeta } = await getPostBySlug(slug);
 
-  const post = { ...postMeta, content };
+  const post = { ...postMeta, content, slug }; // 确保 slug 也被传递给 post 对象
 
   if (!post) {
     return (
