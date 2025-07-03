@@ -17,6 +17,9 @@
   transition:
     opacity 0.2s ease-out,
     visibility 0.2s ease-out;
+  /* 核心修正：添加高斯模糊背景 */
+  -webkit-backdrop-filter: blur(8px); /* 兼容 Safari */
+  backdrop-filter: blur(8px);
 }
 
 .search-modal-backdrop.visible {
@@ -130,9 +133,11 @@ html.dark .search-result-item {
   background-color: var(--color-neutral-50);
 }
 
+/* 核心修正：暗黑模式下搜索结果激活状态颜色 */
 html.dark .search-result-item:hover,
 html.dark .search-result-item.active {
-  background-color: var(--color-neutral-800);
+  background-color: var(--color-neutral-700); /* 更改为更暗的背景色 */
+  color: var(--foreground); /* 确保文本颜色清晰 */
 }
 
 /* 搜索结果标题 */

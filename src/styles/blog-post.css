@@ -228,3 +228,200 @@ html.dark .back-to-top-button:hover {
 .image-preview-toolbar button:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+
+/* 核心修正：为 .prose 类下的标题添加样式 */
+/* .prose 类通常由 Tailwind Typography 插件提供，但如果未安装，我们需要手动定义 */
+.prose h1 {
+  font-size: 2.5rem; /* 40px */
+  font-weight: 700; /* bold */
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  color: var(--foreground); /* 使用主题前景色 */
+}
+
+.prose h2 {
+  font-size: 2rem; /* 32px */
+  font-weight: 600; /* semi-bold */
+  margin-top: 1.25em;
+  margin-bottom: 0.75em;
+  color: var(--foreground);
+}
+
+.prose h3 {
+  font-size: 1.75rem; /* 28px */
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: var(--foreground);
+}
+
+.prose h4 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 500; /* medium */
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  color: var(--foreground);
+}
+
+.prose h5 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 500;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+  color: var(--foreground);
+}
+
+.prose h6 {
+  font-size: 1rem; /* 16px */
+  font-weight: 500;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+  color: var(--foreground);
+}
+
+/* 确保在暗黑模式下标题颜色也正确 */
+html.dark .prose h1,
+html.dark .prose h2,
+html.dark .prose h3,
+html.dark .prose h4,
+html.dark .prose h5,
+html.dark .prose h6 {
+  color: var(--foreground);
+}
+
+/* 针对 Markdown 内容的其他基础排版，确保可读性 */
+.prose p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  line-height: 1.75;
+  color: var(--foreground);
+}
+
+/* 核心修正：无序列表和有序列表的样式 */
+.prose ul {
+  list-style-type: disc; /* 圆点 */
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 1.5em; /* 足够的左内边距显示列表标记 */
+  color: var(--foreground);
+}
+
+.prose ol {
+  list-style-type: decimal; /* 数字 */
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 1.5em; /* 足够的左内边距显示列表标记 */
+  color: var(--foreground);
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+}
+
+.prose strong {
+  font-weight: 700;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose a {
+  color: var(--color-primary-default);
+  text-decoration: underline;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--color-neutral-300);
+  padding-left: 1em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  color: var(--color-neutral-600);
+  font-style: italic;
+}
+
+html.dark .prose blockquote {
+  border-left-color: var(--color-neutral-600);
+  color: var(--color-neutral-400);
+}
+
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--color-neutral-200);
+  margin: 3em 0;
+}
+
+html.dark .prose hr {
+  border-top-color: var(--color-neutral-700);
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  color: var(--foreground);
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--color-neutral-200);
+  padding: 0.75em 1em;
+  text-align: left;
+}
+
+html.dark .prose th,
+html.dark .prose td {
+  border-color: var(--color-neutral-700);
+}
+
+.prose th {
+  background-color: var(--color-neutral-100);
+  font-weight: 600;
+}
+
+html.dark .prose th {
+  background-color: var(--color-neutral-800);
+}
+
+/* 核心修正：为行内代码添加单色背景，不影响代码块 */
+.prose :not(pre) > code {
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  background-color: var(--color-neutral-100); /* 亮色模式下的背景色 */
+  padding: 0.2em 0.4em;
+  border-radius: 0.3em;
+  color: var(--color-neutral-800); /* 亮色模式下的文本颜色 */
+  white-space: nowrap; /* 防止行内代码换行 */
+}
+
+html.dark .prose :not(pre) > code {
+  background-color: var(--color-neutral-800); /* 暗黑模式下的背景色 */
+  color: var(--color-neutral-100); /* 暗黑模式下的文本颜色 */
+}
+
+/* 确保代码块内的 `code` 元素不受上述规则影响 */
+/* 代码块的背景由 figure 元素控制，文本颜色由 shiki 变量控制 */
+.prose figure[data-rehype-pretty-code-figure] > pre code {
+  background-color: transparent; /* 确保 pre 内部的 code 没有额外的背景 */
+  padding: 0; /* 移除内边距，由 pre 负责 */
+  border-radius: 0; /* 移除圆角 */
+  color: inherit; /* 继承父级或 shiki 的颜色 */
+}
+
+.prose kbd {
+  background-color: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-300);
+  border-bottom-color: var(--color-neutral-400);
+  border-radius: 0.25rem;
+  padding: 0.1em 0.4em;
+  font-size: 0.875em;
+  color: var(--color-neutral-700);
+}
+
+html.dark .prose kbd {
+  background-color: var(--color-neutral-800);
+  border-color: var(--color-neutral-600);
+  border-bottom-color: var(--color-neutral-500);
+  color: var(--color-neutral-300);
+}

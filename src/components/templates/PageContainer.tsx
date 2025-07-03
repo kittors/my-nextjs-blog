@@ -39,14 +39,15 @@ const PageContainer: React.FC<PageContainerProps> = ({ children, allPostsForSear
     paddingTopClass = headerConfig.height.replace('h-', 'pt-');
   }
 
-  // 监听快捷键打开搜索模态框
+  // 监听快捷键打开/关闭搜索模态框
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // 检查是否按下了 Cmd (Mac) 或 Ctrl (Windows/Linux) 键，并且按下了配置的快捷键
       const isModifierPressed = event.metaKey || event.ctrlKey;
       if (isModifierPressed && event.key.toLowerCase() === searchConfig.hotkey.toLowerCase()) {
         event.preventDefault(); // 阻止默认行为，例如浏览器搜索
-        setIsSearchModalOpen(true);
+        // 核心修正：如果搜索框已打开，则关闭它；否则，打开它
+        setIsSearchModalOpen(prev => !prev);
       }
     };
 
