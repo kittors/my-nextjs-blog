@@ -21,7 +21,7 @@
 项目遵循原子设计理念，将组件拆分为不同的层级，存放于 `src/components` 目录下：
 
 - **`atoms` (原子):** 最基础的、不可再分的 UI 元素，如 `Button`, `Heading`, `Text`, `PostImage`。
-- **`molecules` (分子):** 由原子组合而成的简单 UI 组件，如 `BlogPostCard`, `ThemeToggle`, `ImagePreview`。
+- **`molecules` (分子):1** 由原子组合而成的简单 UI 组件，如 `BlogPostCard`, `ThemeToggle`, `ImagePreview`。
 - **`organisms` (组织):** 由原子和分子构成的更复杂的、独立的页面区域，如 `Header`, `Footer`, `BlogList`, `TableOfContents`。
 - **`templates` (模板):** 定义页面的整体布局结构，如 `PageContainer`, `BlogPostContent`。
 
@@ -36,12 +36,14 @@
 ```
 git clone https://github.com/kittors/my-nextjs-blog
 cd my-nextjs-blog
+
 ```
 
 **2. 安装依赖** 项目推荐使用 `pnpm` 进行包管理。
 
 ```
 pnpm install
+
 ```
 
 如果你习惯使用 `npm` 或 `yarn`，也可以运行：
@@ -52,12 +54,14 @@ npm install
 
 # 使用 yarn
 yarn install
+
 ```
 
 **3. 运行开发服务器**
 
 ```
 pnpm dev
+
 ```
 
 现在，在浏览器中打开 [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000 'null') 即可看到你的博客网站。
@@ -77,9 +81,17 @@ pnpm dev
 
 ## 🌱 未来开发与版本控制 (Future Development & Branching)
 
-当前 `main` (或 `master`) 分支代表了项目的**稳定极简版本**。它的目标是提供一个干净、可靠的起点。
+当前仓库中，`minimal-blog-v1` 分支是本项目的**稳定极简版本**。它的目标是提供一个干净、可靠的博客基础框架，仅包含核心功能。
 
-为了在此基础上开发更复杂的功能（如评论系统、后台管理、数据库集成等），我们应该创建一个新的开发分支。这可以确保 `main` 分支的稳定性不受新功能开发的影响。
+`main` (或 `master`) 分支代表了项目的**最新稳定版本**，它会包含所有已完成并合并的功能。
+
+为了在此基础上开发更复杂的功能，我们应该创建一个新的开发分支。这可以确保 `main` 分支的稳定性不受新功能开发的影响。
+
+**未来开发功能计划：**
+
+- [ ] **全局搜索 (Global Search):** 实现全站文章内容的搜索功能。
+- [ ] **博文标签分类 (Blog Post Tag Categorization):** 支持为文章添加标签，并按标签进行分类和筛选。
+- [ ] **评论区 (Comment Section):** 集成评论系统，允许用户在文章下方发表评论。
 
 **请使用以下 Git 命令来创建并切换到一个新的开发分支：**
 
@@ -95,6 +107,7 @@ git checkout develop
 
 # --- 或者，使用一条命令完成创建和切换 ---
 git checkout -b develop
+
 ```
 
 现在，你可以在 `develop` 分支上自由地进行新功能的开发。当新功能开发完成并测试稳定后，再通过 Pull Request 将其合并回 `main` 分支。
