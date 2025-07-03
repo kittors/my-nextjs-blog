@@ -11,20 +11,22 @@ import { useTheme } from '@/contexts/ThemeContext';
 const ThemeToggle: React.FC = () => {
   // 我们仍然需要 useTheme 来触发主题切换的逻辑。
   // 但不再需要 isThemeInitialized 来控制渲染。
-  const { toggleTheme } = useTheme();
+  const { toggleTheme, defaultToSystemPreference } = useTheme(); // 获取 defaultToSystemPreference
+
+  // 根据 defaultToSystemPreference 决定按钮是否禁用
+  const isDisabled = defaultToSystemPreference;
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full text-foreground transition-colors duration-200
-                 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+      className={`p-2 rounded-full text-foreground transition-colors duration-200
+                 hover:bg-neutral-200 /* 亮色模式下的 hover 背景 */
+                 theme-toggle-hover-effect /* 核心优化：自定义类处理暗色模式下的 hover 背景 */
+                 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       aria-label="切换主题"
+      disabled={isDisabled} // 设置 disabled 属性
+      title={isDisabled ? '已配置为同步系统主题，无法手动切换' : '切换主题'} // 添加提示
     >
-      {/* 核心改动：同时渲染两个图标，并使用 Tailwind 的 dark: 变体来控制它们的显示。
-        - 月亮图标：在亮色模式下显示 (block)，在暗色模式下隐藏 (dark:hidden)。
-        - 太阳图标：在亮色模式下隐藏 (hidden)，在暗色模式下显示 (dark:block)。
-        这个切换完全由 CSS 处理，因此不会有任何由 JavaScript 加载延迟引起的闪烁。
-      */}
       <Moon size={20} className="block dark:hidden text-neutral-700 hover:text-primary" />
       <Sun size={20} className="hidden dark:block text-primary-light hover:text-primary" />
     </button>

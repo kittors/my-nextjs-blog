@@ -80,7 +80,7 @@ const BlogList: React.FC<BlogListProps> = ({ posts }) => {
 
   return (
     <section className="py-8">
-      <Heading level={1} className="text-center mb-10 text-neutral-800 dark:text-neutral-200">
+      <Heading level={1} className="text-center mb-10 text-[var(--blog-list-heading-color)]">
         最新博客文章
       </Heading>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

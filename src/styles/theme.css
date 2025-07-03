@@ -22,6 +22,35 @@ html.light {
   --color-neutral-700: #404040;
   --color-neutral-800: #303030;
   --color-neutral-900: #202020;
+
+  /* BlogPostCard 悬停效果变量 (亮色模式) */
+  --blog-card-hover-bg: var(--color-neutral-50); /* 亮色模式下 hover 背景 */
+  --blog-card-hover-border: var(--color-primary-default); /* 亮色模式下 hover 边框 */
+  --blog-card-hover-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* 亮色模式下 hover 阴影 */
+
+  /* BlogPostCard 标题渐变色变量 (亮色模式) */
+  --heading-gradient-from: #3b82f6; /* blue-500 */
+  --heading-gradient-to: #8b5cf6; /* purple-600 */
+  --heading-gradient-hover-from: #2563eb; /* blue-600 */
+  --heading-gradient-hover-to: #7c3aed; /* purple-700 */
+
+  /* BlogPostCard 文本颜色变量 (亮色模式) */
+  --blog-card-description-color: var(--foreground); /* 优化：描述文本颜色改为前景深色 */
+  --blog-card-meta-color: var(--color-neutral-600); /* 优化：元信息文本颜色改为更深的灰色 */
+
+  /* ThemeToggle 悬停效果变量 (亮色模式) */
+  --theme-toggle-hover-bg: var(--color-neutral-200);
+
+  /* BlogList 标题颜色变量 (亮色模式) */
+  --blog-list-heading-color: var(--color-neutral-800);
+
+  /* Footer 边框颜色变量 (亮色模式) */
+  --footer-border-color: var(--color-neutral-200);
+
+  /* Header Logo 渐变色变量 (亮色模式) */
+  --header-logo-gradient-from: #2563eb; /* blue-600 */
+  --header-logo-gradient-to: #8b5cf6; /* purple-600 */
 }
 
 /*
@@ -45,6 +74,35 @@ html.dark {
   --color-neutral-700: #cacaca;
   --color-neutral-800: #dadada;
   --color-neutral-900: #eaeaea;
+
+  /* BlogPostCard 悬停效果变量 (暗黑模式) */
+  --blog-card-hover-bg: var(--color-neutral-50); /* 核心修改：暗黑模式下 hover 背景改为更深的灰色 */
+  --blog-card-hover-border: var(--color-primary-light); /* 暗黑模式下 hover 边框 */
+  --blog-card-hover-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2); /* 暗黑模式下 hover 阴影 */
+
+  /* BlogPostCard 标题渐变色变量 (暗黑模式) */
+  --heading-gradient-from: #818cf8; /* blue-400 */
+  --heading-gradient-to: #a78bfa; /* purple-500 */
+  --heading-gradient-hover-from: #60a5fa; /* blue-500 */
+  --heading-gradient-hover-to: #8b5cf6; /* purple-600 */
+
+  /* BlogPostCard 文本颜色变量 (暗黑模式) */
+  --blog-card-description-color: #fafafa; /* 核心修改：将描述文本颜色改为 #fafafa */
+  --blog-card-meta-color: var(--color-neutral-500);
+
+  /* ThemeToggle 悬停效果变量 (暗黑模式) */
+  --theme-toggle-hover-bg: var(--color-neutral-700);
+
+  /* BlogList 标题颜色变量 (暗黑模式) */
+  --blog-list-heading-color: var(--foreground); /* 核心修改：将标题颜色改为前景亮色 */
+
+  /* Footer 边框颜色变量 (暗黑模式) */
+  --footer-border-color: var(--color-neutral-100); /* 核心修改：暗黑模式下边框颜色 */
+
+  /* Header Logo 渐变色变量 (暗黑模式) */
+  --header-logo-gradient-from: #818cf8; /* blue-400 */
+  --header-logo-gradient-to: #a78bfa; /* purple-400 */
 }
 
 /*
@@ -71,4 +129,21 @@ html.dark {
   /* 可选优化: 添加一个非常微妙的边框和阴影，增强“玻璃”的质感。*/
   border-bottom-color: rgba(128, 128, 128, 0.1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 博客文章卡片悬停效果的自定义类 */
+.blog-post-card-hover-effect:hover {
+  background-color: var(--blog-card-hover-bg);
+  border-color: var(--blog-card-hover-border);
+  box-shadow: var(--blog-card-hover-shadow);
+}
+
+/* 主题切换按钮悬停效果的自定义类 */
+.theme-toggle-hover-effect:hover {
+  background-color: var(--theme-toggle-hover-bg);
+}
+
+/* Footer 边框效果的自定义类 */
+.footer-border-effect {
+  border-color: var(--footer-border-color);
 }

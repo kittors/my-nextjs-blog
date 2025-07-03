@@ -17,7 +17,7 @@ interface TextProps {
  */
 const Text: React.FC<TextProps> = ({ children, className = '', as: Component = 'p' }) => {
   // 默认样式，可以根据需要调整
-  const defaultClasses = 'text-base text-gray-700 leading-relaxed';
+  const defaultClasses = 'text-base leading-relaxed';
 
   return <Component className={`${defaultClasses} ${className}`}>{children}</Component>;
 };

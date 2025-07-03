@@ -18,7 +18,7 @@ export interface HeaderConfig {
   blurStrength?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 }
 
-// 新增：定义 Footer 配置的接口
+// 定义 Footer 配置的接口
 export interface FooterConfig {
   isVisible: boolean; // 控制 Footer 是否显示
   text: string; // Footer 显示的文本内容
@@ -26,11 +26,24 @@ export interface FooterConfig {
   textColor?: string; // Footer 文本颜色类名（例如 'text-neutral-100'）
 }
 
+// 新增：定义主题配置的接口
+export interface ThemeConfig {
+  // 是否默认与系统主题偏好同步。
+  // 如果为 true，系统偏好将具有最高优先级。
+  defaultToSystemPreference: boolean;
+  // 如果不默认与系统同步，或者系统偏好不可用时，使用的初始主题。
+  // 'light' | 'dark' | 'system' (如果 defaultToSystemPreference 为 true，此项应为 'system')
+  initialTheme: 'light' | 'dark' | 'system';
+  // 是否允许用户手动切换主题。
+  // 如果为 false，主题将完全由 defaultToSystemPreference 和 initialTheme 控制。
+  enableManualToggle: boolean;
+}
+
 // 定义应用程序的整体配置接口
 export interface AppConfig {
   header: HeaderConfig;
-  footer: FooterConfig; // 新增：Footer 配置
-  // 未来可以添加其他全局配置
+  footer: FooterConfig;
+  theme: ThemeConfig; // 新增：主题配置
 }
 
 /**
@@ -53,10 +66,15 @@ export const appConfig: AppConfig = {
     // 这个值通常能提供最佳的“毛玻璃”效果，既能模糊背景，又能保留轮廓感。
     blurStrength: 'lg',
   },
-  // 新增：Footer 的默认配置
+  // Footer 的默认配置
   footer: {
     isVisible: true,
     text: `&copy; ${new Date().getFullYear()} 我的 Next.js 博客. 保留所有权利。`,
   },
-  // 可以根据需要添加其他全局配置
+  // 新增：主题的默认配置
+  theme: {
+    defaultToSystemPreference: true, // 核心修复：将此设置为 true，以默认同步系统主题
+    initialTheme: 'system', // 如果同步，初始主题设为 'system'
+    enableManualToggle: true, // 默认允许手动切换
+  },
 };

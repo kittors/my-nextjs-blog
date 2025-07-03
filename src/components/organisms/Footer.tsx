@@ -42,8 +42,8 @@ const Footer: React.FC<FooterProps> = ({
     'p-6', // 提供足够的内边距，确保内容不会紧贴边缘
     'text-center', // 高效地实现单行文本的水平居中
     'border-t', // 在页脚顶部添加一条分割线，以区分主内容
-    'border-neutral-200', // 定义分割线的颜色
-    'dark:border-neutral-800', // 适配暗黑模式下的边框颜色
+    'border-neutral-200', // 定义亮色模式下的边框颜色
+    'footer-border-effect', // 核心优化：自定义类处理暗色模式下的边框颜色
   ].join(' ');
 
   return (

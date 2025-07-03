@@ -1,41 +1,62 @@
 // src/components/atoms/ThemeScript.tsx
 import React from 'react';
+import { appConfig } from '@/lib/config'; // 导入 appConfig
 
 /**
  * ThemeScript 组件：注入一个脚本以防止主题闪烁 (FOUC)。
- * 这个脚本会在主 React 应用“水合”之前运行，根据 localStorage 或系统偏好
- * 在 <html> 元素上设置初始主题类。
+ * 这个脚本会在主 React 应用“水合”之前运行，根据 localStorage、系统偏好
+ * 和配置在 <html> 元素上设置初始主题类。
  * 这是在服务器渲染应用中实现流畅用户体验的关键部分。
  */
 const ThemeScript = () => {
+  // 从配置中获取主题相关设置
+  const { defaultToSystemPreference, initialTheme, enableManualToggle } = appConfig.theme;
+
   const script = `
     (function() {
-      function getInitialTheme() {
-        // 1. 优先检查 localStorage 中存储的主题
+      try {
+        const defaultToSystem = ${defaultToSystemPreference};
+        const enableManual = ${enableManualToggle};
+        const configuredInitialTheme = '${initialTheme}';
+
+        let resolvedTheme;
+        let storedTheme = null;
+
         try {
-          const storedTheme = window.localStorage.getItem('theme');
-          if (typeof storedTheme === 'string' && (storedTheme === 'light' || storedTheme === 'dark')) {
-            return storedTheme;
+          storedTheme = window.localStorage.getItem('theme');
+          // 验证 storedTheme 的有效性
+          if (storedTheme !== 'light' && storedTheme !== 'dark') {
+            storedTheme = null; // 无效则视为不存在
           }
         } catch (e) {
-          // localStorage 可能因安全设置被禁用
-          console.error('Could not access localStorage for theme setting.', e);
+          // Error accessing localStorage, proceed without it
+          storedTheme = null;
         }
 
-        // 2. 如果 localStorage 中没有，则检查用户的系统偏好
-        const systemMedia = window.matchMedia('(prefers-color-scheme: dark)');
-        if (systemMedia.matches) {
-          return 'dark';
+        // 核心逻辑：
+        if (defaultToSystem) {
+          // 如果配置为默认跟随系统，则优先使用系统主题
+          resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        } else if (enableManual && storedTheme) {
+          // 如果不默认跟随系统，但允许手动切换且 localStorage 有值，则使用 localStorage
+          resolvedTheme = storedTheme;
+        } else {
+          // 否则，使用配置的 initialTheme (如果 initialTheme 是 'system' 也按系统偏好处理)
+          if (configuredInitialTheme === 'system') {
+             resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          } else {
+             resolvedTheme = configuredInitialTheme;
+          }
         }
 
-        // 3. 默认返回 'light'
-        return 'light';
+        const root = document.documentElement;
+        // 确保移除旧类，添加新类，实现原子性更新
+        root.classList.remove('light', 'dark');
+        root.classList.add(resolvedTheme);
+      } catch (e) {
+        // Fallback: if any error occurs, default to light theme
+        document.documentElement.classList.add('light');
       }
-
-      const theme = getInitialTheme();
-      const root = document.documentElement;
-      // 在<html>标签上直接添加 'dark' 或 'light' 类
-      root.classList.add(theme);
     })();
   `;
 

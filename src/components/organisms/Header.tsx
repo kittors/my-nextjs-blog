@@ -68,13 +68,13 @@ const Header: React.FC<HeaderProps> = ({
           className="text-2xl font-bold tracking-tight"
           style={{ width: logo.width === 'auto' ? 'auto' : logo.width }}
         >
-          {/* 核心修正：为 Logo 链接添加了丰富的悬停效果 */}
+          {/* 核心修正：为 Logo 链接添加了丰富的悬停效果，并使用 CSS 变量控制渐变色 */}
           <Link
             href="/"
             className="
               inline-block
-              bg-gradient-to-r from-blue-600 to-purple-600 
-              dark:from-blue-400 dark:to-purple-400
+              bg-gradient-to-r
+              from-[var(--header-logo-gradient-from)] to-[var(--header-logo-gradient-to)]
               bg-clip-text text-transparent
               hover:scale-105 hover:tracking-wide
               transition-all duration-300 ease-in-out

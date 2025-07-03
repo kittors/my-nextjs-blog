@@ -44,9 +44,10 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => {
           border
           border-neutral-200                    
           hover:border-primary-light            
-          hover:scale-[1.01]                    
-          hover:bg-neutral-50                    
-          dark:hover:bg-neutral-800/50
+          hover:bg-neutral-50
+          
+          /* 核心优化：将悬停样式集中到 theme.css 中 */
+          blog-post-card-hover-effect
         "
       >
         {/* 文章标题 */}
@@ -54,11 +55,10 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => {
           level={2}
           className="
             font-bold
-            bg-gradient-to-r from-blue-500 to-purple-600 
-            dark:from-blue-400 dark:to-purple-500
+            bg-gradient-to-r
+            from-[var(--heading-gradient-from)] to-[var(--heading-gradient-to)]
             bg-clip-text text-transparent
-            group-hover:from-blue-600 group-hover:to-purple-700
-            dark:group-hover:from-blue-500 dark:group-hover:to-purple-600
+            group-hover:from-[var(--heading-gradient-hover-from)] group-hover:to-[var(--heading-gradient-hover-to)]
             transition-all duration-300
             mb-2
           "
@@ -66,11 +66,11 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => {
           {title}
         </Heading>
         {/* 文章描述 */}
-        <Text className="text-neutral-600 dark:text-neutral-400 mb-3 line-clamp-2">
+        <Text className="mb-3 line-clamp-2 text-[var(--blog-card-description-color)]">
           {description}
         </Text>
         {/* 作者和日期信息 */}
-        <div className="flex justify-between items-center text-sm text-neutral-500 dark:text-neutral-500">
+        <div className="flex justify-between items-center text-sm text-[var(--blog-card-meta-color)]">
           <Text as="span" className="text-sm">
             作者: {author}
           </Text>
