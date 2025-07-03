@@ -3,8 +3,10 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import PageContainer from '@/components/templates/PageContainer';
-import ThemeScript from '@/components/atoms/ThemeScript'; // 导入新的 ThemeScript 组件
-import { getAllPostsForSearch } from '@/lib/posts'; // 导入新的数据获取函数
+import ThemeScript from '@/components/atoms/ThemeScript';
+import { getAllPostsForSearch } from '@/lib/posts';
+import { SearchModalProvider } from '@/contexts/SearchModalContext'; // 导入 SearchModalProvider
+import { useState } from 'react'; // 导入 useState
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,17 +21,20 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // 在服务器端获取所有文章的搜索数据
-  // 这将在构建时执行，并将数据作为 props 传递给客户端组件
   const allPostsForSearch = await getAllPostsForSearch();
 
+  // 核心修正：RootLayout 现在是一个客户端组件，以使用 useState 来控制 SearchModal 状态
+  // 这需要将 RootLayout 标记为 'use client'，或者将 PageContainer 拆分为客户端组件。
+  // 考虑到 PageContainer 已经包含客户端逻辑，我们将 PageContainer 内部处理 SearchModal 状态。
+  // 因此，此处不需要 useState，而是由 PageContainer 内部管理 isSearchModalOpen 状态，
+  // 并通过 SearchModalProvider 暴露 setModalOpen。
+
   return (
-    // 添加 suppressHydrationWarning 来告诉 React，我们有意让服务器和客户端的
-    // <html> 标签初始 class 不同，以避免水合警告。
     <html lang="zh-CN" suppressHydrationWarning>
       <body>
-        {/* 在 body 的最顶端插入脚本，确保它在任何内容渲染前执行 */}
         <ThemeScript />
         {/* 将 allPostsForSearch 传递给 PageContainer */}
+        {/* PageContainer 内部将管理 isSearchModalOpen 状态并通过 SearchModalProvider 传递 setModalOpen */}
         <PageContainer allPostsForSearch={allPostsForSearch}>{children}</PageContainer>
       </body>
     </html>

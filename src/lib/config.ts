@@ -26,7 +26,7 @@ export interface FooterConfig {
   textColor?: string; // Footer 文本颜色类名（例如 'text-neutral-100'）
 }
 
-// 新增：定义主题配置的接口
+// 定义主题配置的接口
 export interface ThemeConfig {
   // 是否默认与系统主题偏好同步。
   // 如果为 true，页面将始终跟随系统主题，且不允许手动切换。
@@ -37,18 +37,27 @@ export interface ThemeConfig {
   initialTheme: 'light' | 'dark' | 'system';
 }
 
-// 新增：定义搜索配置的接口
+// 定义搜索配置的接口
 export interface SearchConfig {
   // 搜索模态框的快捷键，例如 'k' 表示 Cmd/Ctrl + K
   hotkey: string;
+  // 是否在 Header 中显示搜索快捷键提示
+  showHotkeyDisplay: boolean; // 新增配置项
+}
+
+// 新增：定义 GitHub 配置的接口
+export interface GithubConfig {
+  isVisible: boolean; // 是否显示 GitHub 图标
+  url: string; // GitHub 地址
 }
 
 // 定义应用程序的整体配置接口
 export interface AppConfig {
   header: HeaderConfig;
   footer: FooterConfig;
-  theme: ThemeConfig; // 新增：主题配置
-  search: SearchConfig; // 新增：搜索配置
+  theme: ThemeConfig;
+  search: SearchConfig;
+  github: GithubConfig; // 新增 GitHub 配置
 }
 
 /**
@@ -76,13 +85,19 @@ export const appConfig: AppConfig = {
     isVisible: true,
     text: `&copy; ${new Date().getFullYear()} 我的 Next.js 博客. 保留所有权利。`,
   },
-  // 新增：主题的默认配置
+  // 主题的默认配置
   theme: {
     defaultToSystemPreference: false, // 根据需求，此项控制是否始终同步系统
     initialTheme: 'system', // 当 defaultToSystemPreference 为 false 且无 localStorage 时，默认跟随系统
   },
-  // 新增：搜索的默认配置
+  // 搜索的默认配置
   search: {
     hotkey: 'k', // 默认快捷键 Cmd/Ctrl + K
+    showHotkeyDisplay: true, // 默认显示快捷键提示
+  },
+  // GitHub 的默认配置
+  github: {
+    isVisible: true, // 默认显示 GitHub 图标
+    url: 'https://github.com/kittors', // 您的 GitHub 地址
   },
 };

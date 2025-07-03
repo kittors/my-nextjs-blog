@@ -8,6 +8,7 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
+  useMemo,
 } from 'react';
 import { appConfig } from '@/lib/config';
 
@@ -136,7 +137,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, [theme, isThemeInitialized]); // 依赖项更新：移除了 enableManualToggle
 
   // toggleTheme 函数：用于用户手动切换主题
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     // 如果配置为默认同步系统主题，则不允许手动切换
     if (defaultToSystemPreference) {
       console.warn('手动主题切换已禁用，因为已配置为同步系统主题。');
@@ -153,15 +154,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       }
       return newTheme;
     });
-  };
+  }, [defaultToSystemPreference]);
 
-  return (
-    <ThemeContext.Provider
-      value={{ theme, toggleTheme, isThemeInitialized, defaultToSystemPreference }}
-    >
-      {children}
-    </ThemeContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      toggleTheme,
+      isThemeInitialized,
+      defaultToSystemPreference,
+    }),
+    [theme, toggleTheme, isThemeInitialized, defaultToSystemPreference]
   );
+
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {
