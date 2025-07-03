@@ -16,35 +16,55 @@
 /* 大纲容器的样式 */
 .toc-container {
   position: sticky;
-  top: 6rem;
-  max-height: calc(100vh - 8rem);
-  overflow-y: auto;
-  padding: 1rem;
+  top: 6rem; /* 整个大纲容器相对于视口顶部的偏移量 */
+  max-height: calc(100vh - 8rem); /* 确保大纲容器不会超出视口高度 */
+  padding: 1rem; /* 初始内边距 */
   border-radius: 0.5rem;
   border: 1px solid var(--color-neutral-200);
   background-color: var(--background);
+  /* 核心修正：使用 flex 布局，使标题和列表垂直排列 */
+  display: flex;
+  flex-direction: column;
 }
 
 html.dark .toc-container {
   border-color: var(--color-neutral-800);
 }
 
-.toc-container h3 {
+/* 优化点 2: 固定大纲标题样式 */
+.toc-header-sticky {
+  /* 移除 position: sticky; top: 0; 因为父容器已经是 sticky，且这里不需要内部粘滞 */
+  background-color: var(--background); /* 确保有背景色覆盖滚动内容 */
+  z-index: 1; /* 确保标题在滚动列表项之上 */
+  padding: 0.5rem 0; /* 为标题添加垂直内边距 */
+  margin-bottom: 1rem; /* 保持原有的底部外边距 */
+  border-bottom: 1px solid var(--color-neutral-200); /* 保持底部边框 */
+  padding-bottom: 0.5rem; /* 保持底部内边距 */
+  /* 确保文本样式与原 h3 保持一致 */
   font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--color-neutral-200);
-  padding-bottom: 0.5rem;
+  /* 确保标题不会在 flex 容器中收缩 */
+  flex-shrink: 0;
 }
 
-html.dark .toc-container h3 {
+html.dark .toc-header-sticky {
   border-bottom-color: var(--color-neutral-700);
+}
+
+/* 新增的列表滚动容器 */
+.toc-list-wrapper {
+  flex-grow: 1; /* 占据 toc-container 的剩余垂直空间 */
+  overflow-y: auto; /* 仅此容器滚动 */
+  /* 确保滚动条在容器内部，不影响布局 */
+  padding-right: 0.5rem; /* 留出滚动条空间，防止内容被遮挡 */
+  margin-right: -0.5rem; /* 抵消 padding-right，保持整体宽度 */
 }
 
 .toc-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  /* 移除所有 padding-top，因为滚动由 toc-list-wrapper 控制，且标题已分离 */
 }
 
 .toc-list a {
@@ -183,7 +203,6 @@ html.dark .back-to-top-button:hover {
 
 /* 图片预览内容区 */
 .image-preview-content {
-  /* 核心修正：将最大尺寸调小，以使默认预览尺寸变小 */
   max-width: 60vw;
   max-height: 70vh;
   display: flex;
@@ -230,7 +249,6 @@ html.dark .back-to-top-button:hover {
 }
 
 /* 核心修正：为 .prose 类下的标题添加样式 */
-/* .prose 类通常由 Tailwind Typography 插件提供，但如果未安装，我们需要手动定义 */
 .prose h1 {
   font-size: 2.5rem; /* 40px */
   font-weight: 700; /* bold */
@@ -297,7 +315,7 @@ html.dark .prose h6 {
   color: var(--foreground);
 }
 
-/* 核心修正：无序列表和有序列表的样式 */
+/* 无序列表和有序列表的样式 */
 .prose ul {
   list-style-type: disc; /* 圆点 */
   margin-top: 1em;
@@ -355,14 +373,13 @@ html.dark .prose hr {
   border-top-color: var(--color-neutral-700);
 }
 
-/* 核心修正：表格样式 */
+/* 表格样式 */
 .prose table {
   width: 100%;
   border-collapse: collapse; /* 消除单元格间距 */
   margin-top: 1.5em;
   margin-bottom: 1.5em;
   color: var(--foreground);
-  /* 核心修正：增加表格外边框宽度和颜色，并添加阴影 */
   border: 1px solid var(--color-neutral-300); /* 表格外边框 */
   border-radius: 0.5rem; /* 圆角 */
   overflow: hidden; /* 确保圆角和边框在内容溢出时也生效 */
@@ -372,7 +389,6 @@ html.dark .prose hr {
 }
 
 html.dark .prose table {
-  /* 核心修正：暗黑模式下表格外边框颜色 */
   border-color: var(--color-neutral-600);
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 0.3),
@@ -398,12 +414,11 @@ html.dark .prose td {
 }
 
 html.dark .prose th {
-  /* 核心修正：暗黑模式下表头背景和文本颜色 */
   background-color: var(--color-neutral-100); /* 保持较暗的背景 */
   color: var(--color-neutral-900); /* 更改为更暗的文本颜色，确保可读性 */
 }
 
-/* 核心修正：任务列表样式 */
+/* 任务列表样式 */
 .prose ul.contains-task-list {
   list-style-type: none; /* 移除无序列表的默认圆点 */
   padding-left: 0; /* 移除默认的左内边距 */
@@ -467,7 +482,7 @@ html.dark .prose code {
   color: var(--color-neutral-100);
 }
 
-/* 核心修正：为行内代码添加单色背景，不影响代码块 */
+/* 为行内代码添加单色背景，不影响代码块 */
 .prose :not(pre) > code {
   font-family: 'Fira Code', 'JetBrains Mono', monospace;
   font-size: 0.9em;
@@ -484,7 +499,6 @@ html.dark .prose :not(pre) > code {
 }
 
 /* 确保代码块内的 `code` 元素不受上述规则影响 */
-/* 代码块的背景由 figure 元素控制，文本颜色由 shiki 变量控制 */
 .prose figure[data-rehype-pretty-code-figure] > pre code {
   background-color: transparent; /* 确保 pre 内部的 code 没有额外的背景 */
   padding: 0; /* 移除内边距，由 pre 负责 */
