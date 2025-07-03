@@ -29,21 +29,25 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
   useEffect(() => {
     if (!articleContentRef.current) return;
 
-    // 查找所有由 rehype-pretty-code 生成的代码块容器
-    const codeContainers = articleContentRef.current.querySelectorAll('div[data-rehype-pretty-code-fragment]');
+    // 核心修正：更新选择器以匹配 rehype-pretty-code 的最新输出。
+    // 库现在生成 <figure data-rehype-pretty-code-figure> 作为代码块的顶层容器。
+    // 旧的选择器 div[data-rehype-pretty-code-fragment] 不再有效。
+    // 确保 JavaScript 逻辑与 HTML 结构和 CSS 样式（如 globals.css 中所定义）保持同步至关重要。
+    const codeFigures = articleContentRef.current.querySelectorAll('figure[data-rehype-pretty-code-figure]');
 
-    codeContainers.forEach(container => {
-      // 防止重复添加按钮
-      if (container.querySelector('.copy-button')) {
+    codeFigures.forEach(figure => {
+      // 防止因 React 重渲染等原因重复添加按钮
+      if (figure.querySelector('.copy-button')) {
         return;
       }
 
-      const codeElement = container.querySelector('code');
+      // 从 <pre> 元素中找到 <code> 元素
+      const codeElement = figure.querySelector('code');
       if (!codeElement) return;
 
       // 创建复制按钮
       const button = document.createElement('button');
-      button.className = 'copy-button';
+      button.className = 'copy-button'; // 这个 class 对应 globals.css 中的样式
       button.ariaLabel = '复制代码';
 
       // 定义 SVG 图标
@@ -56,9 +60,9 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
         try {
           await navigator.clipboard.writeText(codeElement.innerText);
           showToast('代码已复制到剪贴板！', 2000);
-          button.dataset.copied = 'true';
+          button.dataset.copied = 'true'; // 触发 CSS 状态切换
           setTimeout(() => {
-            delete button.dataset.copied;
+            delete button.dataset.copied; // 2秒后恢复状态
           }, 2000);
         } catch (err) {
           console.error('无法复制代码: ', err);
@@ -66,10 +70,11 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
         }
       });
 
-      // 将按钮添加到容器中
-      container.appendChild(button);
+      // 将按钮直接添加到 figure 容器中
+      // CSS 已经处理了它的绝对定位
+      figure.appendChild(button);
     });
-  }, [showToast]);
+  }, [showToast, post.contentHtml]); // 依赖 contentHtml，确保内容变化时重新执行
 
   return (
     <article className="container mx-auto px-4 py-12 max-w-3xl">

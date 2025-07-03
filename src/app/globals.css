@@ -59,59 +59,94 @@ html.dark {
 }
 
 /*
-   代码块美化样式
-   修正：选择器已更新为 figure[data-rehype-pretty-code-figure]
+   ==========================================================================
+   代码块美化样式 (rehype-pretty-code)
+   ==========================================================================
 */
 
 /* 1. 代码块容器卡片样式 */
 .prose figure[data-rehype-pretty-code-figure] {
   position: relative;
-  margin: 1.5rem 0;
-  border-radius: 0.75rem;
+  margin: 1.6em 0; /* 增加外边距 */
+  border-radius: 0.75rem; /* 12px */
   border: 1px solid var(--color-neutral-200);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  /* rehype-pretty-code 会注入 --shiki-light-bg 和 --shiki-dark-bg 变量到 <pre> 标签。
+     我们在这里使用它们来给整个 <figure> 卡片上色，确保背景色一致。 */
+  background-color: var(--shiki-light-bg, #ffffff);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: border-color 0.3s, background-color 0.3s;
 }
 
-/* 2. <pre> 标签重置和背景色 */
-/* rehype-pretty-code 会将主题的背景色作为内联样式应用到 <pre> 标签上 */
+html.dark .prose figure[data-rehype-pretty-code-figure] {
+  border-color: var(--color-neutral-800);
+  background-color: var(--shiki-dark-bg, #121212);
+}
+
+
+/* 2. <pre> 标签重置和样式 */
 .prose figure[data-rehype-pretty-code-figure] > pre {
-  padding: 1.25rem 1rem;
+  padding: 1.25rem 1.5rem; /* 增加左右内边距 */
   margin: 0 !important;
   overflow-x: auto;
   font-family: 'Fira Code', 'JetBrains Mono', monospace;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.7; /* 增加行高以提高可读性 */
+  /* 背景色现在由父级 <figure> 控制，这里设为透明以避免覆盖 */
+  background-color: transparent;
 }
 
-/* 3. 语言标签 */
+/*
+   3. 核心高亮逻辑：应用 Shiki 生成的颜色变量
+   ==========================================================================
+   这是解决“无高亮”问题的关键。
+   rehype-pretty-code 会为每个 token (span) 添加内联的 CSS 变量，
+   如 style="--shiki-light: #xxxxxx; --shiki-dark: #yyyyyy"。
+   我们需要用这些变量来设置实际的颜色。
+*/
+.prose figure[data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+}
+
+html.dark .prose figure[data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+}
+
+/* 4. 语言标签优化 */
 .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after {
   content: attr(data-language);
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  padding: 0.125rem 0.5rem;
+  top: 1rem; /* 调整位置 */
+  right: 1rem; /* 调整位置 */
+  padding: 0.25rem 0.6rem; /* 调整内边距 */
   font-family: sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.75rem; /* 12px */
   font-weight: 600;
-  text-transform: uppercase;
-  color: var(--color-neutral-500);
+  /* 核心修正：使用 capitalize 使首字母大写，而不是全部大写 */
+  text-transform: capitalize;
+  color: var(--color-neutral-600);
   background-color: var(--color-neutral-100);
   border: 1px solid var(--color-neutral-200);
-  border-radius: 0.375rem;
+  border-radius: 0.375rem; /* 6px */
   z-index: 10;
-}
-html.dark .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after {
-  color: var(--color-neutral-400);
-  background-color: var(--color-neutral-700);
-  border-color: var(--color-neutral-600);
+  transition: color 0.3s, background-color 0.3s, border-color 0.3s;
 }
 
-/* 4. 复制按钮 */
+html.dark .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after {
+  color: var(--color-neutral-300);
+  background-color: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+}
+
+/* 5. 复制按钮 (位置微调以适应新布局) */
 .copy-button {
   position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
+  top: 0.75rem;
+  left: 1rem;
   z-index: 20;
   display: inline-flex;
   align-items: center;
@@ -125,7 +160,7 @@ html.dark .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::af
   color: var(--color-neutral-500);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s, background-color 0.2s;
 }
 
 /* 鼠标悬停在代码块上时显示按钮 */
@@ -147,9 +182,6 @@ html.dark .copy-button:hover {
 /* 复制成功后的状态切换 */
 .copy-button[data-copied='true'] .copy-icon { display: none; }
 .copy-button:not([data-copied='true']) .check-icon { display: none; }
-
-
-
 
 /* 全局自定义样式，这些将覆盖 Tailwind 的默认设置或添加额外规则 */
 body {
