@@ -51,6 +51,15 @@ html.light {
   /* Header Logo 渐变色变量 (亮色模式) */
   --header-logo-gradient-from: #2563eb; /* blue-600 */
   --header-logo-gradient-to: #8b5cf6; /* purple-600 */
+
+  /* ThemeToggle Icon 颜色变量 (亮色模式) */
+  --toggle-icon-light-color: var(--color-neutral-700); /* 月亮图标在亮色模式下的颜色 */
+  --toggle-icon-light-hover-color: var(
+    --color-primary-default
+  ); /* 月亮图标在亮色模式下 hover 颜色 */
+  /* 太阳图标在亮色模式下不显示，颜色不重要 */
+  --toggle-icon-dark-color: transparent;
+  --toggle-icon-dark-hover-color: transparent;
 }
 
 /*
@@ -103,6 +112,14 @@ html.dark {
   /* Header Logo 渐变色变量 (暗黑模式) */
   --header-logo-gradient-from: #818cf8; /* blue-400 */
   --header-logo-gradient-to: #a78bfa; /* purple-400 */
+
+  /* ThemeToggle Icon 颜色变量 (暗黑模式) */
+  --toggle-icon-light-color: transparent; /* 月亮图标在暗色模式下不显示，颜色不重要 */
+  --toggle-icon-light-hover-color: transparent;
+  --toggle-icon-dark-color: var(--color-primary-light); /* 太阳图标在暗色模式下的颜色 */
+  --toggle-icon-dark-hover-color: var(
+    --color-primary-default
+  ); /* 太阳图标在暗色模式下 hover 颜色 */
 }
 
 /*

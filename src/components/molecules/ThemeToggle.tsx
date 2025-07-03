@@ -9,26 +9,42 @@ import { useTheme } from '@/contexts/ThemeContext';
  * 通过纯 CSS 控制图标显隐，以实现刷新页面时无缝、无闪烁的视觉效果。
  */
 const ThemeToggle: React.FC = () => {
-  // 我们仍然需要 useTheme 来触发主题切换的逻辑。
-  // 但不再需要 isThemeInitialized 来控制渲染。
-  const { toggleTheme, defaultToSystemPreference } = useTheme(); // 获取 defaultToSystemPreference
+  // 获取主题切换逻辑、defaultToSystemPreference 和当前主题
+  const { toggleTheme, defaultToSystemPreference, theme } = useTheme(); // <-- 获取 'theme' 状态
 
-  // 根据 defaultToSystemPreference 决定按钮是否禁用
+  // 如果 defaultToSystemPreference 为 true，则禁用按钮
   const isDisabled = defaultToSystemPreference;
+
+  // 如果配置为始终同步系统主题，则不渲染切换按钮
+  if (defaultToSystemPreference) {
+    return null;
+  }
 
   return (
     <button
       onClick={toggleTheme}
       className={`p-2 rounded-full text-foreground transition-colors duration-200
                  hover:bg-neutral-200 /* 亮色模式下的 hover 背景 */
-                 theme-toggle-hover-effect /* 核心优化：自定义类处理暗色模式下的 hover 背景 */
+                 theme-toggle-hover-effect /* 自定义类处理暗色模式下的 hover 背景 */
                  ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       aria-label="切换主题"
       disabled={isDisabled} // 设置 disabled 属性
       title={isDisabled ? '已配置为同步系统主题，无法手动切换' : '切换主题'} // 添加提示
     >
-      <Moon size={20} className="block dark:hidden text-neutral-700 hover:text-primary" />
-      <Sun size={20} className="hidden dark:block text-primary-light hover:text-primary" />
+      {/* 核心修复：根据 React 的 theme 状态直接条件渲染图标 */}
+      {theme === 'light' ? (
+        // 亮色模式下显示月亮图标
+        <Moon
+          size={20}
+          className="text-[var(--toggle-icon-light-color)] hover:text-[var(--toggle-icon-light-hover-color)]"
+        />
+      ) : (
+        // 暗色模式下显示太阳图标
+        <Sun
+          size={20}
+          className="text-[var(--toggle-icon-dark-color)] hover:text-[var(--toggle-icon-dark-hover-color)]"
+        />
+      )}
     </button>
   );
 };

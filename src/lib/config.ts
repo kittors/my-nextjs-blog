@@ -29,14 +29,12 @@ export interface FooterConfig {
 // 新增：定义主题配置的接口
 export interface ThemeConfig {
   // 是否默认与系统主题偏好同步。
-  // 如果为 true，系统偏好将具有最高优先级。
+  // 如果为 true，页面将始终跟随系统主题，且不允许手动切换。
+  // 如果为 false，页面将允许手动切换，但默认跟随系统主题。
   defaultToSystemPreference: boolean;
   // 如果不默认与系统同步，或者系统偏好不可用时，使用的初始主题。
-  // 'light' | 'dark' | 'system' (如果 defaultToSystemPreference 为 true，此项应为 'system')
+  // 当 defaultToSystemPreference 为 false 且 localStorage 无主题时生效。
   initialTheme: 'light' | 'dark' | 'system';
-  // 是否允许用户手动切换主题。
-  // 如果为 false，主题将完全由 defaultToSystemPreference 和 initialTheme 控制。
-  enableManualToggle: boolean;
 }
 
 // 定义应用程序的整体配置接口
@@ -73,8 +71,7 @@ export const appConfig: AppConfig = {
   },
   // 新增：主题的默认配置
   theme: {
-    defaultToSystemPreference: true, // 核心修复：将此设置为 true，以默认同步系统主题
-    initialTheme: 'system', // 如果同步，初始主题设为 'system'
-    enableManualToggle: true, // 默认允许手动切换
+    defaultToSystemPreference: false, // 根据需求，此项控制是否始终同步系统
+    initialTheme: 'system', // 当 defaultToSystemPreference 为 false 且无 localStorage 时，默认跟随系统
   },
 };
