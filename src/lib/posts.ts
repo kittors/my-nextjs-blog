@@ -11,7 +11,9 @@ import { createHighlighter, type Highlighter } from 'shiki';
 import { type Root as HastRoot } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
 import { toString } from 'hast-util-to-string'; // 导入 hast-util-to-string 用于提取纯文本
-import remarkGfm from 'remark-gfm'; // 核心修正：导入 remark-gfm
+import remarkGfm from 'remark-gfm'; // 导入 remark-gfm
+import remarkMath from 'remark-math'; // 核心修正：导入 remark-math
+import rehypeKatex from 'rehype-katex'; // 核心修正：导入 rehype-katex
 
 // 定义文章大纲条目的接口
 export interface TocEntry {
@@ -174,9 +176,11 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   // 创建统一的处理器实例
   const processor = unified()
     .use(remarkParse)
-    .use(remarkGfm) // 核心修正：添加 remark-gfm 插件以支持 GFM 语法
+    .use(remarkGfm)
+    .use(remarkMath) // 核心修正：添加 remark-math 插件
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
+    .use(rehypeKatex) // 核心修正：添加 rehype-katex 插件
     .use(() => extractHeadings(headings))
     .use(normalizeCodeLanguage)
     .use(rehypePrettyCode, prettyCodeOptions);
@@ -224,32 +228,33 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
     // 然后再用正则表达式去除剩余的 Markdown 链接、图片等语法
     const markdownToPlainText = unified()
       .use(remarkParse) // 解析 Markdown
-      .use(remarkGfm) // 核心修正：添加 remark-gfm 插件以支持 GFM 语法
+      .use(remarkGfm) // 添加 remark-gfm 插件以支持 GFM 语法
+      .use(remarkMath) // 核心修正：添加 remark-math 插件
       .use(() => (tree: MdastRoot) => {
         // 遍历 AST，移除不必要的节点，例如链接和图片
         visit(
           tree,
-          ['link', 'image', 'inlineCode', 'strong', 'emphasis'],
+          ['link', 'image', 'inlineCode', 'strong', 'emphasis', 'math', 'inlineMath'], // 核心修正：添加 'math' 和 'inlineMath' 节点类型
           (node, index, parent) => {
             if (!parent || index === undefined) {
               return; // 安全检查，尽管这些类型的父节点通常应该存在
             }
 
             if (node.type === 'inlineCode') {
-              // 核心修正：对于 inlineCode 节点，它没有 children 属性，只有 value 属性。
-              // 我们将其替换为一个包含其文本值的 text 节点。
               parent.children.splice(index, 1, { type: 'text', value: node.value as string });
               return SKIP;
             } else if (node.type === 'strong' || node.type === 'emphasis') {
-              // 对于 strong 和 emphasis 节点，它们有 children 属性。
-              // 我们将它们的子节点（即内部文本）提升到父节点。
-              // 确保 node.children 是一个数组，即使为空，以避免 TypeError。
               const childrenToSplice = Array.isArray(node.children) ? node.children : [];
               parent.children.splice(index, 1, ...childrenToSplice);
               return SKIP;
             } else if (node.type === 'link' || node.type === 'image') {
-              // 对于链接和图片，直接移除节点。
               parent.children.splice(index, 1);
+              return SKIP;
+            } else if (node.type === 'math' || node.type === 'inlineMath') {
+              // 核心修正：处理数学公式节点
+              // 对于数学公式，将其内容转换为纯文本，或者直接移除，取决于搜索需求
+              // 暂时将其内容作为纯文本保留，以便搜索到公式中的关键词（如果适用）
+              parent.children.splice(index, 1, { type: 'text', value: node.value as string });
               return SKIP;
             }
           }
