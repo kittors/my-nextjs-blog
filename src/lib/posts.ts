@@ -6,7 +6,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
-import { visit } from 'unist-util-visit';
+import { visit, SKIP } from 'unist-util-visit'; // 核心修正：导入 SKIP
 import { createHighlighter, type Highlighter } from 'shiki';
 import { type Root as HastRoot } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
@@ -184,11 +184,56 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
-    // 修正：将 Markdown 内容转换为 HAST 树，然后从 HAST 树中提取纯文本
-    const processor = unified().use(remarkParse).use(remarkRehype);
-    const mdastTree = processor.parse(content) as MdastRoot;
-    const hastTree = await processor.run(mdastTree); // 确保这里是 await
-    const plainTextContent = toString(hastTree); // 使用 toString 提取纯文本
+    // 核心修正：在提取纯文本之前，先移除 Markdown 语法
+    // 使用 remark-parse 和 remark-stringify 来将 Markdown 转换为纯文本
+    // 然后再用正则表达式去除剩余的 Markdown 链接、图片等语法
+    const markdownToPlainText = unified()
+      .use(remarkParse) // 解析 Markdown
+      .use(() => (tree: MdastRoot) => {
+        // 遍历 AST，移除不必要的节点，例如链接和图片
+        visit(
+          tree,
+          ['link', 'image', 'inlineCode', 'strong', 'emphasis'],
+          (node, index, parent) => {
+            if (!parent || index === undefined) {
+              return; // 安全检查，尽管这些类型的父节点通常应该存在
+            }
+
+            if (node.type === 'inlineCode') {
+              // 核心修正：对于 inlineCode 节点，它没有 children 属性，只有 value 属性。
+              // 我们将其替换为一个包含其文本值的 text 节点。
+              parent.children.splice(index, 1, { type: 'text', value: node.value as string });
+              return SKIP;
+            } else if (node.type === 'strong' || node.type === 'emphasis') {
+              // 对于 strong 和 emphasis 节点，它们有 children 属性。
+              // 我们将它们的子节点（即内部文本）提升到父节点。
+              // 确保 node.children 是一个数组，即使为空，以避免 TypeError。
+              const childrenToSplice = Array.isArray(node.children) ? node.children : [];
+              parent.children.splice(index, 1, ...childrenToSplice);
+              return SKIP;
+            } else if (node.type === 'link' || node.type === 'image') {
+              // 对于链接和图片，直接移除节点。
+              parent.children.splice(index, 1);
+              return SKIP;
+            }
+          }
+        );
+      })
+      .use(remarkRehype) // 转换为 HAST
+      .use(() => (tree: HastRoot) => {
+        // 在 HAST 阶段，可以进一步清理，例如移除 HTML 标签
+        // 这里我们主要依赖 toString 来处理，但为了更彻底，可以添加更多清理逻辑
+      });
+
+    const mdastTree = markdownToPlainText.parse(content) as MdastRoot;
+    const hastTree = (await markdownToPlainText.run(mdastTree)) as HastRoot;
+    let plainTextContent = toString(hastTree);
+
+    // 进一步清理，移除可能残余的 Markdown 语法或多余的空格
+    plainTextContent = plainTextContent
+      .replace(/[`*~_]/g, '') // 移除 Markdown 强调、删除线、下划线等符号
+      .replace(/\s+/g, ' ') // 将多个连续的空格替换为单个空格
+      .trim(); // 移除首尾空格
 
     allSearchablePosts.push({
       metadata: {
