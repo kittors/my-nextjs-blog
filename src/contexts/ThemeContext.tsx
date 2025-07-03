@@ -1,15 +1,15 @@
+// src/contexts/ThemeContext.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
+// 在这里添加 isThemeInitialized
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
-  // 新增：isMounted，用于表示组件是否已在客户端挂载并完成主题初始化
-  isMounted: boolean;
+  isThemeInitialized: boolean; 
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -19,59 +19,39 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // 关键修正：服务器端和客户端初始渲染时，都强制使用 'light'
-  // 然后在 useEffect 中才根据实际用户偏好进行更新
-  const [theme, setThemeState] = useState<Theme>('light');
-  const [isMounted, setIsMounted] = useState(false); // 新增状态，表示组件是否已在客户端挂载
+  const [theme, setTheme] = useState<Theme>('light');
+  const [isThemeInitialized, setIsThemeInitialized] = useState(false);
 
   useEffect(() => {
-    // 这个 useEffect 只在客户端运行
-    const storedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    // 确定最终的主题
-    const initialTheme: Theme = (storedTheme === 'light' || storedTheme === 'dark')
-      ? storedTheme
-      : (systemPrefersDark ? 'dark' : 'light');
-
-    setThemeState(initialTheme); // 更新主题状态
-    setIsMounted(true); // 标记组件已挂载
-
-    // 更新 <html> 元素上的 class
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(initialTheme);
-    localStorage.setItem('theme', initialTheme);
-
-    // 监听主题变化，并更新 HTML 的 class 和 localStorage
-    // 这里的监听器逻辑与之前相同，确保后续切换时也更新
-    // ...
-  }, []); // 空依赖数组，只在组件首次挂载时运行一次
-
-  // 确保当 themeState 变化时，html class 和 localStorage 持续更新
-  useEffect(() => {
-    if (isMounted) { // 只有在客户端完全挂载后才执行后续主题更新
-      const root = document.documentElement;
-      root.classList.remove('light', 'dark');
-      root.classList.add(theme);
-      localStorage.setItem('theme', theme);
-    }
-  }, [theme, isMounted]);
-
+    const initialThemeIsDark = root.classList.contains('dark');
+    setTheme(initialThemeIsDark ? 'dark' : 'light');
+    setIsThemeInitialized(true);
+  }, []);
 
   const toggleTheme = () => {
-    setThemeState((prevTheme) => {
+    setTheme((prevTheme) => {
       const newTheme = prevTheme === 'light' ? 'dark' : 'light';
       return newTheme;
     });
   };
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-  };
+  useEffect(() => {
+    if (!isThemeInitialized) return;
+
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {
+      console.error('Could not save theme to localStorage.', e);
+    }
+  }, [theme, isThemeInitialized]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, isMounted }}>
+    // 在这里提供 isThemeInitialized
+    <ThemeContext.Provider value={{ theme, toggleTheme, isThemeInitialized }}>
       {children}
     </ThemeContext.Provider>
   );

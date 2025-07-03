@@ -1,3 +1,5 @@
+/* app/globals.css */
+
 @import "tailwindcss";
 
 /*
@@ -53,6 +55,89 @@ html.dark {
   --color-neutral-900: #eaeaea;  /* 最深标题色 */
 }
 
+
+/* Prism.js 核心样式 - 所有主题都需要 */
+pre[class*="language-"] {
+  padding: 1em;
+  margin: .5em 0;
+  overflow: auto;
+  border-radius: 0.3em;
+  background: var(--prism-background); /* 使用主题变量 */
+  color: var(--prism-text); /* 使用主题变量 */
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 1em;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+/* Prism.js 语言高亮规则 - 根据 var(--prism-*) 调整 */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--prism-comment);
+}
+
+.token.punctuation {
+  color: var(--prism-text);
+}
+
+.token.selector,
+.token.tag,
+.token.constant,
+.token.boolean,
+.token.atrule,
+.token.attr-value { /* attr-value in light theme is blue */
+  color: var(--prism-tag);
+}
+
+.token.string,
+.token.url {
+  color: var(--prism-string);
+}
+
+.token.entity,
+.token.keyword,
+.token.control-flow, /* Added for control flow statements */
+.token.operator,
+.token.regex,
+.token.important,
+.token.variable { /* Added for variables */
+  color: var(--prism-keyword);
+}
+
+.token.function,
+.token.property-access { /* Added for property access like obj.prop */
+  color: var(--prism-function);
+}
+
+.token.number {
+  color: #fd971f; /* A common color for numbers, can be themed if needed */
+}
+
+/* 额外的，如果你使用了 `line-numbers` 插件 */
+.line-numbers .line-numbers-rows {
+  border-right-color: var(--prism-comment) !important;
+}
+.line-numbers-rows > span:before {
+  color: var(--prism-comment) !important;
+}
+
 /*
    @theme inline 规则将上述 CSS 变量映射到 Tailwind 的主题系统。
    这样，你就可以在组件中使用 `theme('colors.background')` 或 `bg-background` 等 Tailwind 类。
@@ -79,6 +164,10 @@ html.dark {
   --color-neutral-900: var(--color-neutral-900);
 }
 
+/*
+   自定义高斯模糊类 (保持不变)。
+   这些类将用于在 Header 背景层应用 filter: blur()。
+*/
 .blur-px { filter: blur(1px); }
 .blur-xs { filter: blur(2px); }
 .blur-sm { filter: blur(4px); }
@@ -104,4 +193,76 @@ body {
 .prose {
   color: theme('colors.foreground');
   /* ... 其他 .prose 样式 ... */
+}
+
+/*
+   NProgress 样式自定义
+   这里我们覆盖 NProgress 的默认颜色，使用我们主题的 primary-default 颜色变量。
+*/
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: var(--color-primary-default); /* 使用主题的 primary-default 颜色 */
+  position: fixed;
+  z-index: 1031; /* 确保在最顶层 */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px; /* 进度条高度 */
+}
+
+/* 针对 Safari 的加载动画 */
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 10px var(--color-primary-default), 0 0 5px var(--color-primary-default);
+  opacity: 1.0;
+  -webkit-transform: rotate(3deg) translate(0px, -4px);
+  -ms-transform: rotate(3deg) translate(0px, -4px);
+  transform: rotate(3deg) translate(0px, -4px);
+}
+
+/* 进度条的旋转加载器 */
+#nprogress .spinner {
+  display: block;
+  position: fixed;
+  z-index: 1031;
+  top: 15px;
+  right: 15px;
+}
+
+#nprogress .spinner-icon {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: solid 2px transparent;
+  border-top-color: var(--color-primary-default); /* 使用主题的 primary-default 颜色 */
+  border-left-color: var(--color-primary-default); /* 使用主题的 primary-default 颜色 */
+  border-radius: 50%;
+  -webkit-animation: nprogress-spinner 400ms linear infinite;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+}
+
+.nprogress-custom-parent #nprogress .spinner,
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+
+@-webkit-keyframes nprogress-spinner {
+  0%   { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes nprogress-spinner {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

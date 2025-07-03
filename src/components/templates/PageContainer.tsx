@@ -1,78 +1,81 @@
+// src/components/templates/PageContainer.tsx
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import { appConfig } from '@/lib/config';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ToastProvider } from '@/contexts/ToastContext';
+import NProgress from 'nprogress';
 
 interface PageContainerProps {
   children: React.ReactNode;
 }
 
 /**
- * PageContainer 组件：包裹应用程序的实际内容和客户端逻辑。
- * 它处理 Header 高度计算、确保内容不被遮挡，并实现 Sticky Footer 布局。
+ * PageContainer 组件：作为整个应用的布局容器和客户端逻辑的根。
+ * 它通过 CSS 类名而非客户端 JS 计算来处理固定 Header 的布局，从而避免页面抖动。
  * @param {PageContainerProps} props - 组件属性。
- * @param {React.ReactNode} props.children - 实际的页面内容。
  */
 const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
   const { header: headerConfig, footer: footerConfig } = appConfig;
-  const headerRef = useRef<HTMLElement>(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
 
-  useEffect(() => {
-    if (headerConfig.isFixed && headerRef.current) {
-      const calculatedHeight = headerRef.current.offsetHeight;
-      setHeaderHeight(calculatedHeight);
-    } else {
-      setHeaderHeight(0);
-    }
+  // 修正：将 Hooks 调用移至组件的顶层
+  // 这是 React 的核心规则，Hooks 必须在函数组件的顶层无条件地调用。
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-    const handleResize = () => {
-      if (headerConfig.isFixed && headerRef.current) {
-        setHeaderHeight(headerRef.current.offsetHeight);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
+  // 1. NProgress 进度条逻辑
+  // 现在 useEffect 依赖于从顶层 Hooks 获取的 pathname 和 searchParams。
+  // 这确保了每当路由发生变化时，进度条逻辑都会被正确地重新触发。
+  React.useEffect(() => {
+    NProgress.start();
+    const timer = setTimeout(() => NProgress.done(), 300);
+    
     return () => {
-      window.removeEventListener('resize', handleResize);
+      clearTimeout(timer);
+      NProgress.done();
     };
-  }, [headerConfig.isFixed]);
+  }, [pathname, searchParams]); // 将 pathname 和 searchParams 添加到依赖数组
+
+  // 2. 布局逻辑：动态将 Header 的 height 类转换为 padding 类
+  // 这种方法直接从 config 读取类名并进行转换，确保了配置和实现的一致性。
+  // 例如，'h-16' 会被自动转换为 'pt-16'。
+  let paddingTopClass = '';
+  if (headerConfig.isFixed && headerConfig.height) {
+    // 使用字符串替换，这是一个健壮且通用的方法
+    paddingTopClass = headerConfig.height.replace('h-', 'pt-');
+  }
 
   return (
-    // ThemeProvider 包裹整个布局结构
     <ThemeProvider>
-      {/* 修正：将 flex flex-col min-h-screen 应用到这个包裹 Header、内容和 Footer 的 div 上 */}
-      <div className="flex flex-col min-h-screen">
-        <Header
-          ref={headerRef}
-          isVisible={headerConfig.isVisible}
-          isFixed={headerConfig.isFixed}
-          height={headerConfig.height}
-          logo={headerConfig.logo}
-          logoPosition={headerConfig.logoPosition}
-          isBlur={headerConfig.isBlur}
-          blurStrength={headerConfig.blurStrength}
-        />
+      <ToastProvider>
+        <div className="flex flex-col min-h-screen bg-background">
+          <Header
+            isVisible={headerConfig.isVisible}
+            isFixed={headerConfig.isFixed}
+            height={headerConfig.height}
+            logo={headerConfig.logo}
+            logoPosition={headerConfig.logoPosition}
+            isBlur={headerConfig.isBlur}
+            blurStrength={headerConfig.blurStrength}
+          />
 
-        {/* 主内容区域，使用 flex-grow 填充剩余空间，并应用 Header 的 paddingTop */}
-        <div
-          className="flex-grow" /* 确保内容区域能扩展以填充剩余空间 */
-          style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '0px' }}
-        >
-          {children}
+          {/* 将动态生成的 padding 类应用到 main 元素 */}
+          <main className={`flex-grow ${paddingTopClass}`}>
+            {children}
+          </main>
+
+          <Footer
+            isVisible={footerConfig.isVisible}
+            text={footerConfig.text}
+            backgroundColor={footerConfig.backgroundColor}
+            textColor={footerConfig.textColor}
+          />
         </div>
-
-        {/* Footer 组件 */}
-        <Footer
-          isVisible={footerConfig.isVisible}
-          text={footerConfig.text}
-          backgroundColor={footerConfig.backgroundColor}
-          textColor={footerConfig.textColor}
-        />
-      </div>
+      </ToastProvider>
     </ThemeProvider>
   );
 };

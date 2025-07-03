@@ -15,3 +15,10 @@ description: 这是关于我的第一篇博客文章的描述。
 * 列表项 2
 
 **加粗文本** 和 *斜体文本*。
+
+
+``` typeScript
+let arr = 123123;
+console.log(arr);
+
+```
