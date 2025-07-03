@@ -60,19 +60,17 @@ html.dark {
 
 /*
    ==========================================================================
-   代码块美化样式 (rehype-pretty-code)
+   代码块美化样式 (rehype-pretty-code) - 带 Header 版本
    ==========================================================================
 */
 
-/* 1. 代码块容器卡片样式 */
+/* 1. 代码块容器卡片样式 (基本不变) */
 .prose figure[data-rehype-pretty-code-figure] {
   position: relative;
-  margin: 1.6em 0; /* 增加外边距 */
-  border-radius: 0.75rem; /* 12px */
+  margin: 1.6em 0;
+  border-radius: 0.75rem;
   border: 1px solid var(--color-neutral-200);
   overflow: hidden;
-  /* rehype-pretty-code 会注入 --shiki-light-bg 和 --shiki-dark-bg 变量到 <pre> 标签。
-     我们在这里使用它们来给整个 <figure> 卡片上色，确保背景色一致。 */
   background-color: var(--shiki-light-bg, #ffffff);
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   transition: border-color 0.3s, background-color 0.3s;
@@ -83,27 +81,48 @@ html.dark .prose figure[data-rehype-pretty-code-figure] {
   background-color: var(--shiki-dark-bg, #121212);
 }
 
+/* 2. 优化：代码块 Header 样式 */
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* 核心修正：减小垂直内边距，使其更紧凑 */
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-neutral-200);
+  background-color: #f7f7f8;
+}
 
-/* 2. <pre> 标签重置和样式 */
+html.dark .code-block-header {
+  border-bottom-color: var(--color-neutral-800);
+  background-color: #242526;
+}
+
+/* 3. 优化：Header 中的语言标签样式 */
+.code-block-header .language-tag {
+  font-family: sans-serif;
+  /* 核心修正：减小字体大小 */
+  font-size: 0.75rem; /* 12px */
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--color-neutral-600);
+}
+
+html.dark .code-block-header .language-tag {
+  color: var(--color-neutral-300);
+}
+
+/* 4. <pre> 标签重置和样式 (调整内边距以适应新的 Header) */
 .prose figure[data-rehype-pretty-code-figure] > pre {
-  padding: 1.25rem 1.5rem; /* 增加左右内边距 */
+  padding: 1rem 1rem 1.25rem; /* 调整水平内边距以匹配 Header */
   margin: 0 !important;
   overflow-x: auto;
   font-family: 'Fira Code', 'JetBrains Mono', monospace;
   font-size: 0.875rem; /* 14px */
-  line-height: 1.7; /* 增加行高以提高可读性 */
-  /* 背景色现在由父级 <figure> 控制，这里设为透明以避免覆盖 */
+  line-height: 1.7;
   background-color: transparent;
 }
 
-/*
-   3. 核心高亮逻辑：应用 Shiki 生成的颜色变量
-   ==========================================================================
-   这是解决“无高亮”问题的关键。
-   rehype-pretty-code 会为每个 token (span) 添加内联的 CSS 变量，
-   如 style="--shiki-light: #xxxxxx; --shiki-dark: #yyyyyy"。
-   我们需要用这些变量来设置实际的颜色。
-*/
+/* 5. 核心高亮逻辑 (不变) */
 .prose figure[data-rehype-pretty-code-figure] code span {
   color: var(--shiki-light);
   font-style: var(--shiki-light-font-style);
@@ -116,56 +135,25 @@ html.dark .prose figure[data-rehype-pretty-code-figure] code span {
   font-weight: var(--shiki-dark-font-weight);
 }
 
-/* 4. 语言标签优化 */
-.prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after {
-  content: attr(data-language);
-  position: absolute;
-  top: 1rem; /* 调整位置 */
-  right: 1rem; /* 调整位置 */
-  padding: 0.25rem 0.6rem; /* 调整内边距 */
-  font-family: sans-serif;
-  font-size: 0.75rem; /* 12px */
-  font-weight: 600;
-  /* 核心修正：使用 capitalize 使首字母大写，而不是全部大写 */
-  text-transform: capitalize;
-  color: var(--color-neutral-600);
-  background-color: var(--color-neutral-100);
-  border: 1px solid var(--color-neutral-200);
-  border-radius: 0.375rem; /* 6px */
-  z-index: 10;
-  transition: color 0.3s, background-color 0.3s, border-color 0.3s;
-}
+/* 6. 移除：旧的悬浮语言标签样式 */
+/* .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after { ... } 已被移除 */
 
-html.dark .prose figure[data-rehype-pretty-code-figure] > pre[data-language]::after {
-  color: var(--color-neutral-300);
-  background-color: var(--color-neutral-800);
-  border-color: var(--color-neutral-700);
-}
-
-/* 5. 复制按钮 (位置微调以适应新布局) */
+/* 7. 优化：复制按钮样式 */
 .copy-button {
-  position: absolute;
-  top: 0.75rem;
-  left: 1rem;
-  z-index: 20;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  /* 核心修正：减小按钮尺寸 */
+  width: 1.75rem; /* 28px */
+  height: 1.75rem; /* 28px */
   padding: 0;
   background-color: transparent;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 0.375rem;
   color: var(--color-neutral-500);
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s, background-color 0.2s;
-}
-
-/* 鼠标悬停在代码块上时显示按钮 */
-.prose figure[data-rehype-pretty-code-figure]:hover .copy-button {
-  opacity: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 html.dark .copy-button {
@@ -173,13 +161,19 @@ html.dark .copy-button {
 }
 
 .copy-button:hover {
-  background-color: var(--color-neutral-100);
-}
-html.dark .copy-button:hover {
-  background-color: var(--color-neutral-800);
+  opacity: 1;
+  background-color: var(--color-neutral-200);
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-700);
 }
 
-/* 复制成功后的状态切换 */
+html.dark .copy-button:hover {
+  background-color: var(--color-neutral-700);
+  border-color: var(--color-neutral-600);
+  color: var(--color-neutral-200);
+}
+
+/* 复制成功后的状态切换 (不变) */
 .copy-button[data-copied='true'] .copy-icon { display: none; }
 .copy-button:not([data-copied='true']) .check-icon { display: none; }
 

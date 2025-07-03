@@ -19,50 +19,70 @@ interface BlogPostContentProps {
 
 /**
  * BlogPostContent 组件：负责渲染单篇博客文章的内容。
- * 代码高亮已在服务器端完成，此客户端组件仅负责交互，如此处为代码块动态添加复制按钮。
+ * 这个客户端组件的核心职责是增强由服务器渲染的静态 HTML，
+ * 通过动态创建并注入一个包含语言名称和复制按钮的“页眉”，
+ * 来提升代码块的用户体验。
  * @param {BlogPostContentProps} props - 组件属性。
  */
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
+  // 核心修正：移除 useEffect 的依赖数组。
+  //
+  // 问题根源：当点击复制按钮时，`showToast` 函数会更新 ToastContext 的状态，
+  // 这会触发 BlogPostContent 组件的重新渲染。在重新渲染期间，
+  // `dangerouslySetInnerHTML` 会用原始的 `post.contentHtml` 重置 DOM，
+  // 这会清除我们通过脚本动态添加的代码块页眉。
+  //
+  // 旧的 useEffect 依赖于 `[showToast, post.contentHtml]`。由于这些依赖项在
+  // 重新渲染后没有改变，effect 不会再次运行，导致页眉消失。
+  //
+  // 解决方案：通过移除依赖数组，我们确保这个 effect 在每次组件渲染后都会运行。
+  // effect 内部的 `if (figure.querySelector('.code-block-header'))` 检查
+  // 仍然是必要的，它可以防止在未来的某些边缘情况下（尽管在这里不太可能）
+  // 重复添加页眉，这是一种健壮的防御性编程实践。
   useEffect(() => {
     if (!articleContentRef.current) return;
 
-    // 核心修正：更新选择器以匹配 rehype-pretty-code 的最新输出。
-    // 库现在生成 <figure data-rehype-pretty-code-figure> 作为代码块的顶层容器。
-    // 旧的选择器 div[data-rehype-pretty-code-fragment] 不再有效。
-    // 确保 JavaScript 逻辑与 HTML 结构和 CSS 样式（如 globals.css 中所定义）保持同步至关重要。
     const codeFigures = articleContentRef.current.querySelectorAll('figure[data-rehype-pretty-code-figure]');
 
     codeFigures.forEach(figure => {
-      // 防止因 React 重渲染等原因重复添加按钮
-      if (figure.querySelector('.copy-button')) {
+      if (figure.querySelector('.code-block-header')) {
         return;
       }
 
-      // 从 <pre> 元素中找到 <code> 元素
+      const preElement = figure.querySelector('pre');
       const codeElement = figure.querySelector('code');
-      if (!codeElement) return;
+      if (!preElement || !codeElement) return;
 
-      // 创建复制按钮
+      const language = preElement.getAttribute('data-language') || '';
+
+      // 1. 创建页眉容器
+      const header = document.createElement('div');
+      header.className = 'code-block-header';
+
+      // 2. 创建语言标签
+      const languageTag = document.createElement('span');
+      languageTag.className = 'language-tag';
+      languageTag.textContent = language;
+
+      // 3. 创建复制按钮
       const button = document.createElement('button');
-      button.className = 'copy-button'; // 这个 class 对应 globals.css 中的样式
+      button.className = 'copy-button';
       button.ariaLabel = '复制代码';
 
-      // 定义 SVG 图标
-      const copyIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2"></path></svg>`;
-      const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      const copyIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2"></path></svg>`;
+      const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
       button.innerHTML = copyIconSVG + checkIconSVG;
 
-      // 添加点击事件监听器
       button.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(codeElement.innerText);
           showToast('代码已复制到剪贴板！', 2000);
-          button.dataset.copied = 'true'; // 触发 CSS 状态切换
+          button.dataset.copied = 'true';
           setTimeout(() => {
-            delete button.dataset.copied; // 2秒后恢复状态
+            delete button.dataset.copied;
           }, 2000);
         } catch (err) {
           console.error('无法复制代码: ', err);
@@ -70,11 +90,14 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
         }
       });
 
-      // 将按钮直接添加到 figure 容器中
-      // CSS 已经处理了它的绝对定位
-      figure.appendChild(button);
+      // 4. 组装页眉
+      header.appendChild(languageTag);
+      header.appendChild(button);
+
+      // 5. 将完整的页眉插入到 <figure> 元素的顶部，位于 <pre> 标签之前
+      figure.insertBefore(header, preElement);
     });
-  }, [showToast, post.contentHtml]); // 依赖 contentHtml，确保内容变化时重新执行
+  }); // <-- 依赖数组被移除
 
   return (
     <article className="container mx-auto px-4 py-12 max-w-3xl">
