@@ -111,13 +111,23 @@ html.dark .toc-list a.active {
   opacity: 0;
   visibility: hidden;
   transform: translateY(20px);
-  transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+  transition: opacity 0.3s, visibility 0.3s, transform 0.3s, background-color 0.3s, color 0.3s, border-color 0.3s;
   z-index: 1000;
 }
 
+/* 核心修正：为暗黑模式提供更精致的样式 */
 html.dark .back-to-top-button {
-  background-color: var(--color-neutral-800);
-  border-color: var(--color-neutral-700);
+  background-color: var(--color-neutral-100); /* 使用比页面背景稍亮的深灰色 */
+  color: var(--color-neutral-400); /* 图标颜色使用中性灰色，而不是纯白 */
+  border-color: var(--color-neutral-300); /* 边框颜色更深邃 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* 阴影更明显，以突出层次感 */
+}
+
+/* 新增：为暗黑模式下的按钮添加悬停效果 */
+html.dark .back-to-top-button:hover {
+  background-color: var(--color-neutral-200);
+  color: var(--foreground); /* 悬停时图标变亮，提供反馈 */
+  border-color: var(--color-neutral-400);
 }
 
 .back-to-top-button.visible {

@@ -22,14 +22,9 @@ interface PageContainerProps {
 const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
   const { header: headerConfig, footer: footerConfig } = appConfig;
 
-  // 修正：将 Hooks 调用移至组件的顶层
-  // 这是 React 的核心规则，Hooks 必须在函数组件的顶层无条件地调用。
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // 1. NProgress 进度条逻辑
-  // 现在 useEffect 依赖于从顶层 Hooks 获取的 pathname 和 searchParams。
-  // 这确保了每当路由发生变化时，进度条逻辑都会被正确地重新触发。
   React.useEffect(() => {
     NProgress.start();
     const timer = setTimeout(() => NProgress.done(), 300);
@@ -38,14 +33,10 @@ const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
       clearTimeout(timer);
       NProgress.done();
     };
-  }, [pathname, searchParams]); // 将 pathname 和 searchParams 添加到依赖数组
+  }, [pathname, searchParams]);
 
-  // 2. 布局逻辑：动态将 Header 的 height 类转换为 padding 类
-  // 这种方法直接从 config 读取类名并进行转换，确保了配置和实现的一致性。
-  // 例如，'h-16' 会被自动转换为 'pt-16'。
   let paddingTopClass = '';
   if (headerConfig.isFixed && headerConfig.height) {
-    // 使用字符串替换，这是一个健壮且通用的方法
     paddingTopClass = headerConfig.height.replace('h-', 'pt-');
   }
 
@@ -60,7 +51,8 @@ const PageContainer: React.FC<PageContainerProps> = ({ children }) => {
             logo={headerConfig.logo}
             logoPosition={headerConfig.logoPosition}
             isBlur={headerConfig.isBlur}
-            blurStrength={headerConfig.blurStrength}
+            // 核心修正：移除 blurStrength prop 的传递，因为它在 Header 组件中已被弃用。
+            // blurStrength={headerConfig.blurStrength} 
           />
 
           {/* 将动态生成的 padding 类应用到 main 元素 */}
