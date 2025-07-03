@@ -12,6 +12,9 @@ importers:
 
   .:
     dependencies:
+      '@shikijs/transformers':
+        specifier: ^1.10.1
+        version: 1.29.2
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -396,6 +399,9 @@ packages:
 
   '@shikijs/themes@1.29.2':
     resolution: {integrity: sha512-i9TNZlsq4uoyqSbluIcZkmPL9Bfi3djVxRnofUHwvx/h6SRW3cwgBC5SML7vsDcWyukY0eCzVN980rqP6qNl9g==}
+
+  '@shikijs/transformers@1.29.2':
+    resolution: {integrity: sha512-NHQuA+gM7zGuxGWP9/Ub4vpbwrYCrho9nQCLcCPfOe3Yc7LOYwmSuhElI688oiqIXk9dlZwDiyAG9vPBTuPJMA==}
 
   '@shikijs/types@1.29.2':
     resolution: {integrity: sha512-VJjK0eIijTZf0QSTODEXCqinjBn0joAHQ+aPSBzrv4O2d/QSbsMw+ZeSRx03kV34Hy7NzUvV/7NqfYGRLrASmw==}
@@ -2571,6 +2577,11 @@ snapshots:
 
   '@shikijs/themes@1.29.2':
     dependencies:
+      '@shikijs/types': 1.29.2
+
+  '@shikijs/transformers@1.29.2':
+    dependencies:
+      '@shikijs/core': 1.29.2
       '@shikijs/types': 1.29.2
 
   '@shikijs/types@1.29.2':

@@ -7,6 +7,7 @@ import remarkRehype from 'remark-rehype';
 import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeStringify from 'rehype-stringify';
 import { Element } from 'hast';
+import { createHighlighter, type Highlighter } from 'shiki';
 
 // 定义博客文章元数据的接口
 export interface BlogPostMetadata {
@@ -23,6 +24,21 @@ export interface BlogPost extends BlogPostMetadata {
 }
 
 const postsDirectory = path.join(process.cwd(), 'posts');
+
+// 终极解决方案：创建一个全局单例的 Highlighter
+// 这可以确保 Highlighter 只被初始化一次，并在多次调用 getPostBySlug 之间共享。
+// 这是在无服务器环境或构建流程中使用 Shiki 的最高效、最可靠的方式。
+let highlighter: Highlighter;
+async function getSingletonHighlighter() {
+  if (!highlighter) {
+    highlighter = await createHighlighter({
+      themes: ['vitesse-light', 'vitesse-dark'],
+      langs: ['javascript', 'typescript', 'json', 'bash', 'css', 'html'],
+    });
+  }
+  return highlighter;
+}
+
 
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
@@ -50,11 +66,15 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
 
-  // 核心修正：简化配置以进行调试。
-  // 我们将暂时使用一个单一、稳定的主题来确认 Shiki 的核心高亮功能是否正常工作。
+  // 配置 rehype-pretty-code
   const prettyCodeOptions: Partial<RehypePrettyCodeOptions> = {
-    theme: 'github-dark', // 使用一个最常见的主题进行测试
-    keepBackground: true, // 确保主题自带的背景色能够被应用
+    // 核心修正：根据 TypeScript 错误提示，将属性名从 `highlighter` 改为 `getHighlighter`。
+    // 我们直接传递创建单例实例的异步函数，这符合 getHighlighter 的期望类型。
+    getHighlighter: getSingletonHighlighter,
+    theme: {
+      light: 'vitesse-light',
+      dark: 'vitesse-dark',
+    },
     onVisitLine(node: Element) {
       // 防止空行在 `display: grid` 模式下被折叠
       if (node.children.length === 0) {
@@ -63,6 +83,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
     },
   };
 
+  // 处理 Markdown
   const processedContent = await unified()
     .use(remarkParse)
     .use(remarkRehype, { allowDangerousHtml: true })
