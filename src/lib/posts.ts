@@ -6,10 +6,17 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
 import rehypeStringify from 'rehype-stringify';
+import rehypeSlug from 'rehype-slug';
+import { visit } from 'unist-util-visit';
 import { createHighlighter, type Highlighter } from 'shiki';
-// 核心修正：移除不再需要的 'unist-util-visit' 和 HAST 类型，因为我们将不再手动操作 AST。
-// import { visit } from 'unist-util-visit';
-// import { type Root, type Element } from 'hast';
+import { type Element } from 'hast';
+
+// 定义文章大纲条目的接口
+export interface TocEntry {
+  level: number;
+  id: string;
+  text: string;
+}
 
 // 定义博客文章元数据的接口
 export interface BlogPostMetadata {
@@ -20,9 +27,10 @@ export interface BlogPostMetadata {
   description: string;
 }
 
-// 定义完整的博客文章接口
+// 定义完整的博客文章接口，现在包含大纲
 export interface BlogPost extends BlogPostMetadata {
   contentHtml: string;
+  headings: TocEntry[]; // 新增：文章大纲
 }
 
 const postsDirectory = path.join(process.cwd(), 'posts');
@@ -38,9 +46,37 @@ async function getSingletonHighlighter() {
   return highlighter;
 }
 
-// 核心修正：完全移除自定义的 `rehypeCodeHeader` 插件。
-// 这个插件是导致之前不稳定的根源。现在，服务器端只负责生成纯净的高亮代码，
-// 将所有与头部相关的 UI 操作完全交给客户端处理，以确保稳定性和可预测性。
+// 核心修正 1: 新增一个辅助函数，用于递归地从 HAST 节点树中提取所有文本内容。
+// 这个函数能够处理嵌套的元素（如 `<code>` 标签），确保不会丢失任何文本。
+function getTextFromNode(node: any): string {
+  if (node.type === 'text') {
+    return node.value;
+  }
+  if (node.children && Array.isArray(node.children)) {
+    return node.children.map(getTextFromNode).join('');
+  }
+  return '';
+}
+
+// 自定义 Rehype 插件，用于提取标题
+function extractHeadings(headings: TocEntry[]) {
+  return (tree: Element) => {
+    visit(tree, 'element', (node) => {
+      if (['h1', 'h2', 'h3'].includes(node.tagName)) {
+        // 核心修正 2: 使用新的辅助函数来获取完整的标题文本。
+        const text = getTextFromNode(node);
+        
+        if (node.properties?.id) {
+          headings.push({
+            level: parseInt(node.tagName.substring(1)),
+            id: String(node.properties.id),
+            text: text,
+          });
+        }
+      }
+    });
+  };
+}
 
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
@@ -58,14 +94,17 @@ export function getSortedPostsMetadata(): BlogPostMetadata[] {
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost> {
-  const fullPath = path.join(postsDirectory, `${slug}.md`);
+  const decodedSlug = decodeURIComponent(slug);
+  const fullPath = path.join(postsDirectory, `${decodedSlug}.md`);
+  
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
+  const headings: TocEntry[] = [];
 
   const prettyCodeOptions: Partial<RehypePrettyCodeOptions> = {
     getHighlighter: getSingletonHighlighter,
     theme: { light: 'vitesse-light', dark: 'vitesse-dark' },
-    onVisitLine(node) { // 类型可以从 rehype-pretty-code 推断
+    onVisitLine(node) {
       if (node.children.length === 0) {
         node.children = [{ type: 'text', value: ' ' }];
       }
@@ -75,8 +114,9 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   const processedContent = await unified()
     .use(remarkParse)
     .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeSlug)
+    .use(() => extractHeadings(headings))
     .use(rehypePrettyCode, prettyCodeOptions)
-    // 核心修正：从处理管道中移除 .use(rehypeCodeHeader)。
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
@@ -85,6 +125,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   return {
     slug,
     contentHtml,
+    headings,
     ...(data as { title: string; date: string; author: string; description: string }),
   };
 }

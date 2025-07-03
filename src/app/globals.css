@@ -3,16 +3,12 @@
 /* 引入 Tailwind CSS 基础样式 */
 @import "tailwindcss";
 
-/* 引入拆分后的自定义样式模块
-  核心修正：将路径别名 `@/styles/...` 修改为标准的相对路径。
-  `globals.css` 文件位于 `src/app/` 目录，
-  而样式文件位于 `src/styles/` 目录，
-  因此，正确的相对路径是从 `app` 目录返回上一级 (`../`) 再进入 `styles` 目录。
-*/
+/* 引入拆分后的自定义样式模块 */
 @import "../styles/theme.css";
 @import "../styles/code-highlight.css";
 @import "../styles/toast.css";
 @import "../styles/nprogress.css";
+@import "../styles/blog-post.css"; /* 新增：导入文章页面的专属样式 */
 
 /*
   保留最核心的、真正“全局”的 body 样式。
