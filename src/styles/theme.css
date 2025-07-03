@@ -60,6 +60,10 @@ html.light {
   /* 太阳图标在亮色模式下不显示，颜色不重要 */
   --toggle-icon-dark-color: transparent;
   --toggle-icon-dark-hover-color: transparent;
+
+  /* 新增：Header 中搜索/GitHub 图标颜色变量 (亮色模式) */
+  --header-icon-color: var(--color-neutral-500);
+  --header-icon-hover-color: var(--color-neutral-700);
 }
 
 /*
@@ -120,6 +124,10 @@ html.dark {
   --toggle-icon-dark-hover-color: var(
     --color-primary-default
   ); /* 太阳图标在暗色模式下 hover 颜色 */
+
+  /* 新增：Header 中搜索/GitHub 图标颜色变量 (暗黑模式) */
+  --header-icon-color: var(--color-neutral-400);
+  --header-icon-hover-color: var(--color-neutral-200);
 }
 
 /*
@@ -132,7 +140,7 @@ html.dark {
   --font-mono: var(--font-geist-mono);
 }
 
-/* 新增：专门用于 Header 高斯模糊效果的自定义类 
+/* 专门用于 Header 高斯模糊效果的自定义类
   这个类精确地定义了实现“毛玻璃”效果所需的所有样式。
 */
 .header-blur {
@@ -163,4 +171,14 @@ html.dark {
 /* Footer 边框效果的自定义类 */
 .footer-border-effect {
   border-color: var(--footer-border-color);
+}
+
+/* 新增：Header 中图标的通用样式类 */
+.header-icon-button {
+  color: var(--header-icon-color);
+  transition: color 0.2s; /* 添加过渡效果 */
+}
+
+.header-icon-button:hover {
+  color: var(--header-icon-hover-color);
 }

@@ -1,11 +1,13 @@
 // src/components/organisms/Header.tsx
-import React from 'react';
+'use client'; // 确保这是客户端组件
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { HeaderLogoConfig, appConfig } from '@/lib/config'; // 导入 appConfig
+import { HeaderLogoConfig, appConfig } from '@/lib/config';
 import ThemeToggle from '@/components/molecules/ThemeToggle';
-import { Github, Search } from 'lucide-react'; // 导入 Github 和 Search 图标
-import { useSearchModal } from '@/contexts/SearchModalContext'; // 导入 useSearchModal hook
+import { Github, Search } from 'lucide-react';
+import { useSearchModal } from '@/contexts/SearchModalContext';
 
 // Props 类型定义保持不变
 interface HeaderProps {
@@ -31,7 +33,15 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   // 从 appConfig 中获取新的配置项
   const { github: githubConfig, search: searchConfig } = appConfig;
-  const { openSearchModal } = useSearchModal(); // 使用 useSearchModal hook
+  const { openSearchModal } = useSearchModal();
+
+  // 用于判断是否在客户端环境的状态
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // 仅在客户端环境设置 isClient 为 true
+    setIsClient(true);
+  }, []);
 
   if (!isVisible) {
     return null;
@@ -116,20 +126,18 @@ const Header: React.FC<HeaderProps> = ({
         <div
           className={`flex items-center gap-4 ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}
         >
-          {/* 优化点 2: 搜索图标 + 快捷键提示 */}
+          {/* 搜索图标 + 快捷键提示 */}
           {searchConfig.showHotkeyDisplay && (
             <button
-              onClick={openSearchModal} // 点击按钮打开搜索模态框
-              className="flex items-center text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors duration-200 p-2 rounded-full"
+              onClick={openSearchModal}
+              className="flex items-center p-2 rounded-full header-icon-button" /* 使用新的通用类 */
               aria-label="搜索 (快捷键 Cmd/Ctrl + K)"
               title="搜索 (快捷键 Cmd/Ctrl + K)"
             >
               <Search size={20} />
               <span className="ml-2 text-sm font-medium hidden sm:inline-block">
-                {/* 根据操作系统显示不同的快捷键提示 */}
-                {typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform)
-                  ? '⌘K'
-                  : 'Ctrl+K'}
+                {/* 核心优化：在服务端渲染时，不显示平台特定的快捷键，避免闪烁 */}
+                {isClient && (/Mac|iPod|iPhone|iPad/.test(navigator.platform) ? '⌘K' : 'Ctrl+K')}
               </span>
             </button>
           )}
@@ -137,13 +145,13 @@ const Header: React.FC<HeaderProps> = ({
           {/* ThemeToggle 保持不变，位于搜索和 GitHub 之间 */}
           <ThemeToggle />
 
-          {/* 优化点 1: GitHub 图标 */}
+          {/* GitHub 图标 */}
           {githubConfig.isVisible && (
             <Link
               href={githubConfig.url}
-              target="_blank" // 在新标签页打开
-              rel="noopener noreferrer" // 安全最佳实践
-              className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors duration-200 p-2 rounded-full"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full header-icon-button" /* 使用新的通用类 */
               aria-label="访问我的 GitHub"
               title="访问我的 GitHub"
             >
