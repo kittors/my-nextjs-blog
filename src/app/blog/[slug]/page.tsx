@@ -1,11 +1,10 @@
 // src/app/blog/[slug]/page.tsx
 import React from 'react';
-import { getPostBySlug, getAllPostSlugs, BlogPost } from '@/lib/posts';
+import { getPostBySlug, getAllPostSlugs } from '@/lib/posts';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
 import Link from 'next/link';
 import BlogPostContent from '@/components/templates/BlogPostContent';
-import { type TocEntry } from '@/lib/posts'; // 导入大纲类型
 
 interface BlogPostPageProps {
   params: {
@@ -21,10 +20,10 @@ export async function generateStaticParams() {
 export default async function BlogPostPage(props: BlogPostPageProps) {
   const slug = props.params.slug;
   
-  // 现在 getPostBySlug 会返回包含 headings 的对象
-  const { contentHtml, headings, ...postMeta } = await getPostBySlug(slug);
+  // getPostBySlug 现在返回包含 HAST 树和 headings 的对象
+  const { content, headings, ...postMeta } = await getPostBySlug(slug);
 
-  const post = { ...postMeta, contentHtml };
+  const post = { ...postMeta, content };
 
   if (!post) {
     return (

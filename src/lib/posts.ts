@@ -5,11 +5,11 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehype-pretty-code';
-import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
 import { visit } from 'unist-util-visit';
 import { createHighlighter, type Highlighter } from 'shiki';
-import { type Element } from 'hast';
+import { type Root as HastRoot } from 'hast';
+import { type Root as MdastRoot } from 'mdast';
 
 // 定义文章大纲条目的接口
 export interface TocEntry {
@@ -21,16 +21,16 @@ export interface TocEntry {
 // 定义博客文章元数据的接口
 export interface BlogPostMetadata {
   slug: string;
-  title: string;
+  title:string;
   date: string;
   author: string;
   description: string;
 }
 
-// 定义完整的博客文章接口，现在包含大纲
+// 定义完整的博客文章接口，现在包含处理过的内容
 export interface BlogPost extends BlogPostMetadata {
-  contentHtml: string;
-  headings: TocEntry[]; // 新增：文章大纲
+  content: HastRoot; // 内容现在是 HAST 树
+  headings: TocEntry[]; // 文章大纲
 }
 
 const postsDirectory = path.join(process.cwd(), 'posts');
@@ -46,8 +46,6 @@ async function getSingletonHighlighter() {
   return highlighter;
 }
 
-// 核心修正 1: 新增一个辅助函数，用于递归地从 HAST 节点树中提取所有文本内容。
-// 这个函数能够处理嵌套的元素（如 `<code>` 标签），确保不会丢失任何文本。
 function getTextFromNode(node: any): string {
   if (node.type === 'text') {
     return node.value;
@@ -58,14 +56,11 @@ function getTextFromNode(node: any): string {
   return '';
 }
 
-// 自定义 Rehype 插件，用于提取标题
 function extractHeadings(headings: TocEntry[]) {
-  return (tree: Element) => {
+  return (tree: HastRoot) => {
     visit(tree, 'element', (node) => {
       if (['h1', 'h2', 'h3'].includes(node.tagName)) {
-        // 核心修正 2: 使用新的辅助函数来获取完整的标题文本。
         const text = getTextFromNode(node);
-        
         if (node.properties?.id) {
           headings.push({
             level: parseInt(node.tagName.substring(1)),
@@ -111,20 +106,21 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
     },
   };
 
-  const processedContent = await unified()
+  // 修正：创建统一的处理器实例
+  const processor = unified()
     .use(remarkParse)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeSlug)
     .use(() => extractHeadings(headings))
-    .use(rehypePrettyCode, prettyCodeOptions)
-    .use(rehypeStringify, { allowDangerousHtml: true })
-    .process(content);
+    .use(rehypePrettyCode, prettyCodeOptions);
 
-  const contentHtml = processedContent.toString();
+  // 修正：正确地分步执行解析和转换
+  const mdastTree = processor.parse(content) as MdastRoot;
+  const hastTree = await processor.run(mdastTree);
 
   return {
     slug,
-    contentHtml,
+    content: hastTree as HastRoot,
     headings,
     ...(data as { title: string; date: string; author: string; description: string }),
   };

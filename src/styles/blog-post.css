@@ -9,7 +9,6 @@
 
 @media (min-width: 1024px) {
   .blog-layout {
-    /* 在大屏幕上，主内容区占 3 份，大纲占 1 份 */
     grid-template-columns: 3fr 1fr;
   }
 }
@@ -17,7 +16,7 @@
 /* 大纲容器的样式 */
 .toc-container {
   position: sticky;
-  top: 6rem; /* 确保它在 Header 下方 */
+  top: 6rem;
   max-height: calc(100vh - 8rem);
   overflow-y: auto;
   padding: 1rem;
@@ -72,7 +71,6 @@ html.dark .toc-list a:hover {
   background-color: var(--color-neutral-800);
 }
 
-/* 当前活动链接的样式 */
 .toc-list a.active {
   color: var(--color-primary-default);
   font-weight: 600;
@@ -84,7 +82,6 @@ html.dark .toc-list a.active {
   background-color: var(--color-neutral-800);
 }
 
-/* 根据标题级别添加缩进 */
 .toc-list .level-2 {
   padding-left: 1rem;
 }
@@ -92,7 +89,6 @@ html.dark .toc-list a.active {
   padding-left: 2rem;
 }
 
-/* 回到顶部按钮的样式 */
 .back-to-top-button {
   position: fixed;
   bottom: 2rem;
@@ -115,18 +111,16 @@ html.dark .toc-list a.active {
   z-index: 1000;
 }
 
-/* 核心修正：为暗黑模式提供更精致的样式 */
 html.dark .back-to-top-button {
-  background-color: var(--color-neutral-100); /* 使用比页面背景稍亮的深灰色 */
-  color: var(--color-neutral-400); /* 图标颜色使用中性灰色，而不是纯白 */
-  border-color: var(--color-neutral-300); /* 边框颜色更深邃 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* 阴影更明显，以突出层次感 */
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-400);
+  border-color: var(--color-neutral-300);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* 新增：为暗黑模式下的按钮添加悬停效果 */
 html.dark .back-to-top-button:hover {
   background-color: var(--color-neutral-200);
-  color: var(--foreground); /* 悬停时图标变亮，提供反馈 */
+  color: var(--foreground);
   border-color: var(--color-neutral-400);
 }
 
@@ -134,4 +128,89 @@ html.dark .back-to-top-button:hover {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+/* --- 新增样式 --- */
+
+/* 博客文章图片容器 */
+.post-image-container {
+  margin: 2em 0;
+}
+
+/* 博客文章图片样式 */
+.post-image {
+  border-radius: 0.75rem; /* 圆角 */
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  height: auto; /* 保持图片比例 */
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.post-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* 图片预览模态框背景 */
+.image-preview-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* 图片预览内容区 */
+.image-preview-content {
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+/* 图片预览工具栏 */
+.image-preview-toolbar {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(30, 30, 30, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 2001;
+}
+
+.image-preview-toolbar button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.image-preview-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
