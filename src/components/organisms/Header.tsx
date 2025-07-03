@@ -13,7 +13,6 @@ interface HeaderProps {
   logo: HeaderLogoConfig;
   logoPosition: 'left' | 'center' | 'right';
   isBlur?: boolean;
-  // blurStrength prop 不再需要，因为样式被硬编码在 .header-blur 类中
 }
 
 /**
@@ -44,11 +43,9 @@ const Header: React.FC<HeaderProps> = ({
     'transition-all duration-300',
   ];
 
-  // 核心修正：不再使用一长串 Tailwind 类，而是直接应用我们自定义的 .header-blur 类
   if (isBlur) {
     baseHeaderClasses.push('header-blur');
   } else {
-    // 当不启用模糊时，回退到原始的实体背景样式
     baseHeaderClasses.push(
       'bg-background',
       'border-neutral-200',
@@ -72,9 +69,17 @@ const Header: React.FC<HeaderProps> = ({
     if (logo.type === 'text') {
       return (
         <h1 className="text-2xl font-bold tracking-tight" style={{ width: logo.width === 'auto' ? 'auto' : logo.width }}>
+          {/* 核心修正：为 Logo 链接添加了丰富的悬停效果 */}
           <Link
             href="/"
-            className="text-primary hover:text-primary-dark transition-colors duration-200"
+            className="
+              inline-block
+              bg-gradient-to-r from-blue-600 to-purple-600 
+              dark:from-blue-400 dark:to-purple-400
+              bg-clip-text text-transparent
+              hover:scale-105 hover:tracking-wide
+              transition-all duration-300 ease-in-out
+            "
           >
             {logo.content}
           </Link>

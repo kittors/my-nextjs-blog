@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useRef, useEffect, memo, useState, createElement, Fragment } from 'react';
-// 核心修正 1：为生产环境导入 jsx 和 jsxs
+// 为生产环境导入 jsx 和 jsxs
 import { jsx, jsxs } from 'react/jsx-runtime';
 import { useToast } from '@/contexts/ToastContext';
 import Heading from '@/components/atoms/Heading';
@@ -19,10 +19,10 @@ import ImagePreview from '@/components/molecules/ImagePreview';
 
 interface BlogPostContentProps {
   post: {
-    title: string;
-    author: string;
-    date: string;
-    content: HastRoot; // 内容现在是 HAST 树
+    title?: string; // 属性变为可选
+    author?: string; // 属性变为可选
+    date?: string; // 属性变为可选
+    content: HastRoot;
   };
   headings: TocEntry[];
 }
@@ -37,7 +37,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     setPreviewImageSrc(src);
   };
 
-  // 核心修正 2：将 jsx 和 jsxs 添加到 rehype-react 的配置中
   const rehypeOptions = {
     createElement,
     Fragment,
@@ -58,6 +57,13 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     .use(rehypeReact, rehypeOptions as any)
     .stringify(post.content);
 
+  // 核心修正：为元数据提供默认值
+  const title = post.title || "无标题文章";
+  const author = post.author || "匿名作者";
+  const dateObj = post.date ? new Date(post.date) : null;
+  const displayDate = dateObj && !isNaN(dateObj.getTime())
+    ? dateObj.toLocaleDateString("zh-CN")
+    : "未知日期";
 
   // 复制按钮的逻辑
   useEffect(() => {
@@ -100,7 +106,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
       button.addEventListener('click', handleCopy);
       button.dataset.listenerAttached = 'true';
     });
-  }, [contentReact, showToast]); // 当内容变化时重新执行
+  }, [contentReact, showToast]);
 
   return (
     <>
@@ -113,12 +119,12 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
             </Link>
 
             <Heading level={1} className="text-4xl font-extrabold text-neutral-900 mb-4">
-              {post.title}
+              {title}
             </Heading>
 
             <div className="text-neutral-500 text-sm mb-8 border-b border-neutral-200 pb-4">
-              <Text as="span" className="mr-4">作者: {post.author}</Text>
-              <Text as="span">日期: {new Date(post.date).toLocaleDateString('zh-CN')}</Text>
+              <Text as="span" className="mr-4">作者: {author}</Text>
+              <Text as="span">日期: {displayDate}</Text>
             </div>
 
             <div
