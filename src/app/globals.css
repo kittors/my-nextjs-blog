@@ -9,6 +9,7 @@
 @import '../styles/toast.css';
 @import '../styles/nprogress.css';
 @import '../styles/search.css';
+@import '../styles/skeleton.css';
 @import 'katex/dist/katex.min.css';
 
 /* 基础排版 (Base) */

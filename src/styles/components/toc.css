@@ -149,15 +149,28 @@ html.dark .toc-list a:hover {
   background-color: var(--color-neutral-800);
 }
 
-/* 核心修正：简化激活状态，仅改变字体颜色 */
+/* 核心修正：为激活状态设置更突出的样式 */
 .toc-list a.active {
   color: var(--color-primary-default);
+  font-weight: 600; /* 激活时字体加粗 */
 }
 
-/* 核心修正：确保激活状态在鼠标悬停时保持不变 */
+/* 核心修正：确保亮色模式下，激活状态的悬停效果正确 */
 .toc-list a.active:hover {
   color: var(--color-primary-default);
-  background-color: transparent;
+  background-color: transparent; /* 悬停在激活项上时，不改变背景 */
+}
+
+/* 核心修正：为暗黑模式下的激活状态添加更明显的背景和颜色 */
+html.dark .toc-list a.active {
+  color: var(--color-primary-light); /* 使用更亮的颜色以增强对比度 */
+  background-color: var(--color-neutral-50); /* 添加一个微妙的背景色以创建“药丸”效果 */
+}
+
+/* 核心修正：确保暗黑模式下，激活状态的悬停效果正确 */
+html.dark .toc-list a.active:hover {
+  color: var(--color-primary-light); /* 保持激活的亮色 */
+  background-color: var(--color-neutral-50); /* 保持激活的背景色，覆盖一般悬停效果 */
 }
 
 .toc-list .level-2 {

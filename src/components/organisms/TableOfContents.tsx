@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { type TocEntry } from '@/lib/posts';
 import { X } from 'lucide-react';
-import { useIsMobile } from '@/hooks/useIsMobile'; // 核心：导入 useIsMobile hook
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // 定义组件的 Props 接口
 interface TableOfContentsProps {
@@ -16,21 +16,55 @@ interface TableOfContentsProps {
 const HEADER_OFFSET = 80;
 
 /**
+ * 节流函数：确保一个函数在指定的时间间隔内最多只执行一次。
+ * @param callback 要执行的函数。
+ * @param delay 时间间隔（毫秒）。
+ * @returns 返回一个节流后的新函数。
+ */
+const throttle = (callback: (...args: any[]) => void, delay: number) => {
+  let lastCall = 0;
+  return (...args: any[]) => {
+    const now = new Date().getTime();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      callback(...args);
+    }
+  };
+};
+
+/**
+ * 核心修正：添加 Debounce 函数
+ * 在事件触发后延迟执行，如果在延迟期间再次触发，则重置计时器。
+ * @param callback 要执行的函数。
+ * @param delay 时间间隔（毫秒）。
+ * @returns 返回一个去抖动后的新函数。
+ */
+const debounce = (callback: (...args: any[]) => void, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      callback(...args);
+    }, delay);
+  };
+};
+
+/**
  * TableOfContents 组件（已重构）：
  * 负责渲染文章大纲，并根据用户的滚动位置动态高亮当前章节。
- * 此版本是完全响应式的：
- * - PC 端：表现为固定的粘性侧边栏，永久可见。
- * - 移动端：表现为一个可开关的抽屉式侧边栏。
+ * 核心修正：引入了防抖函数，在滚动停止后进行最终的精确状态校准。
  * @param {TableOfContentsProps} props - 组件属性。
  */
 const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onClose }) => {
   const [activeId, setActiveId] = useState<string>('');
-  const isMobile = useIsMobile(); // 核心：使用 hook 判断设备类型
+  const isMobile = useIsMobile();
   const observer = useRef<IntersectionObserver | null>(null);
   const headingStatesRef = useRef<Map<string, boolean>>(new Map());
   const isClickScrolling = useRef(false);
-  const tocListWrapperRef = useRef<HTMLDivElement>(null);
+  const tocListWrapperRef = useRef<HTMLDivElement | null>(null);
   const tocContainerRef = useRef<HTMLElement | null>(null);
+
+  const throttledSetActiveId = useRef(throttle(id => setActiveId(id), 300)).current;
 
   // 当抽屉在移动端打开时，禁止背景页面滚动
   useEffect(() => {
@@ -71,9 +105,11 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
         if (intersecting.length > 0) currentActiveId = intersecting[0].id;
       }
 
-      if (currentActiveId && currentActiveId !== activeId) setActiveId(currentActiveId);
+      if (currentActiveId) {
+        throttledSetActiveId(currentActiveId);
+      }
     },
-    [headings, activeId]
+    [headings, throttledSetActiveId]
   );
 
   // 设置 IntersectionObserver 并观察所有标题元素
@@ -86,6 +122,39 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     elements.forEach(el => observer.current?.observe(el!));
     return () => observer.current?.disconnect();
   }, [headings, handleObserver]);
+
+  // 核心修正：在滚动停止后进行最终的精确检查
+  const debouncedFinalCheck = useRef(
+    debounce(() => {
+      if (isClickScrolling.current) return;
+
+      const atBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 2;
+
+      if (atBottom && headings.length > 0) {
+        setActiveId(headings[headings.length - 1].id);
+        return;
+      }
+
+      let finalActiveId = '';
+      for (const heading of headings) {
+        const element = document.getElementById(heading.id);
+        if (element && element.getBoundingClientRect().top < HEADER_OFFSET + 20) {
+          finalActiveId = heading.id;
+        }
+      }
+
+      if (finalActiveId) {
+        setActiveId(finalActiveId);
+      } else if (headings.length > 0) {
+        setActiveId(headings[0].id);
+      }
+    }, 150) // 150ms 无滚动事件后触发
+  ).current;
+
+  useEffect(() => {
+    window.addEventListener('scroll', debouncedFinalCheck);
+    return () => window.removeEventListener('scroll', debouncedFinalCheck);
+  }, [debouncedFinalCheck]);
 
   // 当 activeId 变化时，自动滚动大纲列表以确保激活项可见
   useEffect(() => {
@@ -124,12 +193,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     }, 800);
   };
 
-  // 核心修正：如果是在 PC 端，且没有标题，则不渲染任何东西
-  if (headings.length === 0 && !isMobile) {
-    return <div className="hidden lg:block w-[280px] flex-shrink-0"></div>;
+  if (headings.length === 0) {
+    return isMobile ? null : <div className="hidden lg:block w-[280px] flex-shrink-0"></div>;
   }
-  // 如果在移动端，且没有标题，也不渲染
-  if (headings.length === 0) return null;
 
   return (
     <>

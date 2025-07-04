@@ -36,6 +36,9 @@ html.dark .skeleton-card {
 .skeleton-line {
   background-color: var(--color-neutral-200); /* 亮色模式下的线条颜色 */
   border-radius: 0.25rem; /* 4px */
+  /* 核心修正：为所有骨架线条提供一个默认高度 (16px)，以确保它们可见。
+     这个高度可以被内联样式覆盖，例如在骨架屏的标题部分。*/
+  height: 1rem;
 }
 
 html.dark .skeleton-line {

@@ -1,11 +1,12 @@
 // src/components/organisms/BlogList.tsx
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { BlogPostMetadata } from '@/lib/posts';
 import BlogPostCard from '@/components/molecules/BlogPostCard';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
-import BlogPostCardSkeleton from '@/components/molecules/BlogPostCardSkeleton'; // 核心: 导入骨架屏组件
+import BlogPostCardSkeleton from '@/components/molecules/BlogPostCardSkeleton';
+import LazyLoad from '@/components/atoms/LazyLoad'; // 核心修正：导入新的通用懒加载组件
 
 // 定义 BlogList 组件的 Props 类型
 interface BlogListProps {
@@ -13,49 +14,14 @@ interface BlogListProps {
 }
 
 /**
- * LazyBlogPostCard 组件：一个实现了懒加载逻辑的内部组件。
- * 它使用 Intersection Observer API 来监听自身是否进入了视口。
- * 核心升级：在组件不可见时，它会渲染一个骨架屏占位符。
- * 当组件可见时，它才会渲染真正的 BlogPostCard，从而实现性能与体验的完美结合。
- * @param { post: BlogPostMetadata } props - 包含单篇文章元数据的对象。
- */
-const LazyBlogPostCard: React.FC<{ post: BlogPostMetadata }> = ({ post }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const cardRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      {
-        rootMargin: '200px', // 在元素进入视口前 200px 就开始加载
-      }
-    );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  // 核心升级：
-  // - 在 ref 容器中，根据 isVisible 状态条件渲染。
-  // - isVisible 为 false 时，显示骨架屏。
-  // - isVisible 为 true 时，显示真实的博客卡片。
-  // - 不再需要 min-height，因为骨架屏组件自身就带有高度。
-  return (
-    <div ref={cardRef}>{isVisible ? <BlogPostCard post={post} /> : <BlogPostCardSkeleton />}</div>
-  );
-};
-
-/**
  * BlogList 组件：用于展示所有博客文章的列表。
- * 遵循原子设计原则，它是一个组织组件，由 BlogPostCard 分子组件组成。
+ *
+ * 遵循原子设计原则，它是一个组织组件，负责编排和布局其子组件。
+ * 核心修正：
+ * 1. 移除了内部的 `LazyBlogPostCard` 组件，将懒加载逻辑委托给可重用的 `LazyLoad` 原子组件。
+ * 2. 这种重构使得 `BlogList` 组件的职责更加单一和清晰：只负责文章列表的渲染和排序。
+ * 3. 每个 `BlogPostCard` 现在被 `LazyLoad` 组件包裹，并传入一个 `BlogPostCardSkeleton` 作为占位符。
+ *
  * @param {BlogListProps} props - 组件属性。
  * @param {BlogPostMetadata[]} props.posts - 博客文章元数据数组。
  */
@@ -68,6 +34,7 @@ const BlogList: React.FC<BlogListProps> = ({ posts }) => {
     );
   }
 
+  // 按日期对文章进行排序
   const sortedPosts = [...posts].sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
@@ -79,7 +46,10 @@ const BlogList: React.FC<BlogListProps> = ({ posts }) => {
       </Heading>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {sortedPosts.map(post => (
-          <LazyBlogPostCard key={post.slug} post={post} />
+          // 使用通用的 LazyLoad 组件来实现卡片的懒加载
+          <LazyLoad key={post.slug} placeholder={<BlogPostCardSkeleton />}>
+            <BlogPostCard post={post} />
+          </LazyLoad>
         ))}
       </div>
     </section>
