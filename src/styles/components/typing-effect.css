@@ -1,0 +1,23 @@
+/* src/styles/components/typing-effect.css */
+
+/* 定义光标的闪烁动画 */
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 打字效果文本容器 */
+.typing-effect-text {
+  /* 确保容器能占据一定空间，防止因文本为空时高度塌陷 */
+  display: inline-block;
+  min-height: 1.5rem; /* 根据您的字体大小调整 */
+}
+
+/* 闪烁的光标 */
+.typing-cursor {
+  animation: blink 0.7s infinite;
+  color: var(--color-primary-default);
+  font-weight: bold;
+  margin-left: 2px;
+}

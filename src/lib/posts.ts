@@ -1,3 +1,4 @@
+// src/lib/posts.ts
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -8,44 +9,36 @@ import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehyp
 import rehypeSlug from 'rehype-slug';
 import { visit } from 'unist-util-visit';
 import { createHighlighter, type Highlighter } from 'shiki';
-import { type Root as HastRoot, type Element } from 'hast';
+import { type Root as HastRoot, type Element, type Node } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
 import { toString } from 'hast-util-to-string';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-// 定义文章大纲条目的接口
+// ... (接口定义保持不变) ...
 export interface TocEntry {
   level: number;
   id: string;
   text: string;
   offset: number;
 }
-
-// 核心新增：定义单个标签信息的接口
 export interface TagInfo {
   tag: string;
   count: number;
 }
-
-// 定义博客文章元数据的接口
 export interface BlogPostMetadata {
   slug: string;
   title: string;
   date: string;
   author: string;
   description: string;
-  tags?: string[]; // 核心新增：tags 是一个可选的字符串数组
+  tags?: string[];
 }
-
-// 定义完整的博客文章接口
 export interface BlogPost extends BlogPostMetadata {
   content: HastRoot;
   headings: TocEntry[];
 }
-
-// 定义用于搜索的文章数据接口
 export interface SearchablePostData {
   metadata: BlogPostMetadata;
   plainTextContent: string;
@@ -54,6 +47,7 @@ export interface SearchablePostData {
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
+// ... (getSingletonHighlighter, getTextFromNode, extractHeadings, normalizeCodeLanguage, rehypeCodeBlockHeader 保持不变) ...
 let highlighter: Highlighter;
 async function getSingletonHighlighter() {
   if (!highlighter) {
@@ -64,7 +58,6 @@ async function getSingletonHighlighter() {
   }
   return highlighter;
 }
-
 function getTextFromNode(node: any): string {
   if (node.type === 'text') return node.value;
   if (node.children && Array.isArray(node.children)) {
@@ -72,7 +65,6 @@ function getTextFromNode(node: any): string {
   }
   return '';
 }
-
 function extractHeadings(headings: Omit<TocEntry, 'offset'>[]) {
   return (tree: HastRoot) => {
     visit(tree, 'element', node => {
@@ -86,7 +78,6 @@ function extractHeadings(headings: Omit<TocEntry, 'offset'>[]) {
     });
   };
 }
-
 function normalizeCodeLanguage() {
   return (tree: HastRoot) => {
     visit(tree, 'element', node => {
@@ -106,7 +97,6 @@ function normalizeCodeLanguage() {
     });
   };
 }
-
 function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
@@ -207,10 +197,28 @@ function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
   };
 }
 
-/**
- * 获取所有博客文章的元数据，并按日期降序排序。
- * @returns {BlogPostMetadata[]} 排序后的博客文章元数据数组。
- */
+function rehypeUnwrapImages() {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element, index: number | undefined, parent: Node | undefined) => {
+      if (!parent || index === undefined || node.tagName !== 'p') {
+        return;
+      }
+      const significantChildren = node.children.filter(child => {
+        if (child.type === 'element') return true;
+        if (child.type === 'text' && child.value.trim() !== '') return true;
+        return false;
+      });
+      if (
+        significantChildren.length === 1 &&
+        (significantChildren[0] as Element).tagName === 'img'
+      ) {
+        (parent as Element).children[index] = significantChildren[0];
+      }
+    });
+  };
+}
+
+// ... (getSortedPostsMetadata 和 getAllTags 保持不变) ...
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsMetadata = fileNames.map(fileName => {
@@ -225,29 +233,18 @@ export function getSortedPostsMetadata(): BlogPostMetadata[] {
   });
   return allPostsMetadata.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
-
-/**
- * 核心新增：获取所有唯一标签及其关联文章数量的函数。
- * @returns {TagInfo[]} 一个包含所有标签信息的数组，按关联文章数量降序排序。
- */
 export function getAllTags(): TagInfo[] {
   const allPosts = getSortedPostsMetadata();
   const tagCounts: { [key: string]: number } = {};
-
-  // 遍历所有文章，统计每个标签出现的次数
   allPosts.forEach(post => {
     post.tags?.forEach(tag => {
       tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     });
   });
-
-  // 将统计结果转换为 TagInfo 数组
   const tags: TagInfo[] = Object.keys(tagCounts).map(tag => ({
     tag,
     count: tagCounts[tag],
   }));
-
-  // 按关联文章数量降序排序
   return tags.sort((a, b) => b.count - a.count);
 }
 
@@ -273,6 +270,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeUnwrapImages)
     .use(rehypeSlug)
     .use(rehypeKatex)
     .use(() => extractHeadings(tempHeadings))
@@ -293,13 +291,13 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
   };
 }
 
+// ... (getAllPostSlugs 和 getAllPostsForSearch 保持不变) ...
 export function getAllPostSlugs(): { slug: string }[] {
   const fileNames = fs.readdirSync(postsDirectory);
   return fileNames.map(fileName => ({
     slug: fileName.replace(/\.md$/, ''),
   }));
 }
-
 export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
   const fileNames = fs.readdirSync(postsDirectory);
   const allSearchablePosts: SearchablePostData[] = [];

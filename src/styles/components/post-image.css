@@ -1,29 +1,32 @@
 /* src/styles/components/post-image.css */
 
-/**
- * 文章内图片的专属样式。
- * 遵循原子设计原则，这些样式定义了图片及其容器的视觉表现和交互效果。
- */
-
-/* 博客文章图片容器 */
-.post-image-container {
-  display: block;
+.post-image-wrapper {
+  display: inline-block;
+  position: relative;
   margin: 2em 0;
   overflow: hidden;
   border-radius: 0.75rem;
+  width: 100%;
+  /* 背景色现在由内联样式根据加载状态动态控制 */
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 0.1),
     0 2px 4px -2px rgb(0 0 0 / 0.1);
-  transition: box-shadow 0.3s ease;
+  /* 核心修正：移除了固定的 aspect-ratio，现在它由内联样式动态设置 */
 }
 
-.post-image-container:hover {
+html.dark .post-image-wrapper {
   box-shadow:
-    0 10px 15px -3px rgb(0 0 0 / 0.1),
-    0 4px 6px -4px rgb(0 0 0 / 0.1);
+    0 4px 6px -1px rgb(0 0 0 / 0.2),
+    0 2px 4px -2px rgb(0 0 0 / 0.2);
 }
 
-/* 博客文章图片本身 */
-.post-image {
+.post-image-content {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* 核心修正：将 object-fit 改为 contain，确保图片在任何比例的容器内都能完整显示，防止边缘裁剪 */
+  object-fit: contain;
   cursor: pointer;
+  z-index: 2;
 }

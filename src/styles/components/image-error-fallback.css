@@ -1,0 +1,29 @@
+/* src/styles/components/image-error-fallback.css */
+
+.image-error-fallback-container {
+  /* 核心修正：因为父元素现在是 inline-block，
+     所以这里需要绝对定位来覆盖整个父元素。 */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-500);
+  z-index: 1;
+}
+
+html.dark .image-error-fallback-container {
+  background-color: var(--color-neutral-800);
+  color: var(--color-neutral-400);
+}
+
+.fallback-icon {
+  margin-bottom: 1rem;
+}
+
+.fallback-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+}

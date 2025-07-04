@@ -2,53 +2,52 @@
 
 // 定义 Logo 配置的接口
 export interface HeaderLogoConfig {
-  type: 'text' | 'image'; // Logo 类型：文字或图片
-  content: string; // Logo 内容：文字字符串或图片 URL
-  width?: string; // Logo 宽度 (可选，如 '120px', 'w-32')
+  type: 'text' | 'image';
+  content: string;
+  width?: string;
 }
 
 // 定义 Header 配置的接口
 export interface HeaderConfig {
-  isVisible: boolean; // 控制 Header 是否显示
-  isFixed: boolean; // 控制 Header 是否固定在顶部
-  height?: string; // Header 高度 (可选，如 '64px', 'h-16')
-  logo: HeaderLogoConfig; // Header Logo 配置
-  logoPosition: 'left' | 'center' | 'right'; // Logo 位置
-  isBlur?: boolean; // 是否启用模糊透明效果
+  isVisible: boolean;
+  isFixed: boolean;
+  height?: string;
+  logo: HeaderLogoConfig;
+  logoPosition: 'left' | 'center' | 'right';
+  isBlur?: boolean;
   blurStrength?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 }
 
 // 定义 Footer 配置的接口
 export interface FooterConfig {
-  isVisible: boolean; // 控制 Footer 是否显示
-  text: string; // Footer 显示的文本内容
-  backgroundColor?: string; // Footer 背景颜色类名（例如 'bg-neutral-800'）
-  textColor?: string; // Footer 文本颜色类名（例如 'text-neutral-100'）
+  isVisible: boolean;
+  text: string;
+  backgroundColor?: string;
+  textColor?: string;
 }
 
 // 定义主题配置的接口
 export interface ThemeConfig {
-  // 是否默认与系统主题偏好同步。
-  // 如果为 true，页面将始终跟随系统主题，且不允许手动切换。
-  // 如果为 false，将允许手动切换，但默认跟随系统主题。
   defaultToSystemPreference: boolean;
-  // 如果不默认与系统同步，或者系统偏好不可用时，使用的初始主题。
-  // 当 defaultToSystemPreference 为 false 且 localStorage 无主题时生效。
   initialTheme: 'light' | 'dark' | 'system';
 }
 
 // 定义搜索配置的接口
 export interface SearchConfig {
-  // 搜索模态框的快捷键，例如 'k' 表示 Cmd/Ctrl + K
   hotkey: string;
-  // 是否在 Header 中显示搜索快捷键提示
   showHotkeyDisplay: boolean;
 }
 
 // 定义 GitHub 配置的接口
 export interface GithubConfig {
-  isVisible: boolean; // 是否显示 GitHub 图标
-  url: string; // GitHub 地址
+  isVisible: boolean;
+  url: string;
+}
+
+// 核心新增：定义首页标题区域的配置接口
+export interface HomePageConfig {
+  title: string;
+  subtitles: string[];
 }
 
 // 定义应用程序的整体配置接口
@@ -58,16 +57,16 @@ export interface AppConfig {
   theme: ThemeConfig;
   search: SearchConfig;
   github: GithubConfig;
+  homePage: HomePageConfig; // 核心新增：添加首页配置
 }
 
 /**
  * 应用程序的全局配置。
- * 这是一个单一的配置源，可以在整个应用中引用。
  */
 export const appConfig: AppConfig = {
   header: {
     isVisible: true,
-    isFixed: true, // 保持固定在顶部，以便观察模糊效果
+    isFixed: true,
     height: 'h-16',
     logo: {
       type: 'text',
@@ -75,29 +74,33 @@ export const appConfig: AppConfig = {
       width: 'auto',
     },
     logoPosition: 'left',
-    isBlur: true, // 默认启用模糊透明效果
-    // 核心修正：将模糊强度从 '3xl' (过于模糊) 调整为 'lg' (16px)。
-    // 这个值通常能提供最佳的“毛玻璃”效果，既能模糊背景，又能保留轮廓感。
+    isBlur: true,
     blurStrength: 'lg',
   },
-  // Footer 的默认配置
   footer: {
     isVisible: true,
     text: `&copy; ${new Date().getFullYear()} 我的 Next.js 博客. 保留所有权利。`,
   },
-  // 主题的默认配置
   theme: {
-    defaultToSystemPreference: false, // 根据需求，此项控制是否始终同步系统
-    initialTheme: 'system', // 当 defaultToSystemPreference 为 false 且无 localStorage 时，默认跟随系统
+    defaultToSystemPreference: false,
+    initialTheme: 'system',
   },
-  // 搜索的默认配置
   search: {
-    hotkey: 'k', // 默认快捷键 Cmd/Ctrl + K
-    showHotkeyDisplay: true, // 默认显示快捷键提示
+    hotkey: 'k',
+    showHotkeyDisplay: true,
   },
-  // GitHub 的默认配置
   github: {
-    isVisible: true, // 默认显示 GitHub 图标
-    url: 'https://github.com/kittors', // 您的 GitHub 地址
+    isVisible: true,
+    url: 'https://github.com/kittors',
+  },
+  // 核心新增：首页内容的配置
+  homePage: {
+    title: '我的个人博客',
+    subtitles: [
+      '分享我的思考、技术和生活。',
+      '代码改变世界，思想照亮未来。',
+      '保持好奇，持续学习。',
+      'A Coder, A Writer, A Thinker.',
+    ],
   },
 };
