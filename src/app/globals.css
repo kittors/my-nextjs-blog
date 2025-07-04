@@ -3,17 +3,37 @@
 /* 引入 Tailwind CSS 基础样式 */
 @import 'tailwindcss';
 
-/* 引入拆分后的自定义样式模块 */
+/* 核心插件与主题样式
+  这些是应用的基础，提供了主题变量、代码高亮、进度条等核心功能。
+*/
 @import '../styles/theme.css';
 @import '../styles/code-highlight.css';
 @import '../styles/toast.css';
 @import '../styles/nprogress.css';
-@import '../styles/blog-post.css';
 @import '../styles/search.css';
-@import '../styles/skeleton.css';
-@import 'katex/dist/katex.min.css';
+@import 'katex/dist/katex.min.css'; /* KaTeX 数学公式样式 */
+
+/* 原子化样式模块导入
+  核心重构：移除了庞大的 'blog-post.css'，并用以下按功能拆分的模块替换。
+  这种结构更清晰，更易于维护。
+  同时也移除了 'skeleton.css' 和 'image-skeleton.css'，因为新的懒加载机制不再需要它们。
+*/
+
+/* 基础排版 (Base) */
+@import '../styles/base/prose-styles.css'; /* Markdown 内容的通用排版 */
+
+/* 布局 (Layouts) */
+@import '../styles/layouts/blog-layout.css'; /* 文章页面的主网格布局 */
+
+/* 组件 (Components) */
+@import '../styles/components/toc.css'; /* 文章大纲组件 */
+@import '../styles/components/back-to-top.css'; /* 回到顶部按钮 */
+@import '../styles/components/post-image.css'; /* 文章图片容器 */
+@import '../styles/components/image-preview.css'; /* 图片预览模态框 */
+@import '../styles/components/lazy-load.css'; /* 懒加载占位符 */
 
 /*
+  全局 Body 样式
   保留最核心的、真正“全局”的 body 样式。
   这确保了应用的基础字体和背景色能被正确应用。
 */
@@ -27,6 +47,9 @@ body {
     color 0.3s ease;
 }
 
+/*
+  .prose 的基础颜色，作为 Tailwind Typography 的一个补充。
+*/
 .prose {
-  color: theme('colors.foreground');
+  color: var(--foreground);
 }

@@ -1,0 +1,16 @@
+/* src/styles/components/lazy-load.css */
+
+/**
+ * 懒加载占位符的专属样式。
+ * 遵循原子设计原则，这是一个用于改善用户体验的微小但独立的视觉组件样式。
+ */
+.lazy-load-placeholder {
+  display: block;
+  background-color: var(--color-neutral-100);
+  border-radius: 0.75rem;
+  margin: 2em 0;
+}
+
+html.dark .lazy-load-placeholder {
+  background-color: var(--color-neutral-50);
+}

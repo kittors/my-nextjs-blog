@@ -1,0 +1,29 @@
+/* src/styles/components/post-image.css */
+
+/**
+ * 文章内图片的专属样式。
+ * 遵循原子设计原则，这些样式定义了图片及其容器的视觉表现和交互效果。
+ */
+
+/* 博客文章图片容器 */
+.post-image-container {
+  display: block;
+  margin: 2em 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.post-image-container:hover {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* 博客文章图片本身 */
+.post-image {
+  cursor: pointer;
+}
