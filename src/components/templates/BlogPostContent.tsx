@@ -6,7 +6,6 @@ import { jsx, jsxs } from 'react/jsx-runtime';
 import { useToast } from '@/contexts/ToastContext';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
-import Link from 'next/link';
 import { type TocEntry } from '@/lib/posts';
 import TableOfContents from '@/components/organisms/TableOfContents';
 import { type Root as HastRoot } from 'hast';
@@ -16,6 +15,7 @@ import PostImage from '@/components/atoms/PostImage';
 import ImagePreview from '@/components/molecules/ImagePreview';
 import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper';
 import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
+import BackButton from '@/components/atoms/BackButton'; // 核心新增：导入新的 BackButton 组件
 
 interface BlogPostContentProps {
   post: {
@@ -38,57 +38,37 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     setPreviewImageSrc(src);
   };
 
-  // 核心新增：处理代码复制的副作用钩子
   useEffect(() => {
     const articleElement = articleContentRef.current;
     if (!articleElement) return;
-
-    // 使用事件委托来处理所有复制按钮的点击事件
     const handleCopyClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      // 找到被点击的、或其父元素是复制按钮的元素
       const copyButton = target.closest('button[data-copy-button]');
-
       if (!copyButton) return;
-
-      // 从按钮向上找到整个代码块的 figure 容器
       const figureElement = copyButton.closest('figure');
       if (!figureElement) return;
-
-      // 在 figure 容器内找到 pre 标签
       const preElement = figureElement.querySelector('pre');
       if (!preElement) return;
-
-      // 获取 pre 标签内的纯文本内容
       const codeToCopy = preElement.innerText || '';
-
-      // 使用浏览器 Clipboard API 进行复制
       navigator.clipboard
         .writeText(codeToCopy)
         .then(() => {
-          // 成功后显示提示
           showToast('代码已复制到剪贴板', 'success');
-          // 设置按钮状态为“已复制”，CSS 会根据此属性切换图标
           copyButton.setAttribute('data-copied', 'true');
-          // 2秒后恢复按钮状态
           setTimeout(() => {
             copyButton.removeAttribute('data-copied');
           }, 2000);
         })
         .catch(err => {
-          // 失败后显示错误提示
           showToast('复制失败，请稍后重试', 'error');
           console.error('无法复制文本: ', err);
         });
     };
-
     articleElement.addEventListener('click', handleCopyClick);
-
-    // 组件卸载时清理事件监听器
     return () => {
       articleElement.removeEventListener('click', handleCopyClick);
     };
-  }, [showToast]); // 依赖项包含 showToast，确保其在闭包中始终是最新的
+  }, [showToast]);
 
   const rehypeOptions = {
     createElement,
@@ -125,26 +105,8 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
       <div className="container mx-auto px-4 py-12">
         <div className="blog-layout">
           <article className="w-full max-w-3xl">
-            <Link
-              href="/"
-              className="text-primary hover:underline mb-8 inline-block flex items-center group"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                ></path>
-              </svg>
-              返回所有文章
-            </Link>
+            {/* 核心修正：使用新的 BackButton 组件，并提供备用链接 */}
+            <BackButton fallbackHref="/" />
 
             <Heading level={1} className="text-4xl font-extrabold text-neutral-900 mb-4">
               {title}

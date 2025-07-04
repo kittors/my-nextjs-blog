@@ -1,0 +1,36 @@
+/* src/styles/components/back-button.css */
+
+.back-button-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  color: var(--color-primary-default);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.back-button-container:hover {
+  color: var(--color-primary-dark);
+}
+
+html.dark .back-button-container:hover {
+  color: var(--color-primary-light);
+}
+
+.back-button-icon {
+  transition: transform 0.2s ease-in-out;
+}
+
+.back-button-container:hover .back-button-icon {
+  transform: translateX(-3px);
+}
+
+.back-button-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import Tag from '@/components/atoms/Tag';
 import { type TagInfo } from '@/lib/posts';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react'; // 核心新增：导入 X 图标
 
 // 定义 TagCloud 组件的 Props 类型
 interface TagCloudProps {
@@ -28,10 +28,10 @@ const colorClasses = [
 /**
  * TagCloud 组件：一个分子级别的 UI 组件，用于显示、搜索和过滤标签。
  *
- * 它由多个 Tag 原子组件和一个搜索输入框组成，并封装了以下核心逻辑：
- * 1. 标签的搜索过滤。
- * 2. 标签列表的展开与折叠。
- * 3. 为每个标签分配一个独特的、循环的颜色。
+ * 核心修正：
+ * 1. 在搜索框内增加了一个清除按钮（X）。
+ * 2. 此按钮仅在用户输入了搜索词时可见。
+ * 3. 点击此按钮会立即清空搜索框，提升了用户操作的便捷性。
  *
  * @param {TagCloudProps} props - 组件属性。
  */
@@ -39,13 +39,16 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // 根据搜索词过滤标签
   const filteredTags = useMemo(() => {
     return tags.filter(tagInfo => tagInfo.tag.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [tags, searchTerm]);
 
-  // 决定显示哪些标签（是否展开）
   const displayedTags = isExpanded ? filteredTags : filteredTags.slice(0, 10);
+
+  // 新增：处理清除搜索的函数
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
 
   return (
     <div className="tag-cloud-container">
@@ -58,9 +61,18 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
+        {/* 仅在 searchTerm 有值时渲染清除按钮 */}
+        {searchTerm && (
+          <button
+            onClick={handleClearSearch}
+            className="tag-search-clear-button"
+            aria-label="清除搜索"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
       <div className="tags-wrapper">
-        {/* “全部” 按钮，用于清除筛选 */}
         <Tag
           label="全部"
           count={tags.length}
@@ -68,7 +80,6 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
           isActive={activeTag === null}
           colorClass="tag-color-all"
         />
-        {/* 渲染标签列表 */}
         {displayedTags.map((tagInfo, index) => (
           <Tag
             key={tagInfo.tag}
@@ -80,7 +91,6 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
           />
         ))}
       </div>
-      {/* 如果有超过10个标签，则显示展开/折叠按钮 */}
       {filteredTags.length > 10 && (
         <div className="tag-expand-button-wrapper">
           <button onClick={() => setIsExpanded(!isExpanded)} className="tag-expand-button">
