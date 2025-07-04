@@ -1,0 +1,203 @@
+/* src/styles/components/tags-page.css */
+
+/* 标签云容器 - 核心修正：移除背景、边框和内边距，实现极简风格 */
+.tag-cloud-container {
+  margin-bottom: 2rem;
+}
+
+/* 标签搜索区域 */
+.tag-search-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+  max-width: 400px; /* 限制搜索框最大宽度 */
+  margin-left: auto;
+  margin-right: auto;
+}
+.tag-search-wrapper .search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+}
+.tag-search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-neutral-300);
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: border-color 0.2s;
+}
+.tag-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary-default);
+}
+html.dark .tag-search-input {
+  border-color: var(--color-neutral-700);
+}
+
+/* 标签包装器 */
+.tags-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center; /* 让标签居中显示 */
+}
+
+/* 单个标签项 */
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+}
+.tag-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.tag-item.active {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--active-tag-ring-color);
+}
+.tag-label {
+  opacity: 0.9;
+}
+.tag-count {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* 展开/折叠按钮 */
+.tag-expand-button-wrapper {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.tag-expand-button {
+  font-size: 0.875rem;
+  color: var(--color-primary-default);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+.tag-expand-button:hover {
+  text-decoration: underline;
+}
+
+/* 预定义标签颜色 */
+.tag-color-all {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+html.dark .tag-color-all {
+  background-color: #4b5563;
+  color: #e5e7eb;
+}
+.tag-color-all.active {
+  --active-tag-ring-color: #9ca3af;
+}
+
+.tag-color-1 {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+html.dark .tag-color-1 {
+  background-color: #1e3a8a;
+  color: #dbeafe;
+}
+.tag-color-1.active {
+  --active-tag-ring-color: #60a5fa;
+}
+
+.tag-color-2 {
+  background-color: #dcfce7;
+  color: #166534;
+}
+html.dark .tag-color-2 {
+  background-color: #16a34a;
+  color: #dcfce7;
+}
+.tag-color-2.active {
+  --active-tag-ring-color: #4ade80;
+}
+
+.tag-color-3 {
+  background-color: #fef9c3;
+  color: #854d0e;
+}
+html.dark .tag-color-3 {
+  background-color: #ca8a04;
+  color: #fef9c3;
+}
+.tag-color-3.active {
+  --active-tag-ring-color: #facc15;
+}
+
+.tag-color-4 {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+html.dark .tag-color-4 {
+  background-color: #dc2626;
+  color: #fee2e2;
+}
+.tag-color-4.active {
+  --active-tag-ring-color: #f87171;
+}
+
+.tag-color-5 {
+  background-color: #ede9fe;
+  color: #5b21b6;
+}
+html.dark .tag-color-5 {
+  background-color: #7c3aed;
+  color: #ede9fe;
+}
+.tag-color-5.active {
+  --active-tag-ring-color: #a78bfa;
+}
+
+.tag-color-6 {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+html.dark .tag-color-6 {
+  background-color: #2563eb;
+  color: #dbeafe;
+}
+.tag-color-6.active {
+  --active-tag-ring-color: #60a5fa;
+}
+
+.tag-color-7 {
+  background-color: #fae8ff;
+  color: #86198f;
+}
+html.dark .tag-color-7 {
+  background-color: #c026d3;
+  color: #fae8ff;
+}
+.tag-color-7.active {
+  --active-tag-ring-color: #e879f9;
+}
+
+.tag-color-8 {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+html.dark .tag-color-8 {
+  background-color: #0ea5e9;
+  color: #e0f2fe;
+}
+.tag-color-8.active {
+  --active-tag-ring-color: #38bdf8;
+}

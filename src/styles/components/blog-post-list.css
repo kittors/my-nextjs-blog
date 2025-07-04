@@ -1,0 +1,109 @@
+/* src/styles/components/blog-post-list.css */
+
+/* 列表容器 */
+.blog-post-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* 24px */
+}
+
+/* 卡片链接 */
+.blog-post-list-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 0.75rem; /* 12px */
+  transition: all 0.3s ease-in-out;
+}
+.blog-post-list-card-link:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+html.dark .blog-post-list-card-link:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* 卡片主体 */
+.blog-post-list-card {
+  background-color: var(--background);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  padding: 1.5rem; /* 24px */
+}
+html.dark .blog-post-list-card {
+  border-color: var(--color-neutral-800);
+}
+
+/* 卡片标题 */
+.card-title {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  /* 核心修正：颜色现在由 JSX 中的渐变类控制，此处无需设置 */
+}
+
+/* 卡片描述 */
+.card-description {
+  font-size: 0.9rem;
+  /* 核心修正：使用与网格卡片一致的主题变量，以统一颜色 */
+  color: var(--blog-card-description-color);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+/* 元数据区域 */
+.card-metadata {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  /* 核心修正：使用与网格卡片一致的主题变量，以统一颜色 */
+  color: var(--blog-card-meta-color);
+  margin-bottom: 1rem;
+}
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* 标签区域 */
+.card-tags {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.tags-icon {
+  color: var(--color-neutral-400);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tag-pill {
+  font-size: 0.75rem;
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+}
+html.dark .tag-pill {
+  background-color: var(--color-neutral-800);
+  color: var(--color-neutral-300);
+}
+
+/* 无文章提示 */
+.no-posts-found {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: var(--color-neutral-500);
+  border: 2px dashed var(--color-neutral-200);
+  border-radius: 0.75rem;
+}
+html.dark .no-posts-found {
+  border-color: var(--color-neutral-800);
+}

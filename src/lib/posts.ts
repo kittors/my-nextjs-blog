@@ -23,6 +23,12 @@ export interface TocEntry {
   offset: number;
 }
 
+// 核心新增：定义单个标签信息的接口
+export interface TagInfo {
+  tag: string;
+  count: number;
+}
+
 // 定义博客文章元数据的接口
 export interface BlogPostMetadata {
   slug: string;
@@ -30,6 +36,7 @@ export interface BlogPostMetadata {
   date: string;
   author: string;
   description: string;
+  tags?: string[]; // 核心新增：tags 是一个可选的字符串数组
 }
 
 // 定义完整的博客文章接口
@@ -100,14 +107,9 @@ function normalizeCodeLanguage() {
   };
 }
 
-/**
- * 最终修正：创建一个独立的 Rehype 插件来添加代码块的 Header。
- */
 function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
-      // 核心修正：判断 `data-rehype-pretty-code-figure` 属性是否存在，
-      // 而不是判断其值的真假。这修复了因属性值为空字符串（falsy）而导致的逻辑错误。
       if (
         node.tagName === 'figure' &&
         node.properties &&
@@ -116,13 +118,9 @@ function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
         const preElement = node.children.find(
           (child): child is Element => child.type === 'element' && child.tagName === 'pre'
         );
-
         if (!preElement) return;
-
         const lang = preElement.properties?.['data-language'] as string | undefined;
-
         if (!lang) return;
-
         const header: Element = {
           type: 'element',
           tagName: 'div',
@@ -209,24 +207,48 @@ function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
   };
 }
 
+/**
+ * 获取所有博客文章的元数据，并按日期降序排序。
+ * @returns {BlogPostMetadata[]} 排序后的博客文章元数据数组。
+ */
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsMetadata = fileNames.map(fileName => {
     const slug = fileName.replace(/\.md$/, '');
     const fullPath = path.join(postsDirectory, fileName);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const matterResult = matter(fileContents);
+    const { data } = matter(fileContents);
     return {
       slug,
-      ...(matterResult.data as {
-        title: string;
-        date: string;
-        author: string;
-        description: string;
-      }),
+      ...(data as BlogPostMetadata),
     };
   });
-  return allPostsMetadata.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return allPostsMetadata.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}
+
+/**
+ * 核心新增：获取所有唯一标签及其关联文章数量的函数。
+ * @returns {TagInfo[]} 一个包含所有标签信息的数组，按关联文章数量降序排序。
+ */
+export function getAllTags(): TagInfo[] {
+  const allPosts = getSortedPostsMetadata();
+  const tagCounts: { [key: string]: number } = {};
+
+  // 遍历所有文章，统计每个标签出现的次数
+  allPosts.forEach(post => {
+    post.tags?.forEach(tag => {
+      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+    });
+  });
+
+  // 将统计结果转换为 TagInfo 数组
+  const tags: TagInfo[] = Object.keys(tagCounts).map(tag => ({
+    tag,
+    count: tagCounts[tag],
+  }));
+
+  // 按关联文章数量降序排序
+  return tags.sort((a, b) => b.count - a.count);
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost> {
@@ -267,7 +289,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
     slug,
     content: hastTree,
     headings,
-    ...(data as { title: string; date: string; author: string; description: string }),
+    ...(data as BlogPostMetadata),
   };
 }
 
@@ -308,7 +330,7 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
     allSearchablePosts.push({
       metadata: {
         slug,
-        ...(data as { title: string; date: string; author: string; description: string }),
+        ...(data as BlogPostMetadata),
       },
       plainTextContent,
       headings,

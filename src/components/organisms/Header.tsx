@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderLogoConfig, appConfig } from '@/lib/config';
 import ThemeToggle from '@/components/molecules/ThemeToggle';
-import { Github, Search, MoreVertical } from 'lucide-react';
+import { Github, Search, MoreVertical, Tags } from 'lucide-react'; // 核心新增：导入 Tags 图标
 import { useSearchModal } from '@/contexts/SearchModalContext';
 import DropdownMenu from '@/components/molecules/DropdownMenu';
 
@@ -23,9 +23,9 @@ interface HeaderProps {
 /**
  * Header 组件：网站的顶部导航栏。
  *
- * 作为一个“组织(organism)”级别的组件，它负责展示 Logo、导航链接和全局操作。
+ * 核心修正：在下拉菜单中添加了一个指向“博文分类”页面的链接。
  *
- * @param {HeaderProps} props - 组件属性，用于定制其外观和行为。
+ * @param {HeaderProps} props - 组件属性。
  */
 const Header: React.FC<HeaderProps> = ({
   isVisible = true,
@@ -148,6 +148,12 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             }
           >
+            {/* 新增：指向 /tags 页面的链接 */}
+            <Link href="/tags" className="dropdown-item">
+              <Tags size={16} />
+              <span>博文分类</span>
+            </Link>
+
             {githubConfig.isVisible && (
               <a
                 href={githubConfig.url}
