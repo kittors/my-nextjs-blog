@@ -16,22 +16,30 @@ interface PageContainerProps {
   children: React.ReactNode;
   allPostsForSearch: SearchablePostData[];
   initialTheme: 'light' | 'dark';
-  // 新增 prop，用于接收从服务器传来的操作系统信息
   userOS: 'mac' | 'other';
 }
+
+// 核心修正：创建一个映射表，将 header 高度类名显式地映射到对应的 padding 类名。
+// 这能确保 Tailwind 的 JIT 编译器在构建时可以静态地检测到这些类名并生成相应的 CSS。
+const heightToPaddingMap: { [key: string]: string } = {
+  'h-16': 'pt-16', // 64px
+  'h-20': 'pt-20', // 80px
+  'h-24': 'pt-24', // 96px
+};
 
 const PageContainer: React.FC<PageContainerProps> = ({
   children,
   allPostsForSearch,
   initialTheme,
-  userOS, // 接收操作系统信息
+  userOS,
 }) => {
   const { header: headerConfig, footer: footerConfig, search: searchConfig } = appConfig;
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   let paddingTopClass = '';
   if (headerConfig.isFixed && headerConfig.height) {
-    paddingTopClass = headerConfig.height.replace('h-', 'pt-');
+    // 使用映射表来获取正确的 padding 类名，而不是动态拼接字符串。
+    paddingTopClass = heightToPaddingMap[headerConfig.height] || '';
   }
 
   useEffect(() => {
@@ -61,7 +69,6 @@ const PageContainer: React.FC<PageContainerProps> = ({
               logo={headerConfig.logo}
               logoPosition={headerConfig.logoPosition}
               isBlur={headerConfig.isBlur}
-              // 将操作系统信息传递给 Header 组件
               userOS={userOS}
             />
 
