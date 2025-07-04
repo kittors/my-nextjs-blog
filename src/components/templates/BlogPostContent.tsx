@@ -15,18 +15,9 @@ import { unified } from 'unified';
 import rehypeReact from 'rehype-react';
 import PostImage from '@/components/atoms/PostImage';
 import ImagePreview from '@/components/molecules/ImagePreview';
-import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper'; // 核心修正：导入新的懒加载组件
+import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper';
+import FloatingActionMenu from '@/components/molecules/FloatingActionMenu';
 
-/**
- * BlogPostContentProps 接口定义了 BlogPostContent 组件的属性。
- * @property {object} post - 博客文章的数据，包含标题、作者、日期、内容和 slug。
- * @property {string} [post.title] - 文章标题，可选。
- * @property {string} [post.author] - 文章作者，可选。
- * @property {string} [post.date] - 文章发布日期，可选。
- * @property {HastRoot} post.content - 文章的 HAST 抽象语法树内容。
- * @property {string} post.slug - 文章的唯一标识符（slug），用于 URL 和内部定位。
- * @property {TocEntry[]} headings - 文章的标题大纲列表，用于目录导航。
- */
 interface BlogPostContentProps {
   post: {
     title?: string;
@@ -40,22 +31,17 @@ interface BlogPostContentProps {
 
 const HEADER_OFFSET = 80;
 
-/**
- * BlogPostContent 组件：负责渲染单篇博客文章的完整内容。
- *
- * @param {BlogPostContentProps} props - 组件属性。
- */
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
+  const [isTocOpen, setIsTocOpen] = useState(false);
 
   const handleImageClick = (src: string) => {
     setPreviewImageSrc(src);
   };
 
-  // 核心修正：更新 rehype-react 的配置，用 LazyLoadWrapper 包裹 PostImage 组件。
-  // 这样，每个图片都会被懒加载，只有当它滚动到视口附近时才会被渲染和加载。
+  // 核心修正：恢复 rehype-react 的完整配置对象
   const rehypeOptions = {
     createElement,
     Fragment,
@@ -71,11 +57,12 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
             </LazyLoadWrapper>
           );
         }
-        return null; // 如果 src 无效，则不渲染任何内容
+        return null;
       },
     },
   };
 
+  // 使用恢复后的配置来处理内容
   const contentReact = unified()
     .use(rehypeReact, rehypeOptions as any)
     .stringify(post.content);
@@ -206,9 +193,15 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
             </div>
           </article>
 
-          <TableOfContents headings={headings} />
+          <TableOfContents
+            headings={headings}
+            isOpen={isTocOpen}
+            onClose={() => setIsTocOpen(false)}
+          />
         </div>
+
         <BackToTopButton />
+        <FloatingActionMenu onToggleToc={() => setIsTocOpen(true)} />
       </div>
       <ImagePreview src={previewImageSrc} onClose={() => setPreviewImageSrc(null)} />
     </>

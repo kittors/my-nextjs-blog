@@ -1,53 +1,140 @@
 /* src/styles/components/toc.css */
 
 /**
- * 文章大纲（Table of Contents）组件的专属样式。
- * 遵循原子设计原则，这些样式封装了 TOC 组件的所有视觉表现。
+ * 文章大纲（Table of Contents）组件的响应式样式。
+ * - 移动端 (<= 1023px): 一个从右侧滑出的抽屉式侧边栏。
+ * - 桌面端 (>= 1024px): 一个固定在页面右侧的侧边栏。
  */
 
-/* 大纲容器的样式 */
+/* 移动端抽屉的背景遮罩层 */
+.toc-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1900; /* 确保在内容之上，但在抽屉之下 */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease-in-out,
+    visibility 0.3s ease-in-out;
+}
+
+.toc-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 大纲容器的基础样式 */
 .toc-container {
-  position: sticky;
-  top: 6rem;
-  max-height: calc(100vh - 8rem);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-neutral-200);
-  background-color: var(--background);
   display: flex;
   flex-direction: column;
-}
-
-html.dark .toc-container {
-  border-color: var(--color-neutral-800);
-}
-
-/* 固定的大纲标题 */
-.toc-header-sticky {
   background-color: var(--background);
-  z-index: 1;
-  padding: 0.5rem 0;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--color-neutral-200);
-  padding-bottom: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+}
+
+/* 移动端样式：抽屉 */
+@media (max-width: 1023px) {
+  .toc-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 300px;
+    max-width: 80vw;
+    padding: 1rem;
+    z-index: 2000;
+    border-left: 1px solid var(--color-neutral-200);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  html.dark .toc-container {
+    border-left-color: var(--color-neutral-700);
+  }
+
+  .toc-container.open {
+    transform: translateX(0);
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* 桌面端样式：固定侧边栏 */
+@media (min-width: 1024px) {
+  .toc-container {
+    position: sticky;
+    top: 6rem; /* 距离顶部的高度，留出 Header 空间 */
+    max-height: calc(100vh - 8rem);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-neutral-200);
+  }
+
+  html.dark .toc-container {
+    border-color: var(--color-neutral-800);
+  }
+}
+
+/* 大纲头部（标题和关闭按钮） */
+.toc-header-sticky {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   flex-shrink: 0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-neutral-200);
 }
 
 html.dark .toc-header-sticky {
   border-bottom-color: var(--color-neutral-700);
 }
 
-/* 大纲列表的滚动容器 */
+.toc-header-sticky h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 移动端关闭按钮 */
+.toc-close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--foreground);
+  padding: 0.25rem;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toc-close-button:hover {
+  background-color: var(--color-neutral-100);
+}
+
+html.dark .toc-close-button:hover {
+  background-color: var(--color-neutral-800);
+}
+
+/* 隐藏桌面端的关闭按钮和遮罩层 */
+@media (min-width: 1024px) {
+  .toc-close-button,
+  .toc-backdrop {
+    display: none;
+  }
+}
+
+/* 大纲列表滚动容器 */
 .toc-list-wrapper {
   flex-grow: 1;
   overflow-y: auto;
-  padding-right: 0.5rem;
+  padding-right: 0.5rem; /* 为滚动条留出空间 */
   margin-right: -0.5rem;
 }
 
-/* 大纲列表本身 */
+/* 大纲列表 */
 .toc-list {
   list-style: none;
   padding: 0;

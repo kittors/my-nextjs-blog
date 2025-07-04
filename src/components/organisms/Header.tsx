@@ -1,7 +1,7 @@
 // src/components/organisms/Header.tsx
 'use client';
 
-import React from 'react'; // 不再需要 useState 和 useEffect
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderLogoConfig, appConfig } from '@/lib/config';
@@ -16,10 +16,14 @@ interface HeaderProps {
   logo: HeaderLogoConfig;
   logoPosition: 'left' | 'center' | 'right';
   isBlur?: boolean;
-  // 新增 prop，用于接收确定的操作系统信息
   userOS: 'mac' | 'other';
 }
 
+/**
+ * Header 组件：网站的顶部导航栏。
+ * 作为一个“组织(organism)”级别的组件，它负责展示 Logo、导航链接和全局操作（如主题切换、搜索）。
+ * @param {HeaderProps} props - 组件属性，用于定制其外观和行为。
+ */
 const Header: React.FC<HeaderProps> = ({
   isVisible = true,
   isFixed = false,
@@ -27,13 +31,11 @@ const Header: React.FC<HeaderProps> = ({
   logo,
   logoPosition = 'left',
   isBlur = false,
-  userOS, // 接收操作系统信息
+  userOS,
 }) => {
   const { github: githubConfig, search: searchConfig } = appConfig;
   const { openSearchModal } = useSearchModal();
 
-  // 核心修正：直接根据从服务器传递来的 userOS prop 计算快捷键文本。
-  // 不再需要任何客户端的状态或 effect，从而从根本上消除闪烁。
   const hotkeyText = userOS === 'mac' ? '⌘K' : 'Ctrl+K';
 
   if (!isVisible) {
@@ -111,7 +113,8 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className={finalHeaderClasses}>
-      <nav className={`container mx-auto ${navClasses} h-full py-4`}>
+      {/* 核心修正：在 nav 标签上添加了 px-4 类，确保在移动端两侧有内边距 */}
+      <nav className={`container mx-auto px-4 ${navClasses} h-full py-4`}>
         {renderLogo()}
         <div
           className={`flex items-center gap-4 ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}
