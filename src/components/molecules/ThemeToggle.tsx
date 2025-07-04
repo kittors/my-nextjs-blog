@@ -10,9 +10,9 @@ import { useTheme } from '@/contexts/ThemeContext';
  * 此版本通过从服务器接收初始主题状态，从根本上解决了UI闪烁问题。
  *
  * 核心修正：
- * 移除了硬编码的 Tailwind hover 类，改为使用一个自定义 CSS 类 `theme-toggle-hover-effect`，
- * 该类在 `src/styles/theme.css` 中定义了基于 CSS 变量的悬停背景色，
- * 确保悬停样式能够正确响应当前主题。
+ * 移除了硬编码的 Tailwind hover 类，改为使用一个自定义 CSS 类 `theme-toggle-interaction-effect`，
+ * 该类在 `src/styles/theme.css` 中定义了基于 CSS 变量的悬停和点击背景色，
+ * 并通过媒体查询确保在非PC端（移动端）不显示点击样式。
  */
 const ThemeToggle: React.FC = () => {
   // 'theme' 状态现在从初始服务器渲染开始就已经是可靠的。
@@ -24,10 +24,10 @@ const ThemeToggle: React.FC = () => {
   }
 
   // 统一定义按钮的样式和尺寸。
-  // 核心修正：移除 hover:bg-neutral-200 dark:hover:bg-neutral-700
+  // 核心修正：将自定义的 hover 效果类名更改为更通用的 interaction 效果类
   const buttonClasses = `p-2 rounded-full text-foreground transition-colors duration-200
                        cursor-pointer flex items-center justify-center
-                       theme-toggle-hover-effect`; // 新增自定义的 hover 效果类
+                       theme-toggle-interaction-effect`; // 新增自定义的 interaction 效果类
   const buttonStyle = { width: '36px', height: '36px' };
 
   return (

@@ -38,8 +38,9 @@ html.light {
   --blog-card-description-color: var(--foreground);
   --blog-card-meta-color: var(--color-neutral-600);
 
-  /* ThemeToggle 悬停效果变量 */
-  --theme-toggle-hover-bg: var(--color-neutral-200);
+  /* ThemeToggle 交互效果变量 */
+  --theme-toggle-interaction-bg-light: var(--color-neutral-200); /* 亮色模式下的背景色 */
+  --theme-toggle-interaction-bg-dark: var(--color-neutral-700); /* 暗色模式下的背景色 */
 
   /* BlogList 标题颜色变量 */
   --blog-list-heading-color: var(--color-neutral-800);
@@ -96,8 +97,9 @@ html.dark {
   --blog-card-description-color: #fafafa;
   --blog-card-meta-color: var(--color-neutral-500);
 
-  /* ThemeToggle 悬停效果变量 */
-  --theme-toggle-hover-bg: var(--color-neutral-700);
+  /* ThemeToggle 交互效果变量 */
+  --theme-toggle-interaction-bg-light: var(--color-neutral-200); /* 亮色模式下的背景色 */
+  --theme-toggle-interaction-bg-dark: var(--color-neutral-700); /* 暗色模式下的背景色 */
 
   /* BlogList 标题颜色变量 */
   --blog-list-heading-color: var(--foreground);
@@ -143,9 +145,31 @@ html.dark {
   box-shadow: var(--blog-card-hover-shadow);
 }
 
-/* 主题切换按钮悬停效果的自定义类 */
-.theme-toggle-hover-effect:hover {
-  background-color: var(--theme-toggle-hover-bg);
+/*
+   核心修正：主题切换按钮交互效果的自定义类。
+   使用 @media (hover: hover) 来确保 hover 效果只在支持 hover 的设备上生效。
+   对于不支持 hover 的设备（如触摸屏），则不会有 hover 效果。
+*/
+.theme-toggle-interaction-effect {
+  /* 默认情况下，没有背景色变化 */
+  background-color: transparent;
+}
+
+/* 仅当设备支持 hover 时，应用 hover 效果 */
+@media (hover: hover) {
+  .theme-toggle-interaction-effect:hover {
+    background-color: var(--theme-toggle-interaction-bg-light);
+  }
+
+  html.dark .theme-toggle-interaction-effect:hover {
+    background-color: var(--theme-toggle-interaction-bg-dark);
+  }
+}
+
+/* 确保在点击或聚焦时，没有额外的 outline 或 box-shadow，特别是对于移动端 */
+.theme-toggle-interaction-effect:focus-visible {
+  outline: none; /* 移除默认的焦点轮廓 */
+  box-shadow: none; /* 移除默认的焦点阴影 */
 }
 
 /* Footer 边框效果的自定义类 */

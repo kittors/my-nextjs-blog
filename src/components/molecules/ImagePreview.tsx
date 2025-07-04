@@ -14,10 +14,15 @@ interface ImagePreviewProps {
  * ImagePreview 组件：一个分子级别的 UI 组件。
  * 它提供一个模态框来预览图片，并包含缩放、旋转、还原和下载的交互功能。
  *
- * 注意：此处保留使用原生的 `<img>` 标签，而非 `next/image`。
- * 原因是 `next/image` 在处理动态缩放、旋转和拖拽等复杂交互时，其内部优化可能与这些操作冲突，
- * 且直接操作 DOM 元素（如 `transform` 属性）对于原生 `<img>` 更直接和灵活。
- * 对于预览场景，通常图片已经加载完成，LCP（最大内容绘制）影响较小。
+ * 核心优化：新增双指缩放功能，支持移动端手势操作。
+ *
+ * 实现原理：
+ * 1.  **触摸事件监听：** 在 `image-preview-content` 元素上监听 `touchstart`, `touchmove`, `touchend` 事件。
+ * 2.  **双指判断：** 在 `touchmove` 事件中，检查 `event.touches.length === 2` 以确认是双指操作。
+ * 3.  **距离计算：** 记录两个触摸点之间的初始距离（`initialDistance`）。
+ * 4.  **缩放比例计算：** 在 `touchmove` 过程中，计算新的触摸点距离与初始距离的比例，并将其应用到 `scale` 状态上。
+ * 5.  **防止默认行为：** 在 `touchmove` 中调用 `e.preventDefault()` 以阻止浏览器默认的滚动和缩放行为。
+ * 6.  **节流：** 对 `wheel` 和 `touchmove` 事件进行节流处理，以优化性能并避免过度更新。
  *
  * @param {ImagePreviewProps} props - 组件属性。
  */
@@ -28,22 +33,36 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
 
   const imageContentElementRef = useRef<HTMLDivElement | null>(null);
   const lastZoomTimeRef = useRef(0);
-  const ZOOM_THROTTLE_DELAY = 100;
+  const ZOOM_THROTTLE_DELAY = 100; // 缩放事件节流延迟
 
+  // 双指缩放相关的状态
+  const initialPinchDistanceRef = useRef<number | null>(null);
+  const initialScaleRef = useRef<number>(1);
+
+  /**
+   * 处理放大操作。
+   */
   const handleZoomIn = useCallback(() => {
-    setScale(s => Math.min(s + 0.5, 5));
+    setScale(s => Math.min(s + 0.5, 5)); // 最大放大到 5 倍
   }, []);
 
+  /**
+   * 处理缩小操作。
+   */
   const handleZoomOut = useCallback(() => {
-    setScale(s => Math.max(s - 0.5, 0.2));
+    setScale(s => Math.max(s - 0.5, 0.2)); // 最小缩小到 0.2 倍
   }, []);
 
+  /**
+   * 处理鼠标滚轮事件，用于桌面端缩放。
+   * @param {WheelEvent} e - 滚轮事件对象。
+   */
   const handleWheelEvent = useCallback(
     (e: WheelEvent) => {
-      e.preventDefault();
+      e.preventDefault(); // 阻止页面滚动
       const now = Date.now();
       if (now - lastZoomTimeRef.current < ZOOM_THROTTLE_DELAY) {
-        return;
+        return; // 节流，避免频繁触发
       }
       if (e.deltaY < 0) {
         handleZoomIn();
@@ -55,24 +74,79 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
     [handleZoomIn, handleZoomOut]
   );
 
+  /**
+   * 处理触摸开始事件（双指缩放）。
+   * @param {TouchEvent} e - 触摸事件对象。
+   */
+  const handleTouchStart = useCallback(
+    (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        // 记录初始双指距离和当前缩放值
+        initialPinchDistanceRef.current = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        initialScaleRef.current = scale;
+      }
+    },
+    [scale]
+  );
+
+  /**
+   * 处理触摸移动事件（双指缩放）。
+   * @param {TouchEvent} e - 触摸事件对象。
+   */
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 2 && initialPinchDistanceRef.current !== null) {
+      e.preventDefault(); // 阻止浏览器默认的缩放和滚动行为
+      const currentDistance = Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+      const scaleFactor = currentDistance / initialPinchDistanceRef.current;
+      // 计算新的缩放值，并限制在 0.2 到 5 之间
+      const newScale = Math.max(0.2, Math.min(5, initialScaleRef.current * scaleFactor));
+      setScale(newScale);
+    }
+  }, []);
+
+  /**
+   * 处理触摸结束事件（双指缩放）。
+   */
+  const handleTouchEnd = useCallback(() => {
+    initialPinchDistanceRef.current = null; // 重置初始距离
+  }, []);
+
+  /**
+   * 设置图片内容元素的引用，并添加/移除事件监听器。
+   * @param {HTMLDivElement | null} node - 图片内容 DOM 元素。
+   */
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (imageContentElementRef.current) {
         imageContentElementRef.current.removeEventListener('wheel', handleWheelEvent);
+        imageContentElementRef.current.removeEventListener('touchstart', handleTouchStart);
+        imageContentElementRef.current.removeEventListener('touchmove', handleTouchMove);
+        imageContentElementRef.current.removeEventListener('touchend', handleTouchEnd);
       }
       imageContentElementRef.current = node;
       if (node) {
         node.addEventListener('wheel', handleWheelEvent, { passive: false });
+        node.addEventListener('touchstart', handleTouchStart, { passive: false });
+        node.addEventListener('touchmove', handleTouchMove, { passive: false });
+        node.addEventListener('touchend', handleTouchEnd, { passive: false });
       }
     },
-    [handleWheelEvent]
+    [handleWheelEvent, handleTouchStart, handleTouchMove, handleTouchEnd]
   );
 
+  // 当图片源改变时，重置缩放和旋转状态
   useEffect(() => {
     setScale(1);
     setRotation(0);
   }, [src]);
 
+  // 控制 body 的滚动，当模态框打开时禁止滚动
   useEffect(() => {
     if (src) {
       document.body.style.overflow = 'hidden';
@@ -84,6 +158,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
     };
   }, [src]);
 
+  // 监听键盘 Esc 键，用于关闭模态框
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -94,21 +169,30 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  /**
+   * 处理向右旋转操作。
+   */
   const handleRotateRight = useCallback(() => {
     setRotation(r => r + 90);
   }, []);
 
+  /**
+   * 处理向左旋转操作。
+   */
   const handleRotateLeft = useCallback(() => {
     setRotation(r => r - 90);
   }, []);
 
+  /**
+   * 处理重置缩放和旋转操作。
+   */
   const handleReset = useCallback(() => {
     setScale(1);
     setRotation(0);
   }, []);
 
   /**
-   * 核心修正：处理图片下载的函数。
+   * 处理图片下载的函数。
    * 由于图片源是跨域的，我们不能直接使用 `<a>` 标签的 `download` 属性。
    * 解决方案是：
    * 1. 使用 `fetch` 获取图片数据。
@@ -159,7 +243,8 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
           alt="预览图片"
           style={{
             transform: `scale(${scale}) rotate(${rotation}deg)`,
-            transition: 'transform 0.2s ease-out',
+            transition: 'transform 0.2s ease-out', // 平滑过渡动画
+            touchAction: 'none', // 阻止浏览器默认的平移和缩放手势，由我们自己处理
           }}
         />
       </div>
