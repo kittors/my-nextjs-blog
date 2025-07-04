@@ -1,18 +1,24 @@
 /* src/styles/layouts/blog-layout.css */
 
 /**
- * 定义文章页面的主布局。
- * 这是一个响应式网格布局，在桌面端（lg: 1024px 以上）分为主内容区和侧边栏（大纲）。
- * 遵循原子设计原则，这是页面结构级别的样式。
+ * 核心重构：
+ * 这个布局现在采用了响应式设计。
+ * - 移动端（默认）：它是一个简单的 flex 容器，用于将文章内容居中。
+ * - PC 端（>= 1024px）：它转变为一个两栏布局，左侧是文章内容，右侧是为粘性大纲预留的包装器。
  */
 .blog-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
+/* 在 PC 端，我们激活侧边栏布局 */
 @media (min-width: 1024px) {
   .blog-layout {
-    grid-template-columns: 3fr 1fr;
+    /* 使用 space-between 将文章和 TOC 推向两边，但由于容器宽度限制，它们会保持合理间距 */
+    justify-content: space-between;
+    align-items: flex-start; /* 确保内容和侧边栏从顶部对齐 */
+    gap: 2rem; /* 在文章和 TOC 之间创建一些间隙 */
   }
 }

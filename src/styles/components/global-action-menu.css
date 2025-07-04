@@ -1,34 +1,43 @@
-/* src/styles/components/floating-action-menu.css */
+/* src/styles/components/global-action-menu.css */
 
-.floating-action-menu-container {
+.global-action-menu-container {
   position: fixed;
-  bottom: 1.5rem; /* 核心修正：调整位置，更靠近底部 */
-  right: 1.5rem; /* 核心修正：调整位置，更靠近右侧 */
+  bottom: 1.5rem; /* 移动端的默认位置 */
+  right: 1.5rem; /* 移动端的默认位置 */
   z-index: 1000;
   display: flex;
-  flex-direction: column; /* 子按钮向上展开 */
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem; /* 减小按钮间距 */
+  gap: 0.75rem;
+  transition: all 0.3s ease-in-out; /* 核心修正：添加过渡效果，使位置变化更平滑 */
 }
 
-/* 主触发按钮 (FAB) - 样式与 BackToTopButton 对齐 */
+/* 核心修正：使用媒体查询为 PC 端（屏幕宽度大于 1024px）调整位置 */
+@media (min-width: 1024px) {
+  .global-action-menu-container {
+    bottom: 6rem; /* PC 端距离底部更远 */
+    right: 8rem; /* PC 端距离右侧更远 */
+  }
+}
+
+/* 主触发按钮 (FAB) */
 .main-fab {
-  width: 3rem; /* 48px - 统一尺寸 */
-  height: 3rem; /* 48px - 统一尺寸 */
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   background-color: var(--background);
   color: var(--foreground);
-  border: 1px solid var(--color-neutral-300); /* 统一边框样式 */
+  border: 1px solid var(--color-neutral-300);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 统一阴影 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
 }
 
 .main-fab:hover {
-  transform: scale(1.1); /* 简化悬停效果 */
+  transform: scale(1.1);
   border-color: var(--color-neutral-400);
 }
 
@@ -52,28 +61,28 @@ html.dark .main-fab:hover {
   transition:
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(10px);
+  transform: translateY(10px) scale(0.95);
   opacity: 0;
   visibility: hidden;
 }
 
 .action-buttons.open {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   opacity: 1;
   visibility: visible;
 }
 
-/* 单个子操作按钮 - 样式与 BackToTopButton 对齐 */
+/* 单个子操作按钮 */
 .action-button {
-  width: 3rem; /* 48px */
-  height: 3rem; /* 48px */
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   background-color: var(--background);
   color: var(--foreground);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-neutral-300); /* 统一边框样式 */
+  border: 1px solid var(--color-neutral-300);
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
@@ -92,11 +101,4 @@ html.dark .action-button {
 html.dark .action-button:hover {
   background-color: var(--color-neutral-200);
   border-color: var(--color-neutral-400);
-}
-
-/* 桌面端隐藏菜单的后备方案 */
-@media (min-width: 1024px) {
-  .floating-action-menu-container {
-    display: none;
-  }
 }

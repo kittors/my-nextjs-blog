@@ -1,7 +1,7 @@
 // src/components/templates/BlogPostContent.tsx
 'use client';
 
-import React, { useRef, useEffect, memo, useState, createElement, Fragment } from 'react';
+import React, { useRef, useState, createElement, Fragment, memo } from 'react';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import { useToast } from '@/contexts/ToastContext';
 import Heading from '@/components/atoms/Heading';
@@ -9,14 +9,13 @@ import Text from '@/components/atoms/Text';
 import Link from 'next/link';
 import { type TocEntry } from '@/lib/posts';
 import TableOfContents from '@/components/organisms/TableOfContents';
-import BackToTopButton from '@/components/atoms/BackToTopButton';
 import { type Root as HastRoot } from 'hast';
 import { unified } from 'unified';
 import rehypeReact from 'rehype-react';
 import PostImage from '@/components/atoms/PostImage';
 import ImagePreview from '@/components/molecules/ImagePreview';
 import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper';
-import FloatingActionMenu from '@/components/molecules/FloatingActionMenu';
+import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
 
 interface BlogPostContentProps {
   post: {
@@ -29,8 +28,6 @@ interface BlogPostContentProps {
   headings: TocEntry[];
 }
 
-const HEADER_OFFSET = 80;
-
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -41,7 +38,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     setPreviewImageSrc(src);
   };
 
-  // 核心修正：恢复 rehype-react 的完整配置对象
   const rehypeOptions = {
     createElement,
     Fragment,
@@ -62,7 +58,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     },
   };
 
-  // 使用恢复后的配置来处理内容
   const contentReact = unified()
     .use(rehypeReact, rehypeOptions as any)
     .stringify(post.content);
@@ -73,86 +68,13 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
   const displayDate =
     dateObj && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('zh-CN') : '未知日期';
 
-  useEffect(() => {
-    if (window.location.hash) {
-      const encodedId = window.location.hash.substring(1);
-      const id = decodeURIComponent(encodedId);
-      const targetElement = document.getElementById(id);
-      if (targetElement) {
-        const timer = setTimeout(() => {
-          const targetPosition = targetElement.offsetTop - HEADER_OFFSET;
-          window.scrollTo({
-            top: targetPosition,
-            behavior: 'smooth',
-          });
-        }, 300);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [post.slug]);
-
-  useEffect(() => {
-    if (!articleContentRef.current) return;
-
-    const codeFigures = articleContentRef.current.querySelectorAll(
-      'figure[data-rehype-pretty-code-figure]'
-    );
-
-    codeFigures.forEach(figure => {
-      const preElement = figure.querySelector('pre');
-      if (!preElement) return;
-
-      if (!figure.querySelector('.code-block-header')) {
-        const language = preElement.getAttribute('data-language') || '';
-        const header = document.createElement('div');
-        header.className = 'code-block-header';
-
-        const languageTag = document.createElement('span');
-        languageTag.className = 'language-tag';
-        languageTag.textContent = language;
-
-        const button = document.createElement('button');
-        button.className = 'copy-button';
-        button.setAttribute('aria-label', '复制代码');
-
-        const copyIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2"></path></svg>`;
-        const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-        button.innerHTML = copyIconSVG + checkIconSVG;
-
-        header.appendChild(languageTag);
-        header.appendChild(button);
-        figure.insertBefore(header, preElement);
-      }
-
-      const button = figure.querySelector('.copy-button') as HTMLButtonElement | null;
-      const codeElement = figure.querySelector('code');
-
-      if (!button || !codeElement || button.dataset.listenerAttached === 'true') return;
-
-      const handleCopy = async () => {
-        try {
-          await navigator.clipboard.writeText(codeElement.innerText);
-          showToast('代码已复制到剪贴板！', 'success');
-          button.dataset.copied = 'true';
-          setTimeout(() => {
-            delete button.dataset.copied;
-          }, 2000);
-        } catch (err) {
-          console.error('无法复制代码: ', err);
-          showToast('复制失败，请手动复制。', 'error');
-        }
-      };
-
-      button.addEventListener('click', handleCopy);
-      button.dataset.listenerAttached = 'true';
-    });
-  }, [contentReact, showToast]);
-
   return (
     <>
+      {/* 主内容区域 */}
       <div className="container mx-auto px-4 py-12">
+        {/* 核心重构：blog-layout 现在包含文章和 TOC，以便在 PC 端实现侧边栏布局 */}
         <div className="blog-layout">
-          <article className="max-w-3xl">
+          <article className="w-full max-w-3xl">
             <Link
               href="/"
               className="text-primary hover:underline mb-8 inline-block flex items-center group"
@@ -193,16 +115,20 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
             </div>
           </article>
 
+          {/* 核心重构：TOC 组件现在是 blog-layout 的一部分。
+              在移动端，它仍然表现为 fixed 定位的抽屉。
+              在 PC 端，它将作为粘性侧边栏存在于布局流中。
+           */}
           <TableOfContents
             headings={headings}
             isOpen={isTocOpen}
             onClose={() => setIsTocOpen(false)}
           />
         </div>
-
-        <BackToTopButton />
-        <FloatingActionMenu onToggleToc={() => setIsTocOpen(true)} />
       </div>
+
+      {/* 全局组件保持在布局之外 */}
+      <GlobalActionMenu onToggleToc={() => setIsTocOpen(!isTocOpen)} />
       <ImagePreview src={previewImageSrc} onClose={() => setPreviewImageSrc(null)} />
     </>
   );
