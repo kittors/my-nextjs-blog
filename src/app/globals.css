@@ -8,9 +8,10 @@
 @import '../styles/code-highlight.css';
 @import '../styles/toast.css';
 @import '../styles/nprogress.css';
-@import '../styles/blog-post.css'; /* 新增：导入文章页面的专属样式 */
-@import '../styles/search.css'; /* 新增：导入搜索模态框的样式 */
-@import 'katex/dist/katex.min.css'; /* 核心修正：引入 KaTeX 样式表 */
+@import '../styles/blog-post.css';
+@import '../styles/search.css';
+@import '../styles/skeleton.css';
+@import 'katex/dist/katex.min.css';
 
 /*
   保留最核心的、真正“全局”的 body 样式。
