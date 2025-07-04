@@ -1,7 +1,7 @@
 // src/components/templates/BlogPostContent.tsx
 'use client';
 
-import React, { useRef, useState, createElement, Fragment, memo } from 'react';
+import React, { useRef, useState, createElement, Fragment, memo, useEffect } from 'react';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import { useToast } from '@/contexts/ToastContext';
 import Heading from '@/components/atoms/Heading';
@@ -38,6 +38,58 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     setPreviewImageSrc(src);
   };
 
+  // 核心新增：处理代码复制的副作用钩子
+  useEffect(() => {
+    const articleElement = articleContentRef.current;
+    if (!articleElement) return;
+
+    // 使用事件委托来处理所有复制按钮的点击事件
+    const handleCopyClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // 找到被点击的、或其父元素是复制按钮的元素
+      const copyButton = target.closest('button[data-copy-button]');
+
+      if (!copyButton) return;
+
+      // 从按钮向上找到整个代码块的 figure 容器
+      const figureElement = copyButton.closest('figure');
+      if (!figureElement) return;
+
+      // 在 figure 容器内找到 pre 标签
+      const preElement = figureElement.querySelector('pre');
+      if (!preElement) return;
+
+      // 获取 pre 标签内的纯文本内容
+      const codeToCopy = preElement.innerText || '';
+
+      // 使用浏览器 Clipboard API 进行复制
+      navigator.clipboard
+        .writeText(codeToCopy)
+        .then(() => {
+          // 成功后显示提示
+          showToast('代码已复制到剪贴板', 'success');
+          // 设置按钮状态为“已复制”，CSS 会根据此属性切换图标
+          copyButton.setAttribute('data-copied', 'true');
+          // 2秒后恢复按钮状态
+          setTimeout(() => {
+            copyButton.removeAttribute('data-copied');
+          }, 2000);
+        })
+        .catch(err => {
+          // 失败后显示错误提示
+          showToast('复制失败，请稍后重试', 'error');
+          console.error('无法复制文本: ', err);
+        });
+    };
+
+    articleElement.addEventListener('click', handleCopyClick);
+
+    // 组件卸载时清理事件监听器
+    return () => {
+      articleElement.removeEventListener('click', handleCopyClick);
+    };
+  }, [showToast]); // 依赖项包含 showToast，确保其在闭包中始终是最新的
+
   const rehypeOptions = {
     createElement,
     Fragment,
@@ -70,9 +122,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
 
   return (
     <>
-      {/* 主内容区域 */}
       <div className="container mx-auto px-4 py-12">
-        {/* 核心重构：blog-layout 现在包含文章和 TOC，以便在 PC 端实现侧边栏布局 */}
         <div className="blog-layout">
           <article className="w-full max-w-3xl">
             <Link
@@ -115,10 +165,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
             </div>
           </article>
 
-          {/* 核心重构：TOC 组件现在是 blog-layout 的一部分。
-              在移动端，它仍然表现为 fixed 定位的抽屉。
-              在 PC 端，它将作为粘性侧边栏存在于布局流中。
-           */}
           <TableOfContents
             headings={headings}
             isOpen={isTocOpen}
@@ -127,7 +173,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
         </div>
       </div>
 
-      {/* 全局组件保持在布局之外 */}
       <GlobalActionMenu onToggleToc={() => setIsTocOpen(!isTocOpen)} />
       <ImagePreview src={previewImageSrc} onClose={() => setPreviewImageSrc(null)} />
     </>
