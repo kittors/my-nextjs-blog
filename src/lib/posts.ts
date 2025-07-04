@@ -226,10 +226,11 @@ export function getSortedPostsMetadata(): BlogPostMetadata[] {
     const fullPath = path.join(postsDirectory, fileName);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data } = matter(fileContents);
+    // 核心修正：将 slug 放在扩展运算符之后，以确保文件名生成的 slug 优先，并消除 TS 警告。
     return {
+      ...data,
       slug,
-      ...(data as BlogPostMetadata),
-    };
+    } as BlogPostMetadata;
   });
   return allPostsMetadata.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
@@ -283,12 +284,13 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
 
   const headings: TocEntry[] = tempHeadings.map(h => ({ ...h, offset: 0 }));
 
+  // 核心修正：将 slug 放在扩展运算符之后。
   return {
+    ...data,
     slug,
     content: hastTree,
     headings,
-    ...(data as BlogPostMetadata),
-  };
+  } as BlogPost;
 }
 
 // ... (getAllPostSlugs 和 getAllPostsForSearch 保持不变) ...
@@ -327,9 +329,10 @@ export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
     });
     allSearchablePosts.push({
       metadata: {
+        // 核心修正：将 slug 放在扩展运算符之后。
+        ...data,
         slug,
-        ...(data as BlogPostMetadata),
-      },
+      } as BlogPostMetadata,
       plainTextContent,
       headings,
     });
