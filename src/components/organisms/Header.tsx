@@ -6,8 +6,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { HeaderLogoConfig, appConfig } from '@/lib/config';
 import ThemeToggle from '@/components/molecules/ThemeToggle';
-import { Github, Search } from 'lucide-react';
+import { Github, Search, MoreVertical } from 'lucide-react';
 import { useSearchModal } from '@/contexts/SearchModalContext';
+import DropdownMenu from '@/components/molecules/DropdownMenu';
 
 interface HeaderProps {
   isVisible?: boolean;
@@ -21,7 +22,9 @@ interface HeaderProps {
 
 /**
  * Header 组件：网站的顶部导航栏。
- * 作为一个“组织(organism)”级别的组件，它负责展示 Logo、导航链接和全局操作（如主题切换、搜索）。
+ *
+ * 作为一个“组织(organism)”级别的组件，它负责展示 Logo、导航链接和全局操作。
+ *
  * @param {HeaderProps} props - 组件属性，用于定制其外观和行为。
  */
 const Header: React.FC<HeaderProps> = ({
@@ -113,11 +116,10 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className={finalHeaderClasses}>
-      {/* 核心修正：在 nav 标签上添加了 px-4 类，确保在移动端两侧有内边距 */}
       <nav className={`container mx-auto px-4 ${navClasses} h-full py-4`}>
         {renderLogo()}
         <div
-          className={`flex items-center gap-4 ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}
+          className={`flex items-center gap-2 ${logoPosition === 'center' ? 'absolute right-4 top-1/2 -translate-y-1/2' : ''}`}
         >
           {searchConfig.showHotkeyDisplay && (
             <button
@@ -133,18 +135,31 @@ const Header: React.FC<HeaderProps> = ({
 
           <ThemeToggle />
 
-          {githubConfig.isVisible && (
-            <Link
-              href={githubConfig.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 rounded-full header-icon-button"
-              aria-label="访问我的 GitHub"
-              title="访问我的 GitHub"
-            >
-              <Github size={20} />
-            </Link>
-          )}
+          <DropdownMenu
+            activation="click"
+            align="right"
+            trigger={
+              <button
+                className="p-2 rounded-full header-icon-button flex items-center justify-center"
+                aria-label="打开更多选项"
+                title="更多选项"
+              >
+                <MoreVertical size={20} />
+              </button>
+            }
+          >
+            {githubConfig.isVisible && (
+              <a
+                href={githubConfig.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="dropdown-item"
+              >
+                <Github size={16} />
+                <span>查看源码</span>
+              </a>
+            )}
+          </DropdownMenu>
         </div>
       </nav>
     </header>

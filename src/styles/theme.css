@@ -6,7 +6,7 @@
 :root,
 html.light {
   --background: #fcfcfc;
-  --background-rgb: 252, 252, 252; /* 新增：供 rgba() 使用的 RGB 值 */
+  --background-rgb: 252, 252, 252;
   --foreground: #333333;
   --color-primary-default: #3b82f6;
   --color-primary-light: #60a5fa;
@@ -23,47 +23,40 @@ html.light {
   --color-neutral-800: #303030;
   --color-neutral-900: #202020;
 
-  /* BlogPostCard 悬停效果变量 (亮色模式) */
-  --blog-card-hover-bg: var(--color-neutral-50); /* 亮色模式下 hover 背景 */
-  --blog-card-hover-border: var(--color-primary-default); /* 亮色模式下 hover 边框 */
-  --blog-card-hover-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* 亮色模式下 hover 阴影 */
+  /* BlogPostCard 悬停效果变量 */
+  --blog-card-hover-bg: var(--color-neutral-50);
+  --blog-card-hover-border: var(--color-primary-default);
+  --blog-card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 
-  /* BlogPostCard 标题渐变色变量 (亮色模式) */
-  --heading-gradient-from: #3b82f6; /* blue-500 */
-  --heading-gradient-to: #8b5cf6; /* purple-600 */
-  --heading-gradient-hover-from: #2563eb; /* blue-600 */
-  --heading-gradient-hover-to: #7c3aed; /* purple-700 */
+  /* BlogPostCard 标题渐变色变量 */
+  --heading-gradient-from: #3b82f6;
+  --heading-gradient-to: #8b5cf6;
+  --heading-gradient-hover-from: #2563eb;
+  --heading-gradient-hover-to: #7c3aed;
 
-  /* BlogPostCard 文本颜色变量 (亮色模式) */
-  --blog-card-description-color: var(--foreground); /* 优化：描述文本颜色改为前景深色 */
-  --blog-card-meta-color: var(--color-neutral-600); /* 优化：元信息文本颜色改为更深的灰色 */
+  /* BlogPostCard 文本颜色变量 */
+  --blog-card-description-color: var(--foreground);
+  --blog-card-meta-color: var(--color-neutral-600);
 
-  /* ThemeToggle 悬停效果变量 (亮色模式) */
+  /* ThemeToggle 悬停效果变量 */
   --theme-toggle-hover-bg: var(--color-neutral-200);
 
-  /* BlogList 标题颜色变量 (亮色模式) */
+  /* BlogList 标题颜色变量 */
   --blog-list-heading-color: var(--color-neutral-800);
 
-  /* Footer 边框颜色变量 (亮色模式) */
+  /* Footer 边框颜色变量 */
   --footer-border-color: var(--color-neutral-200);
 
-  /* Header Logo 渐变色变量 (亮色模式) */
-  --header-logo-gradient-from: #2563eb; /* blue-600 */
-  --header-logo-gradient-to: #8b5cf6; /* purple-600 */
+  /* Header Logo 渐变色变量 */
+  --header-logo-gradient-from: #2563eb;
+  --header-logo-gradient-to: #8b5cf6;
 
-  /* ThemeToggle Icon 颜色变量 (亮色模式) */
-  --toggle-icon-light-color: var(--color-neutral-700); /* 月亮图标在亮色模式下的颜色 */
-  --toggle-icon-light-hover-color: var(
-    --color-primary-default
-  ); /* 月亮图标在亮色模式下 hover 颜色 */
-  /* 太阳图标在亮色模式下不显示，颜色不重要 */
-  --toggle-icon-dark-color: transparent;
-  --toggle-icon-dark-hover-color: transparent;
-
-  /* 新增：Header 中搜索/GitHub 图标颜色变量 (亮色模式) */
+  /* Header 中图标颜色变量 */
   --header-icon-color: var(--color-neutral-500);
   --header-icon-hover-color: var(--color-neutral-700);
+
+  /* 核心新增：DropdownMenu 菜单项悬停背景色 */
+  --dropdown-item-hover-bg: var(--color-neutral-100);
 }
 
 /*
@@ -71,7 +64,7 @@ html.light {
 */
 html.dark {
   --background: #1b1c1d;
-  --background-rgb: 27, 28, 29; /* 新增：供 rgba() 使用的 RGB 值 */
+  --background-rgb: 27, 28, 29;
   --foreground: #e0e0e0;
   --color-primary-default: #60a5fa;
   --color-primary-light: #818cf8;
@@ -88,46 +81,40 @@ html.dark {
   --color-neutral-800: #dadada;
   --color-neutral-900: #eaeaea;
 
-  /* BlogPostCard 悬停效果变量 (暗黑模式) */
-  --blog-card-hover-bg: var(--color-neutral-50); /* 核心修改：暗黑模式下 hover 背景改为更深的灰色 */
-  --blog-card-hover-border: var(--color-primary-light); /* 暗黑模式下 hover 边框 */
-  --blog-card-hover-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2); /* 暗黑模式下 hover 阴影 */
+  /* BlogPostCard 悬停效果变量 */
+  --blog-card-hover-bg: var(--color-neutral-50);
+  --blog-card-hover-border: var(--color-primary-light);
+  --blog-card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
 
-  /* BlogPostCard 标题渐变色变量 (暗黑模式) */
-  --heading-gradient-from: #818cf8; /* blue-400 */
-  --heading-gradient-to: #a78bfa; /* purple-500 */
-  --heading-gradient-hover-from: #60a5fa; /* blue-500 */
-  --heading-gradient-hover-to: #8b5cf6; /* purple-600 */
+  /* BlogPostCard 标题渐变色变量 */
+  --heading-gradient-from: #818cf8;
+  --heading-gradient-to: #a78bfa;
+  --heading-gradient-hover-from: #60a5fa;
+  --heading-gradient-hover-to: #8b5cf6;
 
-  /* BlogPostCard 文本颜色变量 (暗黑模式) */
-  --blog-card-description-color: #fafafa; /* 核心修改：将描述文本颜色改为 #fafafa */
+  /* BlogPostCard 文本颜色变量 */
+  --blog-card-description-color: #fafafa;
   --blog-card-meta-color: var(--color-neutral-500);
 
-  /* ThemeToggle 悬停效果变量 (暗黑模式) */
+  /* ThemeToggle 悬停效果变量 */
   --theme-toggle-hover-bg: var(--color-neutral-700);
 
-  /* BlogList 标题颜色变量 (暗黑模式) */
-  --blog-list-heading-color: var(--foreground); /* 核心修改：将标题颜色改为前景亮色 */
+  /* BlogList 标题颜色变量 */
+  --blog-list-heading-color: var(--foreground);
 
-  /* Footer 边框颜色变量 (暗黑模式) */
-  --footer-border-color: var(--color-neutral-100); /* 核心修改：暗黑模式下边框颜色 */
+  /* Footer 边框颜色变量 */
+  --footer-border-color: var(--color-neutral-100);
 
-  /* Header Logo 渐变色变量 (暗黑模式) */
-  --header-logo-gradient-from: #818cf8; /* blue-400 */
-  --header-logo-gradient-to: #a78bfa; /* purple-400 */
+  /* Header Logo 渐变色变量 */
+  --header-logo-gradient-from: #818cf8;
+  --header-logo-gradient-to: #a78bfa;
 
-  /* ThemeToggle Icon 颜色变量 (暗黑模式) */
-  --toggle-icon-light-color: transparent; /* 月亮图标在暗色模式下不显示，颜色不重要 */
-  --toggle-icon-light-hover-color: transparent;
-  --toggle-icon-dark-color: var(--color-primary-light); /* 太阳图标在暗色模式下的颜色 */
-  --toggle-icon-dark-hover-color: var(
-    --color-primary-default
-  ); /* 太阳图标在暗色模式下 hover 颜色 */
-
-  /* 新增：Header 中搜索/GitHub 图标颜色变量 (暗黑模式) */
+  /* Header 中图标颜色变量 */
   --header-icon-color: var(--color-neutral-400);
   --header-icon-hover-color: var(--color-neutral-200);
+
+  /* 核心新增：DropdownMenu 菜单项悬停背景色 */
+  --dropdown-item-hover-bg: var(--color-neutral-100);
 }
 
 /*
@@ -140,18 +127,11 @@ html.dark {
   --font-mono: var(--font-geist-mono);
 }
 
-/* 专门用于 Header 高斯模糊效果的自定义类
-  这个类精确地定义了实现“毛玻璃”效果所需的所有样式。
-*/
+/* 专门用于 Header 高斯模糊效果的自定义类 */
 .header-blur {
-  /* 关键步骤 1: 背景必须是半透明的。我们使用 RGB 变量来确保主题切换时颜色正确。*/
   background-color: rgba(var(--background-rgb), 0.75);
-
-  /* 关键步骤 2: 应用 backdrop-filter。12px 是一个比较理想的模糊半径。*/
-  -webkit-backdrop-filter: blur(12px); /* 兼容 Safari 浏览器 */
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-
-  /* 可选优化: 添加一个非常微妙的边框和阴影，增强“玻璃”的质感。*/
   border-bottom-color: rgba(128, 128, 128, 0.1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
@@ -173,11 +153,10 @@ html.dark {
   border-color: var(--footer-border-color);
 }
 
-/* 新增：Header 中图标的通用样式类 */
+/* Header 中图标的通用样式类 */
 .header-icon-button {
   color: var(--header-icon-color);
-  transition: color 0.2s; /* 添加过渡效果 */
-  /* 核心优化：添加指针样式 */
+  transition: color 0.2s;
   cursor: pointer;
 }
 

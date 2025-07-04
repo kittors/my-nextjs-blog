@@ -24,6 +24,7 @@
 @import '../styles/components/image-preview.css';
 @import '../styles/components/lazy-load.css';
 @import '../styles/components/global-action-menu.css';
+@import '../styles/components/dropdown-menu.css';
 
 /* 全局 Body 样式 */
 body {
