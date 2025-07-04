@@ -12,133 +12,53 @@ import React, {
 } from 'react';
 import { appConfig } from '@/lib/config';
 
+/**
+ * 设置一个客户端 cookie。
+ * @param name cookie 的名称。
+ * @param value cookie 的值。
+ * @param days cookie 的有效期（天）。
+ */
+const setCookie = (name: string, value: string, days: number) => {
+  let expires = '';
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    expires = '; expires=' + date.toUTCString();
+  }
+  // 确保在整个站点内生效
+  document.cookie = name + '=' + (value || '') + expires + '; path=/';
+};
+
 type Theme = 'light' | 'dark';
 
+// 核心修正 1: 在类型定义中添加 defaultToSystemPreference
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-  isThemeInitialized: boolean;
-  defaultToSystemPreference: boolean; // 暴露 defaultToSystemPreference 给消费者
+  defaultToSystemPreference: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: ReactNode;
+  // 从服务器（通过读取cookie）接收初始主题
+  initialTheme: Theme;
 }
 
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
-  const [isThemeInitialized, setIsThemeInitialized] = useState(false);
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme }) => {
+  // 使用从服务器传递过来的 initialTheme 初始化状态，确保了SSR和客户端的一致性。
+  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const { defaultToSystemPreference } = appConfig.theme;
 
-  // 从配置中获取主题相关设置 (enableManualToggle 已移除)
-  const { defaultToSystemPreference, initialTheme } = appConfig.theme;
-
-  // 这个函数负责处理系统主题变化时的逻辑
-  const handleChange = useCallback(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const newSystemTheme: Theme = mediaQuery.matches ? 'dark' : 'light';
-
-    // 如果当前 React 状态的主题已经与新的系统主题一致，则无需更新
-    if (theme === newSystemTheme) {
-      return;
-    }
-
-    // 核心逻辑：
-    if (defaultToSystemPreference) {
-      // 如果配置为默认跟随系统 (true)，则始终更新为新的系统主题
-      setTheme(newSystemTheme);
-      // 同时更新 localStorage，使系统主题成为新的“手动偏好”（如果以后 defaultToSystemPreference 变为 false）
-      try {
-        localStorage.setItem('theme', newSystemTheme);
-      } catch (e) {
-        console.error('ThemeContext: Could not save system theme change to localStorage.', e);
-      }
-    } else {
-      // 如果不默认跟随系统 (false)，但系统主题变化时，也强制更新为新的系统主题
-      setTheme(newSystemTheme);
-      try {
-        // 将此新的系统主题保存到 localStorage，作为当前的手动偏好
-        localStorage.setItem('theme', newSystemTheme);
-      } catch (e) {
-        console.error('ThemeContext: Could not save system-synced theme to localStorage.', e);
-      }
-    }
-  }, [theme, defaultToSystemPreference]); // useCallback 的依赖项
-
-  // Effect 1: 初始化主题 (客户端水合后执行)
+  // 当主题状态改变时，更新 <html> 的 class 以应用CSS变量。
+  // 这个 effect 只在客户端运行。
   useEffect(() => {
-    let resolvedTheme: Theme;
-    let storedTheme: string | null = null;
-
-    try {
-      // 只有在 defaultToSystemPreference 为 false 时才尝试读取 localStorage
-      if (!defaultToSystemPreference) {
-        storedTheme = window.localStorage.getItem('theme');
-        if (storedTheme !== 'light' && storedTheme !== 'dark') {
-          storedTheme = null;
-        }
-      }
-    } catch (e) {
-      console.error('ThemeContext: Error accessing localStorage for initial theme:', e);
-      storedTheme = null;
-    }
-
-    // 初始化的优先级：
-    if (defaultToSystemPreference) {
-      // 如果配置为默认跟随系统，则始终使用系统主题
-      resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } else {
-      // 如果不默认跟随系统 (即允许手动切换)
-      if (storedTheme) {
-        // 如果 localStorage 中有手动设置，则使用它
-        resolvedTheme = storedTheme as Theme;
-      } else {
-        // 否则，默认跟随系统主题 (即使不强制同步，初始也应友好地跟随系统)
-        resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
-      }
-    }
-
-    setTheme(resolvedTheme);
-    setIsThemeInitialized(true);
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(resolvedTheme);
-  }, [defaultToSystemPreference, initialTheme]); // 依赖项更新：移除了 enableManualToggle
-
-  // Effect 2: 监听系统主题变化
-  useEffect(() => {
-    // 检查 window.matchMedia 是否可用 (客户端环境)
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, [handleChange]); // 依赖项更新：只依赖 handleChange
-
-  // Effect 3: 在 theme 状态变化时更新 HTML 类
-  useEffect(() => {
-    if (!isThemeInitialized) {
-      return;
-    }
-
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
+  }, [theme]);
 
-    // 注意：localStorage 的写入逻辑已移至 handleChange 和 toggleTheme
-    // 这里不再直接操作 localStorage，避免重复写入或冲突
-  }, [theme, isThemeInitialized]); // 依赖项更新：移除了 enableManualToggle
-
-  // toggleTheme 函数：用于用户手动切换主题
   const toggleTheme = useCallback(() => {
-    // 如果配置为默认同步系统主题，则不允许手动切换
     if (defaultToSystemPreference) {
       console.warn('手动主题切换已禁用，因为已配置为同步系统主题。');
       return;
@@ -146,24 +66,26 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
     setTheme(prevTheme => {
       const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-      // 用户手动切换主题时，将其保存到 localStorage
+
+      // 当用户切换主题时，设置一个cookie。
+      // 这个cookie将在下次页面加载时被服务器读取。
+      setCookie('theme', newTheme, 365);
+
+      // 同时，仍然更新 localStorage，这是为了让 ThemeScript 能在页面跳转时立即生效，防止FOUC。
       try {
         localStorage.setItem('theme', newTheme);
       } catch (e) {
-        console.error('ThemeContext: Could not save manual toggle to localStorage.', e);
+        console.error('无法在 localStorage 中设置主题', e);
       }
+
       return newTheme;
     });
   }, [defaultToSystemPreference]);
 
+  // 核心修正 2: 将 defaultToSystemPreference 添加到 context 的 value 中
   const contextValue = useMemo(
-    () => ({
-      theme,
-      toggleTheme,
-      isThemeInitialized,
-      defaultToSystemPreference,
-    }),
-    [theme, toggleTheme, isThemeInitialized, defaultToSystemPreference]
+    () => ({ theme, toggleTheme, defaultToSystemPreference }),
+    [theme, toggleTheme, defaultToSystemPreference]
   );
 
   return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;

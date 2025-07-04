@@ -1,12 +1,12 @@
-// app/layout.tsx
+// src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import PageContainer from '@/components/templates/PageContainer';
 import ThemeScript from '@/components/atoms/ThemeScript';
 import { getAllPostsForSearch } from '@/lib/posts';
-import { SearchModalProvider } from '@/contexts/SearchModalContext'; // 导入 SearchModalProvider
-import { useState } from 'react'; // 导入 useState
+// 核心：从 'next/headers' 导入 cookies 和 headers 函数
+import { cookies, headers } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -15,27 +15,42 @@ export const metadata: Metadata = {
   description: '分享我的思考、技术和生活。',
 };
 
+type Theme = 'light' | 'dark';
+// 新增：定义用户操作系统的类型
+type UserOS = 'mac' | 'other';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // 在服务器端获取所有文章的搜索数据
   const allPostsForSearch = await getAllPostsForSearch();
 
-  // 核心修正：RootLayout 现在是一个客户端组件，以使用 useState 来控制 SearchModal 状态
-  // 这需要将 RootLayout 标记为 'use client'，或者将 PageContainer 拆分为客户端组件。
-  // 考虑到 PageContainer 已经包含客户端逻辑，我们将 PageContainer 内部处理 SearchModal 状态。
-  // 因此，此处不需要 useState，而是由 PageContainer 内部管理 isSearchModalOpen 状态，
-  // 并通过 SearchModalProvider 暴露 setModalOpen。
+  // --- 主题处理 (保持不变) ---
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get('theme');
+  const initialTheme: Theme = themeCookie?.value === 'dark' ? 'dark' : 'light';
+
+  // --- 核心修正：快捷键处理 ---
+  // 1. 在服务器端异步获取请求头对象
+  const headersList = await headers();
+  // 2. 从解析后的请求头中获取 'user-agent' 字符串
+  const userAgent = headersList.get('user-agent') || '';
+  // 3. 根据 user-agent 判断操作系统
+  const userOS: UserOS = /macintosh|mac os x/i.test(userAgent) ? 'mac' : 'other';
 
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body>
         <ThemeScript />
-        {/* 将 allPostsForSearch 传递给 PageContainer */}
-        {/* PageContainer 内部将管理 isSearchModalOpen 状态并通过 SearchModalProvider 传递 setModalOpen */}
-        <PageContainer allPostsForSearch={allPostsForSearch}>{children}</PageContainer>
+        {/* 将初始主题和操作系统信息一起传递给 PageContainer */}
+        <PageContainer
+          allPostsForSearch={allPostsForSearch}
+          initialTheme={initialTheme}
+          userOS={userOS}
+        >
+          {children}
+        </PageContainer>
       </body>
     </html>
   );
