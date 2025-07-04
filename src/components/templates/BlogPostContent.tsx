@@ -20,7 +20,8 @@ import { type TocEntry } from '@/lib/posts';
 import TableOfContents from '@/components/organisms/TableOfContents';
 import { type Root as HastRoot } from 'hast';
 import { unified } from 'unified';
-import rehypeReact from 'rehype-react';
+// 核心修正：导入 RehypeReactOptions 类型
+import rehypeReact, { type Options as RehypeReactOptions } from 'rehype-react';
 import PostImage from '@/components/atoms/PostImage';
 import ImagePreview from '@/components/molecules/ImagePreview';
 import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper';
@@ -105,12 +106,11 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
     [handleImageClick]
   ); // 依赖于稳定的 handleImageClick
 
-  // 核心修正：使用 useMemo 来记忆最终的 React 元素。
-  // 只有当文章内容或 rehype 配置变化时，才会重新执行昂贵的 stringify 操作。
-  // 这可以防止因打开/关闭预览等不相关状态变化导致的重新渲染，从而解决闪烁问题。
+  // 核心修正：修复 'Unexpected any' 错误，为 rehypeReact 的第二个参数提供正确的类型。
+  // rehypeReact 的第二个参数期望一个 RehypeReactOptions 类型。
   const contentReact = useMemo(() => {
     return unified()
-      .use(rehypeReact, rehypeOptions as any)
+      .use(rehypeReact, rehypeOptions as RehypeReactOptions) // 明确指定类型
       .stringify(post.content);
   }, [post.content, rehypeOptions]);
 

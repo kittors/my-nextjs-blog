@@ -2,8 +2,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ZoomIn, ZoomOut, RotateCw, RotateCcw, Maximize, Download } from 'lucide-react'; // 核心修正：导入 Download 图标
-import { useToast } from '@/contexts/ToastContext'; // 核心修正：导入 Toast hook
+import { X, ZoomIn, ZoomOut, RotateCw, RotateCcw, Maximize, Download } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 interface ImagePreviewProps {
   src: string | null;
@@ -13,12 +13,18 @@ interface ImagePreviewProps {
 /**
  * ImagePreview 组件：一个分子级别的 UI 组件。
  * 它提供一个模态框来预览图片，并包含缩放、旋转、还原和下载的交互功能。
+ *
+ * 注意：此处保留使用原生的 `<img>` 标签，而非 `next/image`。
+ * 原因是 `next/image` 在处理动态缩放、旋转和拖拽等复杂交互时，其内部优化可能与这些操作冲突，
+ * 且直接操作 DOM 元素（如 `transform` 属性）对于原生 `<img>` 更直接和灵活。
+ * 对于预览场景，通常图片已经加载完成，LCP（最大内容绘制）影响较小。
+ *
  * @param {ImagePreviewProps} props - 组件属性。
  */
 const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const { showToast } = useToast(); // 核心修正：获取 showToast 函数
+  const { showToast } = useToast();
 
   const imageContentElementRef = useRef<HTMLDivElement | null>(null);
   const lastZoomTimeRef = useRef(0);
@@ -173,7 +179,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ src, onClose }) => {
         <button onClick={handleReset} aria-label="还原" title="还原">
           <Maximize />
         </button>
-        {/* 核心修正：添加下载按钮 */}
         <button onClick={handleDownload} aria-label="下载图片" title="下载图片">
           <Download />
         </button>

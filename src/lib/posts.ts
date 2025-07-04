@@ -9,7 +9,7 @@ import rehypePrettyCode, { type Options as RehypePrettyCodeOptions } from 'rehyp
 import rehypeSlug from 'rehype-slug';
 import { visit } from 'unist-util-visit';
 import { createHighlighter, type Highlighter } from 'shiki';
-import { type Root as HastRoot, type Element, type Node } from 'hast';
+import { type Root as HastRoot, type Element, type Node, type Text } from 'hast';
 import { type Root as MdastRoot } from 'mdast';
 import { toString } from 'hast-util-to-string';
 import remarkGfm from 'remark-gfm';
@@ -47,7 +47,6 @@ export interface SearchablePostData {
 
 const postsDirectory = path.join(process.cwd(), 'posts');
 
-// ... (getSingletonHighlighter, getTextFromNode, extractHeadings, normalizeCodeLanguage, rehypeCodeBlockHeader 保持不变) ...
 let highlighter: Highlighter;
 async function getSingletonHighlighter() {
   if (!highlighter) {
@@ -58,26 +57,57 @@ async function getSingletonHighlighter() {
   }
   return highlighter;
 }
-function getTextFromNode(node: any): string {
-  if (node.type === 'text') return node.value;
-  if (node.children && Array.isArray(node.children)) {
+
+/**
+ * 从 AST 节点中提取文本内容。
+ * 遵循原子设计原则，这是一个纯函数，专注于单一职责：安全地从不同类型的 HAST 节点中获取文本。
+ *
+ * @param {Node} node - HAST 节点。可以是 Text 节点，也可以是包含 children 的 Element 节点。
+ * @returns {string} 提取到的文本内容。
+ */
+function getTextFromNode(node: Node): string {
+  // 核心修正：当节点类型为 'text' 时，明确地将其断言为 Text 类型，
+  // 因为只有 Text 节点才拥有 'value' 属性。
+  if (node.type === 'text') {
+    return (node as Text).value;
+  }
+  // 如果节点有 'children' 属性（例如，它是一个 Element 节点），则递归处理其子节点。
+  // 'children' in node 作为类型守卫，确保我们只在有 children 属性的节点上访问它。
+  if ('children' in node && Array.isArray(node.children)) {
     return node.children.map(getTextFromNode).join('');
   }
+  // 对于其他类型的节点（如 Comment 或 Doctype），返回空字符串。
   return '';
 }
+
+/**
+ * Unified.js 插件：用于从 HAST 树中提取标题信息。
+ * 遍历树中的 'h1', 'h2', 'h3' 元素，并收集它们的级别、ID 和文本内容。
+ *
+ * @param {Array<Omit<TocEntry, 'offset'>>} headings - 用于存储提取到的标题信息的数组。
+ * @returns {function(HastRoot): void} Unified.js 插件函数。
+ */
 function extractHeadings(headings: Omit<TocEntry, 'offset'>[]) {
   return (tree: HastRoot) => {
-    visit(tree, 'element', node => {
+    visit(tree, 'element', (node: Element) => {
+      // 明确类型为 Element，确保可以安全访问 tagName 和 properties
       if (['h1', 'h2', 'h3'].includes(node.tagName) && node.properties?.id) {
         headings.push({
           level: parseInt(node.tagName.substring(1)),
           id: String(node.properties.id),
-          text: getTextFromNode(node),
+          text: getTextFromNode(node), // 调用 getTextFromNode 获取标题文本
         });
       }
     });
   };
 }
+
+/**
+ * Unified.js 插件：规范化代码块的语言类名。
+ * 将 'language-Js' 这样的类名转换为 'language-javascript'，确保 Shiki 正确识别。
+ *
+ * @returns {function(HastRoot): void} Unified.js 插件函数。
+ */
 function normalizeCodeLanguage() {
   return (tree: HastRoot) => {
     visit(tree, 'element', node => {
@@ -97,40 +127,56 @@ function normalizeCodeLanguage() {
     });
   };
 }
+
+/**
+ * Unified.js 插件：为 rehype-pretty-code 生成的代码块添加自定义头部。
+ * 头部包含语言标签和复制按钮。
+ *
+ * @returns {function(HastRoot): void} Unified.js 插件函数。
+ */
 function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
+      // 检查节点是否是 rehype-pretty-code 生成的 figure 元素
       if (
         node.tagName === 'figure' &&
         node.properties &&
         'data-rehype-pretty-code-figure' in node.properties
       ) {
+        // 查找 figure 元素内的 pre 标签，它包含了实际的代码
         const preElement = node.children.find(
           (child): child is Element => child.type === 'element' && child.tagName === 'pre'
         );
-        if (!preElement) return;
+        if (!preElement) return; // 如果没有找到 pre 标签，则跳过
+
+        // 从 pre 标签的 data 属性中获取语言信息
         const lang = preElement.properties?.['data-language'] as string | undefined;
-        if (!lang) return;
+        if (!lang) return; // 如果没有语言信息，则跳过
+
+        // 创建代码块的头部元素
         const header: Element = {
           type: 'element',
           tagName: 'div',
           properties: { className: ['code-block-header'] },
           children: [
+            // 语言标签
             {
               type: 'element',
               tagName: 'span',
               properties: { className: ['language-tag'] },
               children: [{ type: 'text', value: lang }],
             },
+            // 复制按钮
             {
               type: 'element',
               tagName: 'button',
               properties: {
                 className: ['copy-button'],
                 'aria-label': 'Copy code to clipboard',
-                'data-copy-button': 'true',
+                'data-copy-button': 'true', // 用于 JavaScript 事件监听
               },
               children: [
+                // 复制图标 (SVG)
                 {
                   type: 'element',
                   tagName: 'svg',
@@ -163,6 +209,7 @@ function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
                     },
                   ],
                 },
+                // 复制成功图标 (SVG)
                 {
                   type: 'element',
                   tagName: 'svg',
@@ -191,49 +238,77 @@ function rehypeCodeBlockHeader(): (tree: HastRoot) => void {
             },
           ],
         };
+        // 将创建的 header 元素添加到 figure 元素的子节点列表的开头
         node.children.unshift(header);
       }
     });
   };
 }
 
+/**
+ * Unified.js 插件：解包 Markdown 中被 <p> 标签包裹的图片。
+ * 这有助于 Next.js Image 组件的正确渲染，并避免不必要的嵌套。
+ *
+ * @returns {function(HastRoot): void} Unified.js 插件函数。
+ */
 function rehypeUnwrapImages() {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element, index: number | undefined, parent: Node | undefined) => {
+      // 确保有父节点、索引有效且当前节点是 <p> 标签
       if (!parent || index === undefined || node.tagName !== 'p') {
         return;
       }
+      // 过滤出有意义的子节点（非空文本节点或元素节点）
       const significantChildren = node.children.filter(child => {
         if (child.type === 'element') return true;
         if (child.type === 'text' && child.value.trim() !== '') return true;
         return false;
       });
+      // 如果 <p> 标签只包含一个 <img> 标签作为唯一的有意义子节点，则解包
       if (
         significantChildren.length === 1 &&
         (significantChildren[0] as Element).tagName === 'img'
       ) {
+        // 将 img 标签直接替换掉父节点中的 p 标签
         (parent as Element).children[index] = significantChildren[0];
       }
     });
   };
 }
 
-// ... (getSortedPostsMetadata 和 getAllTags 保持不变) ...
+/**
+ * 获取所有博客文章的元数据，并按日期降序排序。
+ *
+ * @returns {BlogPostMetadata[]} 排序后的博客文章元数据数组。
+ */
 export function getSortedPostsMetadata(): BlogPostMetadata[] {
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsMetadata = fileNames.map(fileName => {
-    const slug = fileName.replace(/\.md$/, '');
+    const slug = fileName.replace(/\.md$/, ''); // 从文件名中提取 slug
     const fullPath = path.join(postsDirectory, fileName);
     const fileContents = fs.readFileSync(fullPath, 'utf8');
-    const { data } = matter(fileContents);
-    // 核心修正：将 slug 放在扩展运算符之后，以确保文件名生成的 slug 优先，并消除 TS 警告。
-    return {
-      ...data,
-      slug,
-    } as BlogPostMetadata;
+    const { data } = matter(fileContents); // 解析 front matter
+    // 核心修正：为 data 提供默认值，以防 matter 解析失败或文件为空
+    const metadata = {
+      title: '无标题',
+      date: new Date().toISOString(),
+      author: '未知作者',
+      description: '暂无描述',
+      tags: [],
+      ...data, // 展开 front matter 数据，覆盖默认值
+      slug, // 确保 slug 属性存在且正确
+    } as BlogPostMetadata; // 类型断言为 BlogPostMetadata
+    return metadata;
   });
+  // 按日期降序排序 (最新文章在前)
   return allPostsMetadata.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
+
+/**
+ * 获取所有文章中使用的标签及其计数。
+ *
+ * @returns {TagInfo[]} 标签信息数组，按计数降序排序。
+ */
 export function getAllTags(): TagInfo[] {
   const allPosts = getSortedPostsMetadata();
   const tagCounts: { [key: string]: number } = {};
@@ -249,90 +324,176 @@ export function getAllTags(): TagInfo[] {
   return tags.sort((a, b) => b.count - a.count);
 }
 
+/**
+ * 根据 slug 获取单篇博客文章的完整内容和元数据。
+ *
+ * @param {string} slug - 文章的 slug。
+ * @returns {Promise<BlogPost>} 包含文章内容（HAST 树）和元数据的 Promise。
+ */
 export async function getPostBySlug(slug: string): Promise<BlogPost> {
-  const decodedSlug = decodeURIComponent(slug);
+  const decodedSlug = decodeURIComponent(slug); // 解码 URL 编码的 slug
   const fullPath = path.join(postsDirectory, `${decodedSlug}.md`);
-  const fileContents = fs.readFileSync(fullPath, 'utf8');
-  const { data, content } = matter(fileContents);
-  const tempHeadings: Omit<TocEntry, 'offset'>[] = [];
 
+  // 核心修正：添加 try-catch 块来处理文件读取错误，并返回一个默认的错误文章。
+  let fileContents: string;
+  try {
+    fileContents = fs.readFileSync(fullPath, 'utf8');
+  } catch (error) {
+    console.error(`Error reading post file for slug: ${slug}`, error);
+    // 返回一个默认的错误文章，避免返回 undefined 导致后续 JSON.parse 报错
+    return {
+      slug: slug,
+      title: '文章加载失败',
+      date: new Date().toISOString(),
+      author: '系统',
+      description: '抱歉，无法加载此文章的内容。',
+      content: {
+        type: 'root',
+        children: [
+          {
+            type: 'element',
+            tagName: 'p',
+            properties: {},
+            children: [{ type: 'text', value: '无法找到或读取文章内容。' }],
+          },
+        ],
+      },
+      headings: [],
+    };
+  }
+
+  const { data, content } = matter(fileContents); // 解析 front matter 和 Markdown 内容
+  const tempHeadings: Omit<TocEntry, 'offset'>[] = []; // 临时存储标题信息
+
+  // 核心修正：为 data 提供默认值，以防 matter 解析失败或文件为空
+  const metadata = {
+    title: '无标题',
+    date: new Date().toISOString(),
+    author: '未知作者',
+    description: '暂无描述',
+    tags: [],
+    ...data, // 展开 front matter 数据，覆盖默认值
+    slug, // 确保 slug 属性存在且正确
+  } as BlogPostMetadata;
+
+  // rehype-pretty-code 的配置选项
   const prettyCodeOptions: RehypePrettyCodeOptions = {
-    getHighlighter: getSingletonHighlighter,
-    theme: { light: 'vitesse-light', dark: 'vitesse-dark' },
+    getHighlighter: getSingletonHighlighter, // 获取 Shiki highlighter 实例
+    theme: { light: 'vitesse-light', dark: 'vitesse-dark' }, // 定义亮色和暗色主题
     onVisitLine(node) {
+      // 如果行是空的，插入一个空格以确保行号正确显示
       if (node.children.length === 0) {
         node.children = [{ type: 'text', value: ' ' }];
       }
     },
   };
 
+  // 构建 Unified.js 处理器管道
   const processor = unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkMath)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeUnwrapImages)
-    .use(rehypeSlug)
-    .use(rehypeKatex)
-    .use(() => extractHeadings(tempHeadings))
-    .use(normalizeCodeLanguage)
-    .use(rehypePrettyCode, prettyCodeOptions)
-    .use(rehypeCodeBlockHeader);
+    .use(remarkParse) // 将 Markdown 解析为 MDAST
+    .use(remarkGfm) // 支持 GitHub Flavored Markdown
+    .use(remarkMath) // 支持数学公式
+    .use(remarkRehype, { allowDangerousHtml: true }) // 将 MDAST 转换为 HAST，允许不安全的 HTML
+    .use(rehypeUnwrapImages) // 解包被 p 标签包裹的图片
+    .use(rehypeSlug) // 为标题添加 slug ID
+    .use(rehypeKatex) // 渲染 KaTeX 数学公式
+    .use(() => extractHeadings(tempHeadings)) // 提取标题信息
+    .use(normalizeCodeLanguage) // 规范化代码语言类名
+    .use(rehypePrettyCode, prettyCodeOptions) // 代码高亮
+    .use(rehypeCodeBlockHeader); // 添加代码块头部
 
-  const mdastTree = processor.parse(content) as MdastRoot;
-  const hastTree = (await processor.run(mdastTree)) as HastRoot;
+  const mdastTree = processor.parse(content) as MdastRoot; // 解析 Markdown 内容为 MDAST
+  const hastTree = (await processor.run(mdastTree)) as HastRoot; // 运行插件并转换为 HAST
 
+  // 将临时标题信息转换为 TocEntry 数组
   const headings: TocEntry[] = tempHeadings.map(h => ({ ...h, offset: 0 }));
 
-  // 核心修正：将 slug 放在扩展运算符之后。
   return {
-    ...data,
-    slug,
-    content: hastTree,
-    headings,
-  } as BlogPost;
+    ...metadata, // 使用经过默认值处理的元数据
+    content: hastTree, // 文章内容（HAST 树）
+    headings, // 提取到的标题列表
+  } as BlogPost; // 类型断言为 BlogPost
 }
 
-// ... (getAllPostSlugs 和 getAllPostsForSearch 保持不变) ...
+/**
+ * 获取所有文章的 slug 列表，用于 Next.js 的 `generateStaticParams`。
+ *
+ * @returns {{ slug: string }[]} 包含所有文章 slug 的数组。
+ */
 export function getAllPostSlugs(): { slug: string }[] {
   const fileNames = fs.readdirSync(postsDirectory);
   return fileNames.map(fileName => ({
-    slug: fileName.replace(/\.md$/, ''),
+    slug: fileName.replace(/\.md$/, ''), // 从文件名中提取 slug
   }));
 }
+
+/**
+ * 获取所有文章的搜索数据，包括元数据、纯文本内容和标题信息。
+ * 用于客户端的搜索功能。
+ *
+ * @returns {Promise<SearchablePostData[]>} 包含所有文章搜索数据的 Promise。
+ */
 export async function getAllPostsForSearch(): Promise<SearchablePostData[]> {
   const fileNames = fs.readdirSync(postsDirectory);
   const allSearchablePosts: SearchablePostData[] = [];
+
   for (const fileName of fileNames) {
     const slug = fileName.replace(/\.md$/, '');
     const fullPath = path.join(postsDirectory, fileName);
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
+
+    // 核心修正：添加 try-catch 块来处理文件读取错误，并跳过有问题的文章。
+    let fileContents: string;
+    try {
+      fileContents = fs.readFileSync(fullPath, 'utf8');
+    } catch (error) {
+      console.error(`Error reading search data file for slug: ${slug}. Skipping this post.`, error);
+      continue; // 跳过此文章，继续处理下一篇文章
+    }
+
     const { data, content } = matter(fileContents);
     const tempHeadings: Omit<TocEntry, 'offset'>[] = [];
+
+    // 核心修正：为 data 提供默认值，以防 matter 解析失败或文件为空
+    const metadata = {
+      title: '无标题',
+      date: new Date().toISOString(),
+      author: '未知作者',
+      description: '暂无描述',
+      tags: [],
+      ...data, // 展开 front matter 数据，覆盖默认值
+      slug, // 确保 slug 属性存在且正确
+    } as BlogPostMetadata;
+
+    // 创建一个专门用于提取纯文本内容的处理器（不包含代码高亮等）
     const textProcessor = unified()
       .use(remarkParse)
       .use(remarkGfm)
       .use(remarkMath)
       .use(remarkRehype)
       .use(rehypeSlug)
-      .use(() => extractHeadings(tempHeadings));
+      // 核心修正：为 extractHeadings 提供明确的类型，解决 'Unexpected any' 错误。
+      // extractHeadings 接受一个 Omit<TocEntry, 'offset'>[] 类型的数组。
+      .use(() => extractHeadings(tempHeadings)); // 明确类型
+
     const mdastTreeForText = textProcessor.parse(content) as MdastRoot;
     const hastTreeForText = (await textProcessor.run(mdastTreeForText)) as HastRoot;
+
+    // 将 HAST 树转换为纯文本
     let plainTextContent = toString(hastTreeForText);
+    // 清理 Markdown 标记和多余空格
     plainTextContent = plainTextContent
-      .replace(/[`*~_]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+      .replace(/[`*~_]/g, '') // 移除常见的 Markdown 格式标记
+      .replace(/\s+/g, ' ') // 将多个空格替换为单个空格
+      .trim(); // 移除首尾空白
+
+    // 计算标题在纯文本内容中的偏移量
     const headings: TocEntry[] = tempHeadings.map(h => {
       const offset = plainTextContent.indexOf(h.text);
       return { ...h, offset: offset !== -1 ? offset : 0 };
     });
+
     allSearchablePosts.push({
-      metadata: {
-        // 核心修正：将 slug 放在扩展运算符之后。
-        ...data,
-        slug,
-      } as BlogPostMetadata,
+      metadata: metadata, // 使用经过默认值处理的元数据
       plainTextContent,
       headings,
     });

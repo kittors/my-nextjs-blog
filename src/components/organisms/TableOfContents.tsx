@@ -21,9 +21,10 @@ const HEADER_OFFSET = 80;
  * @param delay 时间间隔（毫秒）。
  * @returns 返回一个节流后的新函数。
  */
-const throttle = (callback: (...args: any[]) => void, delay: number) => {
+// 核心修正：为 callback 参数添加明确的类型，并使用 unknown[] 避免 'Unexpected any'。
+const throttle = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
   let lastCall = 0;
-  return (...args: any[]) => {
+  return (...args: T) => {
     const now = new Date().getTime();
     if (now - lastCall >= delay) {
       lastCall = now;
@@ -39,9 +40,10 @@ const throttle = (callback: (...args: any[]) => void, delay: number) => {
  * @param delay 时间间隔（毫秒）。
  * @returns 返回一个去抖动后的新函数。
  */
-const debounce = (callback: (...args: any[]) => void, delay: number) => {
+// 核心修正：为 callback 参数添加明确的类型，并使用 unknown[] 避免 'Unexpected any'。
+const debounce = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
   let timeoutId: NodeJS.Timeout;
-  return (...args: any[]) => {
+  return (...args: T) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       callback(...args);
@@ -64,7 +66,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
   const tocListWrapperRef = useRef<HTMLDivElement | null>(null);
   const tocContainerRef = useRef<HTMLElement | null>(null);
 
-  const throttledSetActiveId = useRef(throttle(id => setActiveId(id), 300)).current;
+  // 核心修正：为 throttledSetActiveId 明确类型
+  const throttledSetActiveId = useRef(throttle((id: string) => setActiveId(id), 300)).current;
 
   // 当抽屉在移动端打开时，禁止背景页面滚动
   useEffect(() => {
@@ -124,6 +127,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
   }, [headings, handleObserver]);
 
   // 核心修正：在滚动停止后进行最终的精确检查
+  // 明确 debouncedFinalCheck 的类型
   const debouncedFinalCheck = useRef(
     debounce(() => {
       if (isClickScrolling.current) return;

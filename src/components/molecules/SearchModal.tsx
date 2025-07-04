@@ -229,11 +229,17 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
               >
                 <h3
                   className="search-result-title"
-                  dangerouslySetInnerHTML={{ __html: result.highlightedTitle }}
+                  // 核心修正：转义 JSX 中的双引号
+                  dangerouslySetInnerHTML={{
+                    __html: result.highlightedTitle.replace(/"/g, '&quot;'),
+                  }}
                 />
                 <p
                   className="search-result-excerpt"
-                  dangerouslySetInnerHTML={{ __html: result.highlightedExcerpt }}
+                  // 核心修正：转义 JSX 中的双引号
+                  dangerouslySetInnerHTML={{
+                    __html: result.highlightedExcerpt.replace(/"/g, '&quot;'),
+                  }}
                 />
                 <span className="search-result-meta">
                   {result.author} - {new Date(result.date).toLocaleDateString('zh-CN')}
@@ -245,7 +251,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
 
         {query.trim() !== '' && results.length === 0 && (
           <div className="search-no-results">
-            <p>没有找到与 "{query}" 相关的文章。</p>
+            <p>没有找到与 &quot;{query}&quot; 相关的文章。</p> {/* 核心修正：转义双引号 */}
           </div>
         )}
       </div>

@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// 核心修正：移除未使用的 'Inter' 导入
+// import { Inter } from 'next/font/google';
 import './globals.css';
 import PageContainer from '@/components/templates/PageContainer';
 import ThemeScript from '@/components/atoms/ThemeScript';
@@ -8,7 +9,8 @@ import { getAllPostsForSearch } from '@/lib/posts';
 // 核心：从 'next/headers' 导入 cookies 和 headers 函数
 import { cookies, headers } from 'next/headers';
 
-const inter = Inter({ subsets: ['latin'] });
+// 核心修正：移除未使用的 'inter' 变量声明
+// const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: '我的 Next.js 博客',
