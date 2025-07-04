@@ -1,14 +1,92 @@
 /* src/styles/nprogress.css */
 
+/*
+   核心修正：强化 NProgress 进度条的可见性，并应用主题渐变色。
+   - 增加高度，使其更显眼。
+   - 设置固定定位和高 z-index，确保它始终在页面顶部且不被遮挡。
+   - 使用与文章标题相同的 CSS 渐变色，使其与主题保持一致。
+*/
 #nprogress .bar {
-  background: var(--color-primary-default);
+  /* 确保进度条固定在视口顶部 */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important; /* 确保宽度占满 */
+  height: 3px !important; /* 增加高度，使其更显眼 */
+  z-index: 99999 !important; /* 极高 z-index，防止被任何元素遮挡 */
+  /* 核心修正：应用与 BlogPostCard 标题相同的渐变色 */
+  background: linear-gradient(
+    to right,
+    var(--heading-gradient-from, #3b82f6),
+    /* 使用 CSS 变量，并提供回退颜色 */ var(--heading-gradient-to, #8b5cf6)
+      /* 使用 CSS 变量，并提供回退颜色 */
+  ) !important;
+  transition: all 200ms ease !important; /* 确保过渡动画平滑 */
 }
+
+/*
+   核心修正：强化 NProgress 进度条末端的“小尾巴”样式，并应用主题渐变色。
+   - 增加阴影，使其更突出。
+   - 明确背景色。
+*/
 #nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  /* 核心修正：应用与 BlogPostCard 标题相同的渐变色 */
+  background: linear-gradient(
+    to right,
+    var(--heading-gradient-from, #3b82f6),
+    var(--heading-gradient-to, #8b5cf6)
+  ) !important;
   box-shadow:
-    0 0 10px var(--color-primary-default),
-    0 0 5px var(--color-primary-default);
+    0 0 10px var(--heading-gradient-to, #8b5cf6),
+    /* 阴影颜色也使用渐变结束色 */ 0 0 5px var(--heading-gradient-to, #8b5cf6);
+  opacity: 1;
+  transform: rotate(3deg) translate(0px, -4px);
 }
+
+/*
+   核心修正：强化 NProgress 加载指示器（Spinner）样式，并应用主题色。
+   - 明确边框颜色，确保可见。
+*/
+#nprogress .spinner {
+  display: block;
+  position: fixed;
+  z-index: 99999; /* 与进度条保持一致的高 z-index */
+  top: 15px;
+  right: 15px;
+}
+
 #nprogress .spinner-icon {
-  border-top-color: var(--color-primary-default);
-  border-left-color: var(--color-primary-default);
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: solid 2px transparent;
+  /* 核心修正：使用主题主色作为 Spinner 的颜色 */
+  border-top-color: var(--color-primary-default, #3b82f6) !important;
+  border-left-color: var(--color-primary-default, #3b82f6) !important;
+  border-radius: 50%;
+  animation: nprogress-spinner 400ms linear infinite;
+}
+
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+}
+
+.nprogress-custom-parent #nprogress .spinner,
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+
+@keyframes nprogress-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

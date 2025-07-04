@@ -37,9 +37,15 @@ interface BlogPostContentProps {
     slug: string;
   };
   headings: TocEntry[];
+  // 核心新增：接收动态的备用链接
+  dynamicFallbackHref: string;
 }
 
-const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => {
+const BlogPostContent: React.FC<BlogPostContentProps> = ({
+  post,
+  headings,
+  dynamicFallbackHref,
+}) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
@@ -125,7 +131,8 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ post, headings }) => 
       <div className="container mx-auto px-4 py-12">
         <div className="blog-layout">
           <article className="w-full max-w-3xl">
-            <BackButton fallbackHref="/" />
+            {/* 核心修正：将动态的 fallbackHref 传递给 BackButton */}
+            <BackButton fallbackHref={dynamicFallbackHref} />
 
             <Heading level={1} className="text-4xl font-extrabold text-neutral-900 mb-4">
               {title}

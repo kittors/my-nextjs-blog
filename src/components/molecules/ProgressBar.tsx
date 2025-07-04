@@ -1,49 +1,64 @@
 // src/components/molecules/ProgressBar.tsx
 'use client';
 
-import { useEffect, useState } from 'react'; // 导入 useState
+import { useEffect, useRef } from 'react'; // 核心新增：导入 useRef
 import { usePathname, useSearchParams } from 'next/navigation';
 import NProgress from 'nprogress';
 
 /**
  * ProgressBar 组件：在页面加载和路由跳转时显示顶部加载进度条。
  * 这是一个分子组件，负责 UI 反馈的逻辑。
+ *
+ * 核心修正：
+ * 1. 使用 useRef 存储上一次的完整 URL（不含 hash），以区分真正的页面导航和仅 hash 变化。
+ * 2. 只有当 URL 的非 hash 部分发生变化时，才启动 NProgress。
+ * 3. 确保 NProgress 在页面内容渲染后结束。
  */
 const ProgressBar: React.FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isMounted, setIsMounted] = useState(false); // 新增状态，用于判断是否已在客户端挂载
+  // 使用 useRef 存储上一次的完整 URL（不含 hash），初始值为 null
+  const lastUrlWithoutHashRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // 标记组件已在客户端挂载
-    setIsMounted(true);
-  }, []); // 仅在组件首次挂载时运行
+    // 获取当前 URL 的 pathname 和 searchParams 字符串
+    const currentPath = pathname;
+    const currentSearch = searchParams.toString();
+    // 组合成不包含 hash 的完整 URL 字符串
+    const currentUrlWithoutHash = `${currentPath}${currentSearch ? `?${currentSearch}` : ''}`;
 
-  // 路由开始变化时显示进度条
-  useEffect(() => {
-    if (isMounted) {
-      // 确保只在客户端挂载后执行
-      NProgress.start();
-      //console.log('NProgress START: path changed to', pathname, searchParams.toString());
+    // 核心逻辑：检查当前 URL（不含 hash）是否与上一次记录的不同
+    // 如果是首次加载（lastUrlWithoutHashRef.current 为 null）
+    // 或者 URL 的非 hash 部分发生了变化，则启动 NProgress。
+    if (
+      lastUrlWithoutHashRef.current === null ||
+      lastUrlWithoutHashRef.current !== currentUrlWithoutHash
+    ) {
+      NProgress.start(); // 启动进度条
+      // console.log('NProgress START: URL changed to', currentUrlWithoutHash);
+      // 更新上一次的 URL 记录
+      lastUrlWithoutHashRef.current = currentUrlWithoutHash;
+    } else {
+      // 如果只有 hash 变化，或者 URL 的非 hash 部分没有变化，则不启动 NProgress。
+      // console.log('NProgress SKIPPED (hash only change or no change):', currentUrlWithoutHash);
     }
-  }, [pathname, searchParams, isMounted]); // 监听 pathname, searchParams 和 isMounted 的变化
 
-  // 在组件首次渲染（客户端）和每次路由/数据加载完成后调用 NProgress.done()
-  useEffect(() => {
-    if (isMounted) {
-      // 确保只在客户端挂载后执行
-      const timer = setTimeout(() => {
-        NProgress.done();
-        //console.log('NProgress DONE: after mount/render or path changed and content drawn');
-      }, 300); // 延迟 300ms，给页面渲染和水合一些时间
+    // 设置一个定时器，在短时间后结束进度条。
+    // 这模拟了页面内容加载和渲染完成的时间，确保进度条不会一直显示。
+    const timer = setTimeout(() => {
+      NProgress.done(); // 结束进度条
+      // console.log('NProgress DONE (timed out):', currentUrlWithoutHash);
+    }, 300); // 300ms 的延迟通常足够覆盖大部分客户端渲染和水合时间
 
-      // 清理函数，在组件卸载或下次 effect 运行前调用 done()
-      return () => {
-        clearTimeout(timer);
-        NProgress.done(); // 确保在组件卸载时进度条也会消失
-      };
-    }
-  }, [isMounted]); // 仅在 isMounted 变化时运行
+    // 清理函数：
+    // 在组件卸载时，或者在依赖项（pathname 或 searchParams）再次变化（新的导航开始）之前，
+    // 清除当前定时器，并确保 NProgress 结束。
+    return () => {
+      clearTimeout(timer); // 清除未完成的定时器
+      NProgress.done(); // 确保进度条状态被重置
+      // console.log('NProgress CLEANUP:', currentUrlWithoutHash);
+    };
+  }, [pathname, searchParams]); // 依赖项为 pathname 和 searchParams
 
   return null; // 进度条是纯粹的副作用，不渲染任何 DOM 元素
 };

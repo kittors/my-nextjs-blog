@@ -6,6 +6,8 @@ import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
 import Link from 'next/link';
 import BlogPostContent from '@/components/templates/BlogPostContent';
+// 核心新增：从 'next/headers' 导入 headers 函数，用于获取请求头信息
+import { headers } from 'next/headers';
 
 // 核心修正：定义一个临时的、更宽松的 PageProps 接口，用于绕过编译时的类型错误。
 // 这里的 `params` 和 `searchParams` 都被设置为 `any`，以满足编译器可能存在的、
@@ -32,10 +34,8 @@ export async function generateStaticParams() {
  * 它接收路由参数 `params` (包含文章的 `slug`)，并根据 slug 获取文章内容。
  *
  * 核心修正：
- * 使用 `TempPageProps` 接口来定义组件的 props。这是一种临时解决方案，
- * 用于绕过 TypeScript 编译器在构建时对 `params` 和 `searchParams` 属性的错误类型检查
- * (即它错误地期望它们具有 Promise 属性)。
- * 在运行时，Next.js 会确保 `params.slug` 是一个字符串，因此解构 `slug` 是安全的。
+ * 1. 使用 `TempPageProps` 接口来定义组件的 props。
+ * 2. 动态判断 `Referer` 头部，以确定“返回”按钮的备用链接。
  *
  * @param {TempPageProps} props - 包含路由参数和搜索参数的对象。
  * @returns {Promise<JSX.Element>} 渲染后的博客文章页面。
@@ -50,6 +50,25 @@ export default async function BlogPostPage({ params }: TempPageProps) {
 
   // 组合文章数据，包括解析后的内容和 slug。
   const post = { ...postMeta, content, slug };
+
+  // 核心新增：根据 Referer 头部动态设置 fallbackHref
+  const headersList = headers();
+  const referer = headersList.get('referer'); // 获取 Referer 头部
+  let dynamicFallbackHref = '/'; // 默认备用链接为首页
+
+  if (referer) {
+    try {
+      const refererUrl = new URL(referer);
+      // 如果 Referer 的路径是 /tags，则将备用链接设置为 /tags
+      if (refererUrl.pathname === '/tags') {
+        dynamicFallbackHref = '/tags';
+      }
+      // 如果需要，可以在这里添加更多条件，例如检查 refererUrl.origin 是否与当前站点匹配
+    } catch (e) {
+      // 如果 Referer URL 无效，捕获错误并使用默认备用链接
+      console.error('无效的 Referer URL:', referer, e);
+    }
+  }
 
   // 如果文章不存在，则显示“文章未找到”的提示信息。
   if (!post) {
@@ -66,6 +85,8 @@ export default async function BlogPostPage({ params }: TempPageProps) {
     );
   }
 
-  // 渲染 BlogPostContent 组件，传入文章数据和标题列表。
-  return <BlogPostContent post={post} headings={headings} />;
+  // 渲染 BlogPostContent 组件，传入文章数据、标题列表和动态备用链接。
+  return (
+    <BlogPostContent post={post} headings={headings} dynamicFallbackHref={dynamicFallbackHref} />
+  );
 }
