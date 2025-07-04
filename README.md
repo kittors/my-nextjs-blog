@@ -89,8 +89,8 @@ pnpm dev
 
 **未来开发功能计划：**
 
-- [ ] **全局搜索 (Global Search):** 实现全站文章内容的搜索功能。
-- [ ] **博文标签分类 (Blog Post Tag Categorization):** 支持为文章添加标签，并按标签进行分类和筛选。
+- [x] **全局搜索 (Global Search):** 实现全站文章内容的搜索功能。
+- [x] **博文标签分类 (Blog Post Tag Categorization):** 支持为文章添加标签，并按标签进行分类和筛选。
 - [ ] **评论区 (Comment Section):** 集成评论系统，允许用户在文章下方发表评论。
 
 **请使用以下 Git 命令来创建并切换到一个新的开发分支：**
