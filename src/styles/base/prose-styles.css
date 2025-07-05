@@ -180,15 +180,13 @@ html.dark .prose th {
 
 .prose ul.contains-task-list .task-list-item {
   display: flex;
-  /* 移除 align-items: center; 因为现在由内部的 p 标签控制对齐 */
   margin-bottom: 0.5em;
 }
 
-/* 核心修正：使 p 标签成为 flex 容器，并垂直居中其内容 */
 .prose ul.contains-task-list .task-list-item p {
   display: flex;
-  align-items: center; /* 垂直居中复选框和文本 */
-  margin: 0; /* 移除默认的段落外边距，防止影响对齐 */
+  align-items: center;
+  margin: 0;
 }
 
 .prose ul.contains-task-list .task-list-item input[type='checkbox'] {
@@ -216,7 +214,7 @@ html.dark .prose ul.contains-task-list .task-list-item input[type='checkbox'] {
 .prose ul.contains-task-list .task-list-item input[type='checkbox']:checked {
   background-color: var(--color-primary-default);
   border-color: var(--color-primary-default);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -227,26 +225,30 @@ html.dark .prose ul.contains-task-list .task-list-item input[type='checkbox']:ch
   border-color: var(--color-primary-light);
 }
 
-/* 行内代码和键盘输入 */
-.prose code {
+/* 核心修正：为行内代码和键盘输入提供统一的样式和换行策略 */
+.prose code,
+.prose kbd {
   font-family: 'Fira Code', 'JetBrains Mono', monospace;
   font-size: 0.9em;
   background-color: var(--color-neutral-100);
   padding: 0.2em 0.4em;
   border-radius: 0.3em;
   color: var(--color-neutral-800);
+  /* 新增：允许行内长代码换行 */
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
-html.dark .prose code {
+html.dark .prose code,
+html.dark .prose kbd {
   background-color: var(--color-neutral-800);
   color: var(--color-neutral-100);
 }
 
-.prose :not(pre) > code {
-  white-space: nowrap;
-}
-
-.prose figure[data-rehype-pretty-code-figure] > pre code {
+/* 核心修正：确保 rehype-pretty-code 内部的 code 标签不受影响 */
+.prose figure[data-rehype-pretty-code-figure] code {
+  white-space: pre; /* 恢复 pre 的默认行为，因为 pretty-code 会处理滚动 */
+  word-break: normal;
   background-color: transparent;
   padding: 0;
   border-radius: 0;
@@ -254,18 +256,38 @@ html.dark .prose code {
 }
 
 .prose kbd {
-  background-color: var(--color-neutral-100);
   border: 1px solid var(--color-neutral-300);
   border-bottom-color: var(--color-neutral-400);
-  border-radius: 0.25rem;
-  padding: 0.1em 0.4em;
-  font-size: 0.875em;
-  color: var(--color-neutral-700);
 }
 
 html.dark .prose kbd {
-  background-color: var(--color-neutral-800);
   border-color: var(--color-neutral-600);
   border-bottom-color: var(--color-neutral-500);
-  color: var(--color-neutral-300);
+}
+
+/* 核心修正：为通用的 <pre> 块（如 frontmatter）添加样式和换行 */
+.prose pre {
+  background-color: var(--color-neutral-100);
+  color: var(--foreground);
+  padding: 1em;
+  border-radius: 0.5rem;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  overflow-x: auto; /* 保留水平滚动条作为备用 */
+  white-space: pre-wrap; /* 允许自动换行 */
+  word-break: break-all; /* 强制长内容断词 */
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+}
+
+html.dark .prose pre {
+  background-color: var(--color-neutral-800);
+}
+
+/* 核心修正：确保此规则不会错误地覆盖由 rehype-pretty-code 添加的样式 */
+.prose figure[data-rehype-pretty-code-figure] > pre {
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
 }
