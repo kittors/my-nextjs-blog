@@ -8,10 +8,6 @@ import { appConfig } from '@/lib/config';
 import TypingEffect from '@/components/atoms/TypingEffect';
 import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
 
-// 核心新增：为页面指定 Edge Runtime。
-// 这是为了满足 @cloudflare/next-on-pages 工具的要求，确保页面能在 Cloudflare 的边缘网络上运行。
-export const runtime = 'edge';
-
 /**
  * Home Page 组件：博客的首页。
  */
