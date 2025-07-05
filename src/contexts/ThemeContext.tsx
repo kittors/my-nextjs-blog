@@ -12,12 +12,6 @@ import React, {
 } from 'react';
 import { appConfig } from '@/lib/config';
 
-/**
- * 设置一个客户端 cookie。
- * @param name cookie 的名称。
- * @param value cookie 的值。
- * @param days cookie 的有效期（天）。
- */
 const setCookie = (name: string, value: string, days: number) => {
   let expires = '';
   if (days) {
@@ -25,13 +19,11 @@ const setCookie = (name: string, value: string, days: number) => {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     expires = '; expires=' + date.toUTCString();
   }
-  // 确保在整个站点内生效
   document.cookie = name + '=' + (value || '') + expires + '; path=/';
 };
 
 type Theme = 'light' | 'dark';
 
-// 核心修正 1: 在类型定义中添加 defaultToSystemPreference
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
@@ -42,47 +34,65 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: ReactNode;
-  // 从服务器（通过读取cookie）接收初始主题
   initialTheme: Theme;
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, initialTheme }) => {
-  // 使用从服务器传递过来的 initialTheme 初始化状态，确保了SSR和客户端的一致性。
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const { defaultToSystemPreference } = appConfig.theme;
 
-  // 当主题状态改变时，更新 <html> 的 class 以应用CSS变量。
-  // 这个 effect 只在客户端运行。
+  // Effect 1: 当 theme 状态改变时，更新 <html> 的 class。
   useEffect(() => {
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
   }, [theme]);
 
+  // 核心新增 Effect 2: 监听操作系统的颜色模式变化。
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      const newSystemTheme: Theme = e.matches ? 'dark' : 'light';
+
+      // 无论在哪种模式下，系统主题的变化都应该立即被响应。
+      setTheme(newSystemTheme);
+
+      // 在混合模式下，系统变化会重置用户的临时选择。
+      if (!defaultToSystemPreference) {
+        try {
+          localStorage.removeItem('theme');
+          setCookie('theme', '', -1); // 设置一个过期的 cookie 来删除它
+        } catch (error) {
+          console.error('无法清除主题存储:', error);
+        }
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    // 组件卸载时清理监听器。
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    };
+  }, [defaultToSystemPreference]);
+
+  // 用户手动切换主题的函数
   const toggleTheme = useCallback(() => {
-    if (defaultToSystemPreference) {
-      console.warn('手动主题切换已禁用，因为已配置为同步系统主题。');
-      return;
-    }
+    if (defaultToSystemPreference) return; // 在完全同步模式下，此函数不应执行。
 
     setTheme(prevTheme => {
       const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-
-      // 当用户切换主题时，设置一个cookie。
-      // 这个cookie将在下次页面加载时被服务器读取。
-      setCookie('theme', newTheme, 365);
-
-      // 同时，仍然更新 localStorage，这是为了让 ThemeScript 能在页面跳转时立即生效，防止FOUC。
       try {
+        // 将用户的手动选择（临时偏好）写入存储。
         localStorage.setItem('theme', newTheme);
+        setCookie('theme', newTheme, 365);
       } catch (e) {
-        console.error('无法在 localStorage 中设置主题', e);
+        console.error('无法持久化主题设置:', e);
       }
-
       return newTheme;
     });
   }, [defaultToSystemPreference]);
 
-  // 核心修正 2: 将 defaultToSystemPreference 添加到 context 的 value 中
   const contextValue = useMemo(
     () => ({ theme, toggleTheme, defaultToSystemPreference }),
     [theme, toggleTheme, defaultToSystemPreference]
