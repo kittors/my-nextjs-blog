@@ -11,8 +11,9 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { SearchablePostData } from '@/lib/posts';
 import { SearchModalProvider } from '@/contexts/SearchModalContext';
-import NProgress from 'nprogress'; // 核心新增：导入 NProgress
-import { usePathname } from 'next/navigation'; // 核心新增：导入 usePathname
+import NProgress from 'nprogress';
+// 核心修正：移除了未使用的 `usePathname` 导入，以解决构建错误。
+// import { usePathname } from 'next/navigation';
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -35,7 +36,8 @@ const PageContainer: React.FC<PageContainerProps> = ({
 }) => {
   const { header: headerConfig, footer: footerConfig, search: searchConfig } = appConfig;
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const pathname = usePathname(); // 核心新增：获取当前路径
+  // 核心修正：移除了未使用的 `pathname` 变量，这解决了 `@typescript-eslint/no-unused-vars` ESLint 错误，使代码更整洁。
+  // const pathname = usePathname();
 
   let paddingTopClass = '';
   if (headerConfig.isFixed && headerConfig.height) {
@@ -56,32 +58,35 @@ const PageContainer: React.FC<PageContainerProps> = ({
     };
   }, [searchConfig.hotkey]);
 
-  // 核心新增：添加全局事件监听器来处理路由跳转时的进度条
   useEffect(() => {
     const handleAnchorClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      // 向上查找最近的 <a> 标签
       const anchor = target.closest('a');
 
       if (anchor) {
-        const targetUrl = new URL(anchor.href);
-        const currentUrl = new URL(window.location.href);
+        try {
+          const targetUrl = new URL(anchor.href);
+          const currentUrl = new URL(window.location.href);
 
-        // 检查是否是内部导航，且路径名不同（忽略仅 hash 的变化）
-        if (targetUrl.origin === currentUrl.origin && targetUrl.pathname !== currentUrl.pathname) {
-          NProgress.start();
+          if (
+            targetUrl.origin === currentUrl.origin &&
+            targetUrl.pathname !== currentUrl.pathname
+          ) {
+            NProgress.start();
+          }
+        } catch (error) {
+          // 如果 URL 无效（例如 'mailto:'），则忽略
+          console.warn('捕获到无效的 a 标签 href:', anchor.href);
         }
       }
     };
 
-    // 监听所有点击事件
     document.addEventListener('click', handleAnchorClick);
 
-    // 组件卸载时移除监听器
     return () => {
       document.removeEventListener('click', handleAnchorClick);
     };
-  }, []); // 空依赖数组，确保只在挂载时执行一次
+  }, []);
 
   return (
     <ThemeProvider initialTheme={initialTheme}>
