@@ -6,6 +6,7 @@ import { Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BlogPostMetadata, TocEntry } from '@/lib/posts';
+import NProgress from 'nprogress'; // 核心新增：导入 NProgress
 
 // 定义搜索结果的接口
 interface SearchResult extends BlogPostMetadata {
@@ -28,7 +29,10 @@ interface SearchModalProps {
 
 /**
  * SearchModal 组件：提供一个模态框，包含搜索输入框和实时搜索结果列表。
- * 支持键盘导航、高亮匹配内容，并能在点击结果后跳转到文章。
+ *
+ * 核心修正：
+ * 在通过键盘回车键触发的程序化导航 (`router.push`) 前，
+ * 手动调用 `NProgress.start()`，以确保进度条能够正确触发。
  *
  * @param {SearchModalProps} props - 组件属性。
  */
@@ -40,12 +44,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
   const resultsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  /**
-   * 辅助函数：根据匹配偏移量和文章标题列表计算出最合适的跳转 hash。
-   * 会寻找距离匹配点最近且在其之前的标题。
-   * @param {SearchResult} result - 单个搜索结果对象。
-   * @returns {string} 目标 URL hash (例如: '#section-id')。
-   */
   const getTargetHash = useCallback((result: SearchResult): string => {
     let targetHash = '';
     if (typeof result.matchedOffset === 'number' && result.headings.length > 0) {
@@ -65,7 +63,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
     return targetHash;
   }, []);
 
-  // 搜索逻辑：在 query 或 postsData 变化时执行搜索
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
@@ -146,7 +143,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
     setActiveIndex(-1);
   }, [query, postsData, isOpen]);
 
-  // 键盘事件处理
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isOpen) return;
@@ -165,8 +161,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
           if (activeIndex !== -1 && results[activeIndex]) {
             const result = results[activeIndex];
             const targetHash = getTargetHash(result);
+            const destination = `/blog/${result.slug}${targetHash}`;
 
-            router.push(`/blog/${result.slug}${targetHash}`);
+            // 核心新增：在导航前手动启动进度条
+            NProgress.start();
+            router.push(destination);
             onClose();
           }
           break;
@@ -180,7 +179,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
     [isOpen, activeIndex, results, onClose, router, getTargetHash]
   );
 
-  // 监听键盘事件
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -188,7 +186,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
     };
   }, [handleKeyDown]);
 
-  // 滚动到活跃结果
   useEffect(() => {
     if (activeIndex !== -1 && resultsRef.current) {
       const activeElement = resultsRef.current.children[activeIndex] as HTMLElement;
@@ -229,14 +226,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
               >
                 <h3
                   className="search-result-title"
-                  // 核心修正：转义 JSX 中的双引号
                   dangerouslySetInnerHTML={{
                     __html: result.highlightedTitle.replace(/"/g, '&quot;'),
                   }}
                 />
                 <p
                   className="search-result-excerpt"
-                  // 核心修正：转义 JSX 中的双引号
                   dangerouslySetInnerHTML={{
                     __html: result.highlightedExcerpt.replace(/"/g, '&quot;'),
                   }}
@@ -251,7 +246,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
 
         {query.trim() !== '' && results.length === 0 && (
           <div className="search-no-results">
-            <p>没有找到与 &quot;{query}&quot; 相关的文章。</p> {/* 核心修正：转义双引号 */}
+            <p>没有找到与 &quot;{query}&quot; 相关的文章。</p>
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import NProgress from 'nprogress'; // 核心新增：导入 NProgress
 
 interface BackButtonProps {
   /**
@@ -17,11 +18,9 @@ interface BackButtonProps {
 /**
  * BackButton 组件：一个智能的、可复用的返回按钮。
  *
- * 遵循原子设计原则，这是一个独立的 UI 单元，封装了“返回上一页”的交互逻辑。
  * 核心修正：
- * 移除了基于 `window.history.length` 的条件判断，现在点击按钮将始终
- * 使用 `router.push` 导航到 `fallbackHref`。这解决了当 URL 仅因 hash 变化时
- * `router.back()` 行为不符合预期的问题，确保了“返回所有文章”按钮的可靠性。
+ * 在进行程序化导航前，手动调用 `NProgress.start()`，以确保进度条能够
+ * 在这类非用户直接点击链接的场景下也能正确触发。
  *
  * @param {BackButtonProps} props - 组件属性。
  */
@@ -31,8 +30,10 @@ const BackButton: React.FC<BackButtonProps> = ({ fallbackHref }) => {
   const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); // 阻止默认的链接行为
 
-    // 核心修正：直接使用 router.push 导航到 fallbackHref
-    // 这确保了无论浏览器历史记录状态如何，都能可靠地回到指定页面。
+    // 核心新增：在导航前手动启动进度条
+    NProgress.start();
+
+    // 使用 router.push 导航到 fallbackHref
     router.push(fallbackHref);
   };
 

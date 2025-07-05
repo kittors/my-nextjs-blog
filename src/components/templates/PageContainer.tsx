@@ -11,6 +11,8 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { SearchablePostData } from '@/lib/posts';
 import { SearchModalProvider } from '@/contexts/SearchModalContext';
+import NProgress from 'nprogress'; // 核心新增：导入 NProgress
+import { usePathname } from 'next/navigation'; // 核心新增：导入 usePathname
 
 interface PageContainerProps {
   children: React.ReactNode;
@@ -19,12 +21,10 @@ interface PageContainerProps {
   userOS: 'mac' | 'other';
 }
 
-// 核心修正：创建一个映射表，将 header 高度类名显式地映射到对应的 padding 类名。
-// 这能确保 Tailwind 的 JIT 编译器在构建时可以静态地检测到这些类名并生成相应的 CSS。
 const heightToPaddingMap: { [key: string]: string } = {
-  'h-16': 'pt-16', // 64px
-  'h-20': 'pt-20', // 80px
-  'h-24': 'pt-24', // 96px
+  'h-16': 'pt-16',
+  'h-20': 'pt-20',
+  'h-24': 'pt-24',
 };
 
 const PageContainer: React.FC<PageContainerProps> = ({
@@ -35,10 +35,10 @@ const PageContainer: React.FC<PageContainerProps> = ({
 }) => {
   const { header: headerConfig, footer: footerConfig, search: searchConfig } = appConfig;
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const pathname = usePathname(); // 核心新增：获取当前路径
 
   let paddingTopClass = '';
   if (headerConfig.isFixed && headerConfig.height) {
-    // 使用映射表来获取正确的 padding 类名，而不是动态拼接字符串。
     paddingTopClass = heightToPaddingMap[headerConfig.height] || '';
   }
 
@@ -55,6 +55,33 @@ const PageContainer: React.FC<PageContainerProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [searchConfig.hotkey]);
+
+  // 核心新增：添加全局事件监听器来处理路由跳转时的进度条
+  useEffect(() => {
+    const handleAnchorClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // 向上查找最近的 <a> 标签
+      const anchor = target.closest('a');
+
+      if (anchor) {
+        const targetUrl = new URL(anchor.href);
+        const currentUrl = new URL(window.location.href);
+
+        // 检查是否是内部导航，且路径名不同（忽略仅 hash 的变化）
+        if (targetUrl.origin === currentUrl.origin && targetUrl.pathname !== currentUrl.pathname) {
+          NProgress.start();
+        }
+      }
+    };
+
+    // 监听所有点击事件
+    document.addEventListener('click', handleAnchorClick);
+
+    // 组件卸载时移除监听器
+    return () => {
+      document.removeEventListener('click', handleAnchorClick);
+    };
+  }, []); // 空依赖数组，确保只在挂载时执行一次
 
   return (
     <ThemeProvider initialTheme={initialTheme}>
