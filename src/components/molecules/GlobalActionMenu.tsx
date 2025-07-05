@@ -1,7 +1,7 @@
 // src/components/molecules/GlobalActionMenu.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Menu, X, ArrowUp, ListOrdered } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
@@ -14,11 +14,13 @@ interface GlobalActionMenuProps {
  * GlobalActionMenu 组件：一个全局浮动操作菜单。
  *
  * 核心修正：
- * 根据可见子操作按钮的数量，智能地渲染菜单结构。
- * - 如果没有可见按钮，则不渲染任何内容。
- * - 如果只有一个可见按钮（例如，只有“回到顶部”或只有移动端大纲按钮），
- * 则直接渲染该按钮，无需主浮动操作按钮（FAB）来展开。
- * - 如果有两个或更多可见按钮，则按原有逻辑渲染主 FAB 和可展开的子菜单。
+ * 修复了移动端子按钮点击事件有时需要点击两次的问题。
+ * 策略如下：
+ * 1. 统一子按钮点击后关闭菜单的逻辑，不再根据可见按钮数量判断。
+ * 2. 确保在执行操作后立即尝试关闭菜单，避免状态冲突。
+ * 3. 简化了 `visibleActionButtons` 的声明，直接构建并使用。
+ * 4. **关键：** 结合 CSS 中 `touch-action: manipulation;` 属性，
+ * 以优化移动端浏览器对点击事件的解释和响应，减少延迟或双击问题。
  *
  * 这提升了用户体验，减少了不必要的点击。
  *
@@ -47,28 +49,25 @@ const GlobalActionMenu: React.FC<GlobalActionMenuProps> = ({ onToggleToc }) => {
   }, []); // 空依赖数组，确保只在组件挂载和卸载时执行
 
   // 平滑滚动到页面顶部的处理函数
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // 如果有多个按钮，点击后关闭菜单；如果只有一个按钮，则无需关闭菜单
-    if (visibleActionButtons.length > 1) {
-      setIsMenuOpen(false);
-    }
-  };
+    // 核心修正：点击子按钮后，无论如何都尝试关闭菜单。
+    // 这避免了多次点击的问题，因为菜单状态会立即更新。
+    setIsMenuOpen(false);
+  }, []);
 
   // 触发文章大纲显示/隐藏的处理函数
-  const handleToggleToc = () => {
+  const handleToggleToc = useCallback(() => {
     // 只有当 onToggleToc 回调函数存在时才调用它
     if (onToggleToc) {
       onToggleToc();
-      // 如果有多个按钮，点击后关闭菜单；如果只有一个按钮，则无需关闭菜单
-      if (visibleActionButtons.length > 1) {
-        setIsMenuOpen(false);
-      }
+      // 核心修正：点击子按钮后，无论如何都尝试关闭菜单。
+      setIsMenuOpen(false);
     }
-  };
+  }, [onToggleToc]);
 
-  // 核心修正：根据条件构建一个包含所有可见子操作按钮的数组
-  // 将 JSX.Element[] 更改为 React.ReactElement[]，明确从 React 导入的类型
+  // 根据条件构建一个包含所有可见子操作按钮的数组
+  // 使用 React.ReactElement[] 明确类型
   const visibleActionButtons: React.ReactElement[] = [];
 
   // 检查“回到顶部”按钮是否应该可见
@@ -110,6 +109,8 @@ const GlobalActionMenu: React.FC<GlobalActionMenuProps> = ({ onToggleToc }) => {
   }
 
   // 如果只有一个可见按钮，则直接渲染该按钮，无需主 FAB
+  // 核心修正：当只有一个可见按钮时，即使它是一个 FAB，也直接渲染。
+  // 这消除了“点击主按钮展开，再点击子按钮执行”的中间步骤，简化了交互。
   if (visibleActionButtonsCount === 1) {
     return (
       <div className="global-action-menu-container">

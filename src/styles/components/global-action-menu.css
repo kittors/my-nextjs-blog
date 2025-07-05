@@ -33,12 +33,18 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
+  /* 核心修正：移除直接的 transition，将其移入媒体查询以控制移动端行为 */
+  /* 核心修正：添加 touch-action 属性，优化移动端点击响应 */
+  touch-action: manipulation;
 }
 
-.main-fab:hover {
-  transform: scale(1.1);
-  border-color: var(--color-neutral-400);
+/* 核心修正：将 hover 效果限制在 PC 端 */
+@media (min-width: 1024px) {
+  .main-fab:hover {
+    transform: scale(1.1);
+    border-color: var(--color-neutral-400);
+    transition: all 0.2s ease-in-out; /* 仅在 PC 端应用过渡效果 */
+  }
 }
 
 html.dark .main-fab {
@@ -47,9 +53,12 @@ html.dark .main-fab {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-html.dark .main-fab:hover {
-  background-color: var(--color-neutral-200);
-  border-color: var(--color-neutral-400);
+/* 核心修正：将 dark 模式下的 hover 效果限制在 PC 端 */
+@media (min-width: 1024px) {
+  html.dark .main-fab:hover {
+    background-color: var(--color-neutral-200);
+    border-color: var(--color-neutral-400);
+  }
 }
 
 /* 子操作按钮的容器 */
@@ -85,12 +94,18 @@ html.dark .main-fab:hover {
   border: 1px solid var(--color-neutral-300);
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
+  /* 核心修正：移除直接的 transition，将其移入媒体查询以控制移动端行为 */
+  /* 核心修正：添加 touch-action 属性，优化移动端点击响应 */
+  touch-action: manipulation;
 }
 
-.action-button:hover {
-  transform: scale(1.1);
-  border-color: var(--color-neutral-400);
+/* 核心修正：将 hover 效果限制在 PC 端 */
+@media (min-width: 1024px) {
+  .action-button:hover {
+    transform: scale(1.1);
+    border-color: var(--color-neutral-400);
+    transition: all 0.2s ease-in-out; /* 仅在 PC 端应用过渡效果 */
+  }
 }
 
 html.dark .action-button {
@@ -98,7 +113,10 @@ html.dark .action-button {
   border-color: var(--color-neutral-300);
 }
 
-html.dark .action-button:hover {
-  background-color: var(--color-neutral-200);
-  border-color: var(--color-neutral-400);
+/* 核心修正：将 dark 模式下的 hover 效果限制在 PC 端 */
+@media (min-width: 1024px) {
+  html.dark .action-button:hover {
+    background-color: var(--color-neutral-200);
+    border-color: var(--color-neutral-400);
+  }
 }

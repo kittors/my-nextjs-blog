@@ -180,8 +180,15 @@ html.dark .prose th {
 
 .prose ul.contains-task-list .task-list-item {
   display: flex;
-  align-items: flex-start;
+  /* 移除 align-items: center; 因为现在由内部的 p 标签控制对齐 */
   margin-bottom: 0.5em;
+}
+
+/* 核心修正：使 p 标签成为 flex 容器，并垂直居中其内容 */
+.prose ul.contains-task-list .task-list-item p {
+  display: flex;
+  align-items: center; /* 垂直居中复选框和文本 */
+  margin: 0; /* 移除默认的段落外边距，防止影响对齐 */
 }
 
 .prose ul.contains-task-list .task-list-item input[type='checkbox'] {
