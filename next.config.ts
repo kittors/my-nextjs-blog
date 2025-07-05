@@ -2,7 +2,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   // Webpack 配置保持不变
   webpack: (config, { isServer }) => {
     if (isServer) {
