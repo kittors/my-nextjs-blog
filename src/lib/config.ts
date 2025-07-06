@@ -1,5 +1,4 @@
 // src/lib/config.ts
-import { i18n } from '@/i18n-config'; // 核心新增：导入 i18n 配置
 
 // 定义 Logo 配置的接口
 export interface HeaderLogoConfig {
@@ -55,12 +54,14 @@ export interface HomePageConfig {
 
 // 核心新增：定义语言配置的接口
 export interface LanguageConfig {
-  // 核心修正：将 languages 属性的类型从 string[] 改为 readonly string[]，
-  // 以匹配 i18n.locales 的只读类型，解决类型不兼容问题。
-  languages: readonly string[];
-  defaultLanguage: string;
+  // 核心新增：直接在此处定义支持的语言列表，取代 src/i18n-config.ts
+  locales: readonly ['en', 'zh', 'ja']; // 明确列出所有支持的语言
+  defaultLocale: 'zh'; // 默认语言
   languageLabels: { [key: string]: string };
 }
+
+// 核心新增：从 LanguageConfig 中导出 Locale 类型，供其他文件使用
+export type Locale = LanguageConfig['locales'][number];
 
 // 定义应用程序的整体配置接口
 export interface AppConfig {
@@ -145,9 +146,9 @@ export const appConfig: AppConfig = {
   },
   // 核心新增：语言相关的配置
   language: {
-    // 核心修正：直接从 i18n-config.ts 中获取支持的语言列表
-    languages: i18n.locales, // i18n.locales 本身就是 readonly 类型，直接赋值即可
-    defaultLanguage: i18n.defaultLocale, // 核心修正：直接从 i18n-config.ts 中获取默认语言
+    // 核心修正：直接在此处定义支持的语言列表，取代 src/i18n-config.ts
+    locales: ['en', 'zh', 'ja'], // 明确列出所有支持的语言
+    defaultLocale: 'zh', // 默认语言
     languageLabels: {
       en: 'English',
       zh: '简体中文',

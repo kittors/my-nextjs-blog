@@ -15,8 +15,8 @@ import { toString } from 'hast-util-to-string';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-// 核心修正：从 i18n-config.ts 导入 i18n 配置，而不是 appConfig
-import { i18n } from '@/i18n-config';
+// 核心修正：从 src/lib/config 导入 appConfig
+import { appConfig } from '@/lib/config';
 
 // 接口定义
 export interface TocEntry {
@@ -61,8 +61,8 @@ export interface SearchablePostData {
 }
 
 const postsDirectory = path.join(process.cwd(), 'posts');
-// 核心修正：直接使用 i18n.locales 作为支持的语言列表
-const languages = i18n.locales;
+// 核心修正：直接使用 appConfig.language.locales 作为支持的语言列表
+const languages = appConfig.language.locales;
 
 let highlighter: Highlighter;
 async function getSingletonHighlighter() {

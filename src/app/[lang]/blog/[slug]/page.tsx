@@ -4,7 +4,8 @@ import { getAllPostsParams, getPostBySlug } from '@/lib/posts';
 import BlogPostContent from '@/components/templates/BlogPostContent';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-// import { type Locale } from '@/i18n-config'; // 核心修正：移除未使用的 Locale 导入
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 import { getDictionary } from '@/lib/dictionary';
 
 // 核心新增：启用增量静态再生 (ISR)

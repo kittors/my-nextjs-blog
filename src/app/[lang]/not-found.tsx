@@ -2,23 +2,27 @@
 import Link from 'next/link';
 import { getDictionary } from '@/lib/dictionary';
 import { headers } from 'next/headers';
-import { type Locale } from '@/i18n-config';
-import { i18n } from '@/i18n-config';
-import { appConfig } from '@/lib/config'; // 核心新增：导入 appConfig
+// 核心修正：从 src/lib/config 导入 Locale 类型和 appConfig
+import { appConfig, type Locale } from '@/lib/config';
 
 export default async function NotFound() {
   const headersList = await headers();
   // 核心修正：尝试从 Referer 头或 User-Agent 中推断语言，或者使用默认语言
   // 这种方法更健壮，因为 _not-found 页面可能没有直接的 [lang] 参数
   const referer = headersList.get('referer');
-  let lang: Locale = i18n.defaultLocale; // 默认使用配置中的默认语言
+  // 核心修正：使用 appConfig.language.defaultLocale
+  let lang: Locale = appConfig.language.defaultLocale; // 默认使用配置中的默认语言
 
   if (referer) {
     try {
       const url = new URL(referer);
       // 从路径中提取语言前缀
       const pathSegments = url.pathname.split('/').filter(Boolean); // 过滤空字符串
-      if (pathSegments.length > 0 && i18n.locales.includes(pathSegments[0] as Locale)) {
+      // 核心修正：使用 appConfig.language.locales
+      if (
+        pathSegments.length > 0 &&
+        appConfig.language.locales.includes(pathSegments[0] as Locale)
+      ) {
         lang = pathSegments[0] as Locale;
       }
     } catch (e) {

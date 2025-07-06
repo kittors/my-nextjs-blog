@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { BlogPostMetadata } from '@/lib/posts'; // 导入文章元数据类型
 import Heading from '@/components/atoms/Heading'; // 导入原子组件
 import Text from '@/components/atoms/Text'; // 导入原子组件
-import { type Locale } from '@/i18n-config'; // 导入 Locale 类型
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 
 // 定义 BlogPostCard 组件的 Props 类型
 interface BlogPostCardProps {

@@ -4,13 +4,13 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { HeaderLogoConfig, appConfig } from '@/lib/config';
+// 核心修正：从 src/lib/config 导入 HeaderLogoConfig, appConfig 和 Locale 类型
+import { HeaderLogoConfig, appConfig, type Locale } from '@/lib/config';
 import ThemeToggle from '@/components/molecules/ThemeToggle';
 import { Github, Search, MoreVertical, Tags } from 'lucide-react';
 import { useSearchModal } from '@/contexts/SearchModalContext';
 import DropdownMenu from '@/components/molecules/DropdownMenu';
 import LanguageSwitcher from '@/components/molecules/LanguageSwitcher';
-import { type Locale } from '@/i18n-config';
 
 interface HeaderProps {
   isVisible?: boolean;
@@ -94,7 +94,7 @@ const Header: React.FC<HeaderProps> = ({
 
   const renderLogo = () => {
     // 核心修正：根据当前语言获取 logo 内容，如果当前语言没有，则回退到默认语言
-    const logoContent = logo.content[lang] || logo.content[appConfig.language.defaultLanguage];
+    const logoContent = logo.content[lang] || logo.content[appConfig.language.defaultLocale];
 
     if (logo.type === 'text') {
       return (

@@ -7,7 +7,8 @@ import BlogPostList from '@/components/organisms/BlogPostList';
 import TagCloud from '@/components/molecules/TagCloud';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
-import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 
 // 核心修正：更新 Props 接口以接收字典和 lang
 interface TagsPageClientProps {

@@ -84,3 +84,16 @@ html.dark .dropdown-panel {
 .dropdown-item:hover {
   background-color: var(--dropdown-item-hover-bg);
 }
+
+/* 核心新增：激活语言项的样式 */
+.dropdown-item.active-language-item {
+  background-color: var(--color-neutral-100); /* 亮色模式下浅灰色背景 */
+  color: var(--color-primary-dark); /* 亮色模式下深蓝色文本 */
+  font-weight: 600; /* 加粗 */
+  cursor: default; /* 激活项不可点击 */
+}
+
+html.dark .dropdown-item.active-language-item {
+  background-color: var(--color-neutral-50); /* 暗色模式下更深的背景 */
+  color: var(--color-primary-light); /* 暗色模式下亮蓝色文本 */
+}

@@ -6,7 +6,8 @@ import PageContainer from '@/components/templates/PageContainer';
 import { getAllPostsForSearch } from '@/lib/posts';
 import { cookies, headers } from 'next/headers';
 import { getDictionary } from '@/lib/dictionary';
-import { type Locale } from '@/i18n-config';
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 import { appConfig } from '@/lib/config';
 
 // 你仍然可以从这里导出 Metadata，它会自动应用于此布局下的所有页面

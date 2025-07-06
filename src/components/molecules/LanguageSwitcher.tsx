@@ -3,7 +3,8 @@
 
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { i18n, type Locale } from '@/i18n-config';
+// 核心修正：从 src/lib/config 导入 appConfig 和 Locale 类型
+import { appConfig, type Locale } from '@/lib/config';
 import DropdownMenu from '@/components/molecules/DropdownMenu';
 import { Languages } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface LanguageSwitcherProps {
     label: string;
     en: string;
     zh: string;
+    ja: string; // 核心修正：添加 ja 类型
   };
 }
 
@@ -53,12 +55,16 @@ export default function LanguageSwitcher({ lang, dictionary }: LanguageSwitcherP
         </button>
       }
     >
-      {i18n.locales.map(locale => (
+      {/* 核心修正：使用 appConfig.language.locales 替代 i18n.locales */}
+      {appConfig.language.locales.map(locale => (
         <button
           key={locale}
           onClick={() => handleLanguageChange(locale)}
           // 核心修正：为菜单项提供更清晰的样式，并正确禁用当前语言
-          className={`dropdown-item w-full text-left justify-start ${lang === locale ? 'font-semibold text-primary' : ''}`}
+          // 将激活状态的类从 Tailwind 的 'font-semibold text-primary' 更改为自定义的 'active-language-item'。
+          // 'active-language-item' 类已在 src/styles/components/dropdown-menu.css 中定义，
+          // 包含亮色和暗色模式下的样式。
+          className={`dropdown-item w-full text-left justify-start ${lang === locale ? 'active-language-item' : ''}`}
           disabled={lang === locale}
         >
           {/* 从字典中获取语言的完整名称 */}

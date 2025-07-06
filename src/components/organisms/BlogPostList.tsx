@@ -5,7 +5,8 @@ import React from 'react';
 import { type BlogPostMetadata } from '@/lib/posts';
 import BlogPostListCard from '@/components/molecules/BlogPostListCard';
 import { AnimatePresence, motion } from 'framer-motion';
-import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 
 // 核心新增：定义 BlogPostListProps 接口，包含字典
 interface BlogPostListProps {

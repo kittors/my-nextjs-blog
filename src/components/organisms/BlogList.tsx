@@ -7,7 +7,8 @@ import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
 import BlogPostCardSkeleton from '@/components/molecules/BlogPostCardSkeleton';
 import LazyLoad from '@/components/atoms/LazyLoad';
-import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 
 // 核心新增：定义 BlogList 组件的 Props 类型，包含字典对象
 interface BlogListProps {

@@ -6,13 +6,13 @@ import Header from '@/components/organisms/Header';
 import Footer from '@/components/organisms/Footer';
 import ProgressBar from '@/components/molecules/ProgressBar';
 import SearchModal from '@/components/molecules/SearchModal';
-import { appConfig } from '@/lib/config';
+// 核心修正：从 src/lib/config 导入 appConfig 和 Locale 类型
+import { appConfig, type Locale } from '@/lib/config';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { SearchablePostData } from '@/lib/posts';
 import { SearchModalProvider } from '@/contexts/SearchModalContext';
 import NProgress from 'nprogress';
-import { type Locale } from '@/i18n-config';
 
 interface PageContainerProps {
   children: React.ReactNode;

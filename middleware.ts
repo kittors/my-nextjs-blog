@@ -3,9 +3,11 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { match } from '@formatjs/intl-localematcher';
 import Negotiator from 'negotiator';
-import { i18n } from './src/i18n-config';
+// 核心修正：从 src/lib/config 导入 appConfig 和 Locale 类型
+import { appConfig, type Locale } from './src/lib/config';
 
-const { locales, defaultLocale } = i18n;
+// 核心修正：直接从 appConfig 中获取 locales 和 defaultLocale
+const { locales, defaultLocale } = appConfig.language;
 
 /**
  * 从请求头中解析出最匹配的语言区域设置。
@@ -49,13 +51,14 @@ export function middleware(request: NextRequest) {
   // 2. 确定用户的最佳语言。
   // 优先从 cookie 中读取用户上次访问时选择的语言。
   const cookieLang = request.cookies.get('lang')?.value;
-  let locale: string;
+  let locale: Locale; // 核心修正：确保 locale 的类型是 Locale
 
-  if (cookieLang && locales.includes(cookieLang as any)) {
-    locale = cookieLang;
+  if (cookieLang && locales.includes(cookieLang as Locale)) {
+    // 核心修正：类型断言为 Locale
+    locale = cookieLang as Locale;
   } else {
     // 如果没有有效的 cookie，则根据请求头的 'Accept-Language' 进行协商。
-    locale = getLocale(request);
+    locale = getLocale(request) as Locale; // 核心修正：类型断言为 Locale
   }
 
   // 3. 构建新的重定向 URL 并执行重定向。

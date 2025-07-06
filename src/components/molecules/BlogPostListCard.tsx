@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { type BlogPostMetadata } from '@/lib/posts';
 import { Calendar, User, Tag } from 'lucide-react';
 import Heading from '@/components/atoms/Heading'; // 核心修正：导入 Heading 原子组件
-import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 
 interface BlogPostListCardProps {
   post: BlogPostMetadata;

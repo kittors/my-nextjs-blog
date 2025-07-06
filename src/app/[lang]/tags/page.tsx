@@ -3,14 +3,8 @@ import React from 'react';
 import { getSortedPostsMetadata, getAllTags } from '@/lib/posts';
 import TagsPageClient from '@/components/templates/TagsPageClient';
 import { getDictionary } from '@/lib/dictionary';
-// import { type Locale } from '@/i18n-config'; // 核心修正：移除未使用的 Locale 导入
-
-// 核心修正：更新 Props 接口以接收 lang 参数
-// interface TagsPageProps { // 核心修正：移除 TagsPageProps 接口定义
-//   params: {
-//     lang: Locale;
-//   };
-// }
+// 核心修正：从 src/lib/config 导入 Locale 类型
+import { type Locale } from '@/lib/config';
 
 /**
  * TagsPage (Server Component): 标签分类页面的服务器端入口。
