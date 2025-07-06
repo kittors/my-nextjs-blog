@@ -1,16 +1,26 @@
 // src/lib/dictionary.ts
 import 'server-only';
 import type { Locale } from '@/i18n-config';
+import { i18n } from '@/i18n-config'; // 核心新增：导入 i18n 配置
 
-// 定义一个映射，将语言环境代码映射到其对应的字典模块。
-// 使用动态导入 `() => import(...)` 来实现代码分割，
-// 这样每个语言的字典只在被请求时才会被加载。
-const dictionaries = {
-  en: () => import('@/locales/en.json').then(module => module.default),
-  zh: () => import('@/locales/zh.json').then(module => module.default),
-  // 核心新增：导入日语字典
-  ja: () => import('@/locales/ja.json').then(module => module.default),
-};
+// 定义一个类型，表示字典加载函数
+type DictionaryLoader = () => Promise<any>;
+
+// 核心修正：动态创建 dictionaries 对象。
+// 这个映射现在会根据 i18n.locales 中定义的语言列表，
+// 自动为每种语言生成对应的字典加载函数。
+// 这样，当您在 src/locales 目录下添加新的语言 JSON 文件时，
+// 无需修改此文件，它会通过 i18n.locales 自动识别并加载新语言的字典。
+const dictionaries: Record<Locale, DictionaryLoader> = i18n.locales.reduce(
+  (acc, locale) => {
+    // 使用模板字符串进行动态导入。
+    // @ts-ignore: TypeScript 在编译时对动态导入的路径要求严格，
+    // 但 Next.js 的打包工具能够正确处理这种模式，将每个语言的字典打包成独立的 chunk。
+    acc[locale] = () => import(`@/locales/${locale}.json`).then(module => module.default);
+    return acc;
+  },
+  {} as Record<Locale, DictionaryLoader>
+); // 确保初始累加器是一个 Record 类型
 
 /**
  * 异步获取指定语言环境的字典。
@@ -22,8 +32,8 @@ const dictionaries = {
  * 不产生任何副作用。动态导入的运用体现了对性能优化的考量。
  */
 export const getDictionary = async (locale: Locale) => {
-  // 检查请求的 locale 是否在支持的字典中，如果不在，则回退到 'en'。
+  // 检查请求的 locale 是否在支持的字典中，如果不在，则回退到默认语言。
   // 这增加了函数的健壮性，防止因无效的 locale 参数导致程序崩溃。
-  const loader = dictionaries[locale] || dictionaries.en;
+  const loader = dictionaries[locale] || dictionaries[i18n.defaultLocale];
   return loader();
 };

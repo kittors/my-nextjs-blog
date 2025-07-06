@@ -15,7 +15,8 @@ import { toString } from 'hast-util-to-string';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { appConfig } from './config';
+// 核心修正：从 i18n-config.ts 导入 i18n 配置，而不是 appConfig
+import { i18n } from '@/i18n-config';
 
 // 接口定义
 export interface TocEntry {
@@ -60,7 +61,8 @@ export interface SearchablePostData {
 }
 
 const postsDirectory = path.join(process.cwd(), 'posts');
-const { languages } = appConfig.language;
+// 核心修正：直接使用 i18n.locales 作为支持的语言列表
+const languages = i18n.locales;
 
 let highlighter: Highlighter;
 async function getSingletonHighlighter() {
@@ -180,7 +182,6 @@ export async function getPostBySlug(slug: string, lang: string): Promise<BlogPos
     .filter(p => p.postId === metadata.postId && p.lang !== metadata.lang)
     .map(p => ({ lang: p.lang, slug: p.slug, title: p.title }));
 
-  // ... (unified processor and HAST generation logic remains the same)
   const tempHeadings: Omit<TocEntry, 'offset'>[] = [];
   const prettyCodeOptions: RehypePrettyCodeOptions = {
     getHighlighter: getSingletonHighlighter,
