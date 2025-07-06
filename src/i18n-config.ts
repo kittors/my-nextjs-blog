@@ -14,7 +14,7 @@
 // 定义支持的语言环境列表
 export const i18n = {
   defaultLocale: 'zh',
-  locales: ['en', 'zh'],
+  locales: ['en', 'zh', 'ja'],
 } as const;
 
 // 从配置中导出 Locale 类型，确保整个应用中的类型安全

@@ -83,6 +83,8 @@ export const appConfig: AppConfig = {
       content: {
         zh: '我的博客',
         en: 'My Blog',
+        // 核心新增：日语 Logo 文本
+        ja: '私のブログ',
       },
       width: 'auto',
     },
@@ -111,6 +113,8 @@ export const appConfig: AppConfig = {
     title: {
       zh: '我的个人博客',
       en: 'My Personal Blog',
+      // 核心新增：日语标题
+      ja: '私の個人ブログ',
     },
     subtitles: {
       zh: [
@@ -125,15 +129,24 @@ export const appConfig: AppConfig = {
         'Stay curious, keep learning.',
         'A Coder, A Writer, A Thinker.',
       ],
+      // 核心新增：日语副标题
+      ja: [
+        '私の思考、技術、そして生活を共有します。',
+        'コードは世界を変え、思想は未来を照らす。',
+        '好奇心を持ち続け、学び続けよう。',
+        'A Coder, A Writer, A Thinker.',
+      ],
     },
   },
   // 核心新增：语言相关的配置
   language: {
-    languages: ['en', 'zh'],
+    // 核心修正：新增 'ja' 到支持的语言列表中
+    languages: ['en', 'zh', 'ja'],
     defaultLanguage: 'zh',
     languageLabels: {
       en: 'English',
       zh: '简体中文',
+      ja: '日本語',
     },
   },
 };

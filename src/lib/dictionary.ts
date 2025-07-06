@@ -8,6 +8,8 @@ import type { Locale } from '@/i18n-config';
 const dictionaries = {
   en: () => import('@/locales/en.json').then(module => module.default),
   zh: () => import('@/locales/zh.json').then(module => module.default),
+  // 核心新增：导入日语字典
+  ja: () => import('@/locales/ja.json').then(module => module.default),
 };
 
 /**

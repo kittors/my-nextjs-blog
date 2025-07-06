@@ -1,0 +1,55 @@
+{
+  "header": {
+    "tags": "タグ",
+    "source_code": "ソースコードを見る",
+    "toggle_theme": "テーマを切り替える",
+    "language_switcher_label": "言語"
+  },
+  "footer": {
+    "copyright": "&copy; {year} 私のNext.jsブログ。すべての権利を保有。"
+  },
+  "tags_page": {
+    "title": "タグ",
+    "description": "ここでは、タグで記事を検索・絞り込むことができます。",
+    "search_placeholder": "タグを検索...",
+    "show_all": "全{count}タグを表示",
+    "all_tags_label": "すべて",
+    "collapse_tags": "タグを折りたたむ"
+  },
+  "post": {
+    "back_button": "すべての記事に戻る",
+    "toc_title": "目次"
+  },
+  "language_switcher": {
+    "label": "言語",
+    "en": "English",
+    "zh": "簡体字中国語",
+    "ja": "日本語"
+  },
+  "search": {
+    "placeholder": "コンテンツを検索...",
+    "no_results": "\"{query}\" に関連する記事は見つかりませんでした。"
+  },
+  "errors": {
+    "post_not_found": "記事が見つかりません",
+    "post_not_found_description": "申し訳ありません、お探しの記事は存在しません。",
+    "back_to_home": "ホームに戻る"
+  },
+  "blog_list": {
+    "no_posts": "ブログ記事が見つかりません。",
+    "latest_posts_heading": "最新のブログ記事"
+  },
+  "blog_post_list": {
+    "no_posts_found": "このカテゴリに関連する記事は見つかりませんでした。"
+  },
+  "blog_post_card": {
+    "author_label": "著者",
+    "date_label": "日付",
+    "unknown_date": "不明な日付"
+  },
+  "post_content": {
+    "author_label": "著者",
+    "date_label": "日付",
+    "unknown_date": "不明な日付"
+  }
+}
