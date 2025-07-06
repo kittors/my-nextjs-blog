@@ -47,8 +47,13 @@ export default async function HomePage({ params }: HomePageProps) {
         </Text>
       </section>
 
-      {/* 核心新增：将 blog_list 相关的字典文本传递给 BlogList 组件 */}
-      <BlogList posts={allPosts} dictionary={dictionary.blog_list} />
+      {/* 核心新增：将 blog_list 和 blog_post_card 相关的字典文本以及 lang 传递给 BlogList 组件 */}
+      <BlogList
+        posts={allPosts}
+        dictionary={dictionary.blog_list}
+        blogPostCardDictionary={dictionary.blog_post_card}
+        lang={lang}
+      />
       <GlobalActionMenu />
     </main>
   );

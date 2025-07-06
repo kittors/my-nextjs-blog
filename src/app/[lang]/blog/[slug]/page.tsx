@@ -74,6 +74,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       dynamicFallbackHref={dynamicFallbackHref}
       dictionary={dictionary.post} // 传递文章页面相关的字典
       lang={lang}
+      postContentDictionary={dictionary.post_content} // 核心新增：传递 post_content 字典
     />
   );
 }

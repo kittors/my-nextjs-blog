@@ -40,5 +40,15 @@
   },
   "blog_post_list": {
     "no_posts_found": "在此分类下没有找到相关的文章。"
+  },
+  "blog_post_card": {
+    "author_label": "作者",
+    "date_label": "日期",
+    "unknown_date": "未知日期"
+  },
+  "post_content": {
+    "author_label": "作者",
+    "date_label": "日期",
+    "unknown_date": "未知日期"
   }
 }

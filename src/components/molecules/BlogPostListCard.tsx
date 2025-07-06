@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { type BlogPostMetadata } from '@/lib/posts';
 import { Calendar, User, Tag } from 'lucide-react';
 import Heading from '@/components/atoms/Heading'; // 核心修正：导入 Heading 原子组件
+import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
 
 interface BlogPostListCardProps {
   post: BlogPostMetadata;
+  lang: Locale; // 核心新增：接收当前语言
 }
 
 /**
@@ -15,21 +17,25 @@ interface BlogPostListCardProps {
  * 核心修正：
  * 1. 移除了硬编码的 <h2> 元素。
  * 2. 复用了可维护的 `Heading` 原子组件来渲染标题，确保其样式
- * （字体大小、粗细、渐变色等）与首页的 `BlogPostCard` 完全一致。
+ * (字体大小、粗细、渐变色等) 与首页的 `BlogPostCard` 完全一致。
  * 3. 这种重构遵循了原子设计的核心原则，提升了代码的可维护性和视觉一致性。
+ * 4. 新增 `lang` prop，用于在生成链接时包含语言前缀。
  *
  * @param {BlogPostListCardProps} props - 组件属性。
+ * @param {Locale} props.lang - 当前语言环境。
  */
-const BlogPostListCard: React.FC<BlogPostListCardProps> = ({ post }) => {
+const BlogPostListCard: React.FC<BlogPostListCardProps> = ({ post, lang }) => {
   const { slug, title, date, author, description, tags = [] } = post;
-  const displayDate = new Date(date).toLocaleDateString('zh-CN', {
+  // 核心修正：使用 lang 格式化日期
+  const displayDate = new Date(date).toLocaleDateString(lang, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
 
   return (
-    <Link href={`/blog/${slug}`} className="blog-post-list-card-link group">
+    // 核心修正：在 href 中添加语言前缀
+    <Link href={`/${lang}/blog/${slug}`} className="blog-post-list-card-link group">
       <article className="blog-post-list-card">
         <div className="card-content">
           {/* 使用可复用的 Heading 组件，并传入与 BlogPostCard 完全一致的 className */}

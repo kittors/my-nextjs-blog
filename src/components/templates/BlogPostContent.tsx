@@ -38,6 +38,12 @@ interface BlogPostContentProps {
     toc_title: string;
   };
   lang: Locale; // 明确接收当前语言
+  postContentDictionary: {
+    // 核心新增：接收 post_content 字典
+    author_label: string;
+    date_label: string;
+    unknown_date: string;
+  };
 }
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({
@@ -46,6 +52,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
   dynamicFallbackHref,
   dictionary, // 使用字典
   lang,
+  postContentDictionary, // 核心新增：使用 postContentDictionary
 }) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -120,8 +127,11 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
   const title = post.title || '无标题文章';
   const author = post.author || '匿名作者';
   const dateObj = post.date ? new Date(post.date) : null;
+  // 核心修正：使用 postContentDictionary 中的文本作为未知日期的占位符
   const displayDate =
-    dateObj && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString(lang) : '未知日期';
+    dateObj && !isNaN(dateObj.getTime())
+      ? dateObj.toLocaleDateString(lang)
+      : postContentDictionary.unknown_date;
 
   return (
     <>
@@ -137,9 +147,13 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
 
             <div className="text-neutral-500 text-sm mb-8 border-b border-neutral-200 pb-4">
               <Text as="span" className="mr-4">
-                作者: {author}
+                {/* 核心修正：使用 postContentDictionary 中的文本 */}
+                {postContentDictionary.author_label}: {author}
               </Text>
-              <Text as="span">日期: {displayDate}</Text>
+              <Text as="span">
+                {/* 核心修正：使用 postContentDictionary 中的文本 */}
+                {postContentDictionary.date_label}: {displayDate}
+              </Text>
             </div>
 
             <div

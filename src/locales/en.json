@@ -40,5 +40,15 @@
   },
   "blog_post_list": {
     "no_posts_found": "No related articles found under this category."
+  },
+  "blog_post_card": {
+    "author_label": "Author",
+    "date_label": "Date",
+    "unknown_date": "Unknown Date"
+  },
+  "post_content": {
+    "author_label": "Author",
+    "date_label": "Date",
+    "unknown_date": "Unknown Date"
   }
 }

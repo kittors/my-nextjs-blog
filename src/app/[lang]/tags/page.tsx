@@ -26,13 +26,14 @@ export default async function TagsPage({ params }: TagsPageProps) {
   const allTags = getAllTags(lang);
   const dictionary = await getDictionary(lang);
 
-  // 将获取到的所有数据作为 props 传递给客户端组件进行渲染
+  // 核心修正：将 lang 属性传递给 TagsPageClient
   return (
     <TagsPageClient
       allPosts={allPosts}
       allTags={allTags}
       dictionary={dictionary.tags_page}
       blogPostListDictionary={dictionary.blog_post_list}
+      lang={lang} // 核心修正：在这里传递 lang
     />
   );
 }

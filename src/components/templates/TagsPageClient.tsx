@@ -7,8 +7,9 @@ import BlogPostList from '@/components/organisms/BlogPostList';
 import TagCloud from '@/components/molecules/TagCloud';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
+import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
 
-// 核心修正：更新 Props 接口以接收字典
+// 核心修正：更新 Props 接口以接收字典和 lang
 interface TagsPageClientProps {
   allPosts: BlogPostMetadata[];
   allTags: TagInfo[];
@@ -17,13 +18,14 @@ interface TagsPageClientProps {
     description: string;
     search_placeholder: string;
     show_all: string;
-    all_tags_label: string; // 核心新增：添加 all_tags_label
-    collapse_tags: string; // 核心新增：添加 collapse_tags
+    all_tags_label: string;
+    collapse_tags: string;
   };
   blogPostListDictionary: {
     // 核心新增：接收 BlogPostList 的字典
     no_posts_found: string;
   };
+  lang: Locale; // 核心新增：接收当前语言
 }
 
 /**
@@ -38,6 +40,7 @@ const TagsPageClient: React.FC<TagsPageClientProps> = ({
   allTags,
   dictionary,
   blogPostListDictionary,
+  lang,
 }) => {
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
@@ -69,8 +72,8 @@ const TagsPageClient: React.FC<TagsPageClientProps> = ({
 
       <hr className="my-12 border-neutral-200 dark:border-neutral-800" />
 
-      {/* 核心新增：将 blogPostListDictionary 传递给 BlogPostList */}
-      <BlogPostList posts={filteredPosts} dictionary={blogPostListDictionary} />
+      {/* 核心新增：将 blogPostListDictionary 和 lang 传递给 BlogPostList */}
+      <BlogPostList posts={filteredPosts} dictionary={blogPostListDictionary} lang={lang} />
     </div>
   );
 };

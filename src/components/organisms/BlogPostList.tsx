@@ -5,6 +5,7 @@ import React from 'react';
 import { type BlogPostMetadata } from '@/lib/posts';
 import BlogPostListCard from '@/components/molecules/BlogPostListCard';
 import { AnimatePresence, motion } from 'framer-motion';
+import { type Locale } from '@/i18n-config'; // 核心新增：导入 Locale 类型
 
 // 核心新增：定义 BlogPostListProps 接口，包含字典
 interface BlogPostListProps {
@@ -13,6 +14,7 @@ interface BlogPostListProps {
     // 字典包含 'no_posts_found' 键
     no_posts_found: string;
   };
+  lang: Locale; // 核心新增：接收当前语言
 }
 
 /**
@@ -23,10 +25,11 @@ interface BlogPostListProps {
  * 提供了流畅、优雅的动画效果，极大地提升了用户体验。
  * 核心修正：
  * 1. 接受 `dictionary` prop 以支持多语言显示“未找到文章”的消息。
+ * 2. 接受 `lang` prop，并将其传递给 `BlogPostListCard`。
  *
  * @param {BlogPostListProps} props - 组件属性。
  */
-const BlogPostList: React.FC<BlogPostListProps> = ({ posts, dictionary }) => {
+const BlogPostList: React.FC<BlogPostListProps> = ({ posts, dictionary, lang }) => {
   if (posts.length === 0) {
     return (
       <div className="no-posts-found">
@@ -48,7 +51,8 @@ const BlogPostList: React.FC<BlogPostListProps> = ({ posts, dictionary }) => {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
           >
-            <BlogPostListCard post={post} />
+            {/* 核心新增：将 lang 传递给 BlogPostListCard */}
+            <BlogPostListCard post={post} lang={lang} />
           </motion.div>
         ))}
       </AnimatePresence>
