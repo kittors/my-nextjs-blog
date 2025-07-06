@@ -30,6 +30,7 @@ export interface FooterConfig {
 // 定义主题配置的接口
 export interface ThemeConfig {
   defaultToSystemPreference: boolean;
+  // 核心修正：initialTheme 可以是 'system'
   initialTheme: 'light' | 'dark' | 'system';
 }
 
@@ -97,7 +98,11 @@ export const appConfig: AppConfig = {
     text: `footer.copyright`, // 将硬编码文本替换为字典键
   },
   theme: {
+    // 核心修正：设置为 false，允许用户手动切换主题。
+    // 如果为 true，则主题切换按钮不显示，始终同步系统偏好。
     defaultToSystemPreference: false,
+    // 核心修正：初始主题设置为 'system'，表示优先尝试同步系统偏好。
+    // 如果用户在 localStorage 有明确选择，则以用户选择为准。
     initialTheme: 'system',
   },
   search: {

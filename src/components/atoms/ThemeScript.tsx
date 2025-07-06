@@ -16,31 +16,37 @@ import { appConfig } from '@/lib/config';
  * - **错误处理**: 包含 `try...catch` 块，以确保在任何意外情况（如 `localStorage` 访问被禁用）下，页面都能安全地回退到一个默认主题（light）。
  */
 const ThemeScript = () => {
-  const { defaultToSystemPreference } = appConfig.theme;
+  const { defaultToSystemPreference, initialTheme } = appConfig.theme;
 
   const script = `
     (function() {
       try {
         const getInitialTheme = () => {
-          // 1. 检查配置是否强制同步系统主题
-          if (${defaultToSystemPreference}) {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-          }
-          
-          // 2. 尝试从 localStorage 获取用户存储的主题
           let storedTheme;
           try {
+            // 1. 尝试从 localStorage 获取用户明确存储的主题偏好
             storedTheme = window.localStorage.getItem('theme');
           } catch (e) {
-            console.error('无法访问 localStorage，将回退到系统主题。', e);
+            console.error('ThemeScript: 无法访问 localStorage，回退到系统偏好或默认主题。', e);
           }
-          
+
+          // 2. 如果 localStorage 中存在有效主题，则使用它
           if (storedTheme === 'light' || storedTheme === 'dark') {
             return storedTheme;
           }
           
-          // 3. 如果 localStorage 中没有，则回退到系统主题
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          // 3. 检查 appConfig 是否配置为默认同步系统主题
+          if (${defaultToSystemPreference}) {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+
+          // 4. 如果 appConfig initialTheme 是 'system'，则回退到系统偏好
+          if ('${initialTheme}' === 'system') {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          
+          // 5. 否则，使用 appConfig 中定义的初始主题
+          return '${initialTheme}';
         };
 
         const theme = getInitialTheme();
@@ -49,8 +55,8 @@ const ThemeScript = () => {
         root.classList.add(theme);
       } catch (e) {
         // 在任何意外错误发生时，提供一个最终的安全回退
-        console.error('应用初始主题时出错:', e);
-        document.documentElement.classList.add('light');
+        console.error('ThemeScript: 应用初始主题时出错:', e);
+        document.documentElement.classList.add('light'); // 安全回退到亮色主题
       }
     })();
   `;

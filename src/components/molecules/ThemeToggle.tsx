@@ -13,12 +13,15 @@ import { useTheme } from '@/contexts/ThemeContext';
  * 移除了硬编码的 Tailwind hover 类，改为使用一个自定义 CSS 类 `theme-toggle-interaction-effect`，
  * 该类在 `src/styles/theme.css` 中定义了基于 CSS 变量的悬停和点击背景色，
  * 并通过媒体查询确保在非PC端（移动端）不显示点击样式。
+ *
+ * 并且，如果 `appConfig.theme.defaultToSystemPreference` 为 `true`，则不渲染此组件。
  */
 const ThemeToggle: React.FC = () => {
   // 'theme' 状态现在从初始服务器渲染开始就已经是可靠的。
   const { toggleTheme, defaultToSystemPreference, theme } = useTheme();
 
   // 如果配置为始终同步系统主题，则不渲染此切换按钮。
+  // 这避免了用户可以手动切换，但切换后又被系统偏好覆盖的困惑。
   if (defaultToSystemPreference) {
     return null;
   }

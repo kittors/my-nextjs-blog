@@ -45,13 +45,16 @@ export default async function LangLayout({ children, params }: LangLayoutProps) 
   const themeCookie = cookieStore.get('theme');
   let initialTheme: Theme;
 
-  // 此逻辑用于为 ThemeProvider 提供一个初始的、服务器端已知的状态
+  // 核心修正：服务器端 initialTheme 的获取逻辑
+  // 优先级：Cookie -> appConfig.theme.initialTheme -> 默认 'light'
   if (themeCookie?.value === 'dark') {
     initialTheme = 'dark';
   } else if (themeCookie?.value === 'light') {
     initialTheme = 'light';
   } else {
-    // 如果没有 cookie，则根据应用配置提供一个默认值
+    // 如果没有有效的 cookie，则根据应用配置提供一个默认值
+    // 如果 appConfig.theme.initialTheme 是 'system'，这里默认给 'light'。
+    // 实际的系统偏好判断会在客户端的 ThemeScript 和 ThemeProvider 中进行。
     initialTheme = appConfig.theme.initialTheme === 'dark' ? 'dark' : 'light';
   }
 
