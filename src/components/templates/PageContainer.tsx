@@ -76,7 +76,8 @@ const PageContainer: React.FC<PageContainerProps> = ({
             NProgress.start();
           }
         } catch (error) {
-          console.warn('捕获到无效的 a 标签 href:', anchor.href);
+          // 核心修正：记录错误信息
+          console.error('捕获到无效的 a 标签 href:', anchor.href, error);
         }
       }
     };

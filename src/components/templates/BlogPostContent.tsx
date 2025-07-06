@@ -17,7 +17,7 @@ import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
 import { type BlogPost, type TocEntry } from '@/lib/posts';
 import TableOfContents from '@/components/organisms/TableOfContents';
-import { type Root as HastRoot } from 'hast';
+// import { type Root as HastRoot } from 'hast'; // 核心修正：移除未使用的导入
 import { unified } from 'unified';
 import rehypeReact, { type Options as RehypeReactOptions } from 'rehype-react';
 import PostImage from '@/components/atoms/PostImage';
