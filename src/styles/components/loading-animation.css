@@ -1,0 +1,209 @@
+/* src/styles/components/loading-animation.css */
+
+/**
+ * 纯 CSS + SVG 逐帧动画的专属样式 (最终版 - 主题自适应星空)。
+ * 该样式模块实现了基于您提供的 7 个 SVG 帧的胶片式动画，
+ * 并拥有一个能根据亮/暗模式改变颜色的动态星空背景。
+ */
+
+.loading-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* 核心修正：背景色现在由 CSS 主题变量控制，能响应亮/暗模式 */
+  background-color: var(--background);
+  z-index: 9999;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* 宇航员动画的视口，用于裁剪“胶片” */
+.astronaut-viewport {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  position: relative; /* 确保 z-index 生效 */
+  z-index: 2; /* 确保宇航员在星星之上 */
+}
+
+/* “胶片”容器，宽度为视口的 7 倍，用于并排存放 7 帧 */
+.film-strip {
+  width: 700%;
+  height: 100%;
+  display: flex;
+  animation: play-film 1.4s steps(7) infinite;
+}
+
+/* 胶片动画的关键帧 */
+@keyframes play-film {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* 单个动画帧 */
+.astronaut-frame {
+  width: calc(100% / 7);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* 宇航员图片样式 */
+.astronaut-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: filter 0.3s ease;
+}
+
+/* 核心新增：在暗黑模式下，反转宇航员颜色以确保可见性 */
+html.dark .astronaut-img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* 加载文本样式 */
+.loading-text {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  /* 核心修正：颜色由主题变量控制 */
+  color: var(--foreground);
+  opacity: 0.7;
+  font-family: sans-serif;
+  letter-spacing: 0.1em;
+  animation: text-fade 2s infinite ease-in-out;
+  transition: color 0.3s ease;
+  position: relative; /* 确保 z-index 生效 */
+  z-index: 2; /* 确保文字在星星之上 */
+}
+
+@keyframes text-fade {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 核心重构：使用 background-position 驱动动画，实现无缝循环 */
+@keyframes move-background {
+  from {
+    /* 动画从 (0, 0) 开始 */
+    background-position: 0 0;
+  }
+  to {
+    /* 动画结束于背景图的一个完整瓦片尺寸，以实现无缝循环 */
+    background-position: 2000px 1000px;
+  }
+}
+
+#stars,
+#stars2,
+#stars3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1; /* 确保星星在最底层 */
+  /* 核心修正：将动画目标改为 background-position */
+  animation: move-background linear infinite;
+  /* 核心新增：确保背景图片会重复平铺 */
+  background-repeat: repeat;
+}
+
+/* 核心修正：极大增加星星密度，并调整背景尺寸以适应新的动画 */
+#stars {
+  background-image:
+    radial-gradient(1px 1px at 100px 40px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 200px 180px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 300px 80px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 450px 250px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 600px 350px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 750px 150px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 900px 450px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1100px 280px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1300px 100px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1450px 320px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1600px 500px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1750px 200px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1900px 400px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 50px 600px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 250px 750px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 400px 900px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 550px 650px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 800px 850px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1000px 700px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1250px 950px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1500px 800px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1800px 650px, var(--foreground), transparent);
+  background-size: 2000px 1000px; /* 定义一个瓦片的大小 */
+  animation-duration: 50s;
+}
+
+#stars2 {
+  background-image:
+    radial-gradient(1px 1px at 50px 150px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 180px 50px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 320px 320px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 480px 480px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 650px 220px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 800px 100px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 950px 400px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1150px 250px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1300px 500px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1450px 120px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1600px 380px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1750px 200px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1900px 480px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 100px 700px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 300px 850px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 500px 600px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 700px 950px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 900px 750px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1100px 900px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1300px 650px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1500px 880px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1800px 720px, var(--foreground), transparent);
+  background-size: 2000px 1000px;
+  animation-duration: 35s;
+}
+
+#stars3 {
+  background-image:
+    radial-gradient(2px 2px at 30px 80px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 150px 250px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 290px 120px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 420px 420px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 590px 300px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 730px 100px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 890px 450px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1040px 200px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1210px 350px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1380px 80px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1550px 480px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1700px 150px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1880px 380px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 80px 880px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 220px 650px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 380px 780px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 530px 920px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 680px 680px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 840px 840px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1000px 950px, var(--foreground), transparent),
+    radial-gradient(2px 2px at 1200px 700px, var(--foreground), transparent),
+    radial-gradient(1px 1px at 1400px 900px, var(--foreground), transparent);
+  background-size: 2000px 1000px;
+  animation-duration: 25s;
+}

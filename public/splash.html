@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading...</title>
+    <style>
+      /* 定义亮色和暗色模式的 CSS 变量 */
+      :root {
+        /* 亮色模式默认值 */
+        --splash-background: #fcfcfc;
+        --splash-foreground: #333333; /* 例如，用于星星和文本（如果存在） */
+        --astronaut-filter: none; /* 亮色模式下不反转 */
+      }
+
+      html.dark {
+        /* 暗色模式覆盖 */
+        --splash-background: #1b1c1d;
+        --splash-foreground: #ffffff; /* 例如，用于星星和文本（如果存在） */
+        --astronaut-filter: invert(1) hue-rotate(180deg); /* 暗色模式下反转 */
+      }
+
+      /* 基础样式，确保 Canvas 铺满屏幕 */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        cursor: none; /* 隐藏默认光标，增强沉浸感 */
+      }
+      #splash-container {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* 使用 CSS 变量控制背景色，实现主题切换 */
+        background-color: var(--splash-background);
+        z-index: 9999;
+        transition: background-color 0.3s ease; /* 添加过渡效果 */
+      }
+      #starfield-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+      .content-overlay {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .astronaut-viewport {
+        width: 150px;
+        height: 150px;
+        overflow: hidden;
+        /* 为旋转变换添加平滑的过渡效果 */
+        transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      .film-strip {
+        width: 700%;
+        height: 100%;
+        display: flex;
+        animation: play-film 1.4s steps(7) infinite;
+      }
+      @keyframes play-film {
+        to {
+          transform: translateX(-100%);
+        }
+      }
+      .astronaut-frame {
+        width: calc(100% / 7);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      .astronaut-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        /* 使用 CSS 变量控制滤镜，实现主题切换 */
+        filter: var(--astronaut-filter);
+        transition: filter 0.3s ease; /* 添加过渡效果 */
+      }
+      /* 自定义光标样式 */
+      #cursor {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        /* 光标颜色使用 --splash-foreground 变量，保持与主题一致 */
+        background-color: rgba(var(--splash-foreground-rgb, 255, 255, 255), 0.8);
+        pointer-events: none;
+        z-index: 10000;
+        transform: translate(-50%, -50%);
+        transition: transform 0.1s ease-out;
+      }
+    </style>
+    <script>
+      // 原子设计原则：此脚本是一个独立的、不可分割的功能单元，专注于主题初始化。
+      // 它的主要职责是根据用户偏好或系统设置，在 localStorage 中设置主题，
+      // 并将相应的主题类应用到 <html> 标签，以便 splash 页面本身也能响应主题变化，避免闪烁。
+      (function () {
+        // 定义主题前景色的 RGB 值映射，用于光标
+        const themeForegroundRgbMap = {
+          light: '51, 51, 51', // #333333 的 RGB
+          dark: '255, 255, 255', // #FFFFFF 的 RGB
+        };
+
+        // 应用主题到 HTML 根元素和设置 RGB 变量的函数
+        const applyTheme = theme => {
+          const root = document.documentElement;
+          root.classList.remove('light', 'dark'); // 先移除可能的旧类
+          root.classList.add(theme); // 添加新的主题类
+          root.style.setProperty('--splash-foreground-rgb', themeForegroundRgbMap[theme]);
+          // console.log('Splash Theme Setter - Applied theme:', theme); // 调试信息
+        };
+
+        const getInitialTheme = () => {
+          let storedTheme;
+          try {
+            // 1. 尝试从 localStorage 获取用户明确存储的主题偏好
+            storedTheme = window.localStorage.getItem('theme');
+            // console.log('Splash Theme Setter - storedTheme:', storedTheme); // 调试信息
+          } catch (e) {
+            console.warn('Splash Theme Setter: 无法访问 localStorage，回退到系统偏好。', e);
+          }
+
+          // 2. 如果 localStorage 中存在有效主题，则使用它
+          if (storedTheme === 'light' || storedTheme === 'dark') {
+            return storedTheme;
+          }
+
+          // 3. 如果 localStorage 中没有有效主题，则检测系统偏好
+          const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const systemTheme = prefersDarkMode ? 'dark' : 'light';
+
+          try {
+            // 4. 将系统偏好持久化到 localStorage，以便下次直接加载
+            window.localStorage.setItem('theme', systemTheme);
+          } catch (e) {
+            console.warn('Splash Theme Setter: 无法将系统主题保存到 localStorage。', e);
+          }
+
+          return systemTheme;
+        };
+
+        try {
+          // 初始化时获取并应用主题
+          const initialTheme = getInitialTheme();
+          applyTheme(initialTheme);
+
+          // 核心新增：监听系统主题变化
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            const newSystemTheme = e.matches ? 'dark' : 'light';
+            // console.log('Splash Theme Setter - System theme changed to:', newSystemTheme); // 调试信息
+
+            // 更新 localStorage
+            try {
+              window.localStorage.setItem('theme', newSystemTheme);
+            } catch (error) {
+              console.warn('Splash Theme Setter: 无法将系统主题变化保存到 localStorage。', error);
+            }
+
+            // 立即应用新的系统主题到 splash 页面
+            applyTheme(newSystemTheme);
+          });
+        } catch (e) {
+          // 捕获任何可能发生的错误，确保即使脚本失败，页面也能安全渲染
+          console.error('Splash Theme Setter: 执行主题逻辑时出错:', e);
+          document.documentElement.classList.add('light'); // 安全回退到亮色主题
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="splash-container">
+      <canvas id="starfield-canvas"></canvas>
+      <div id="cursor"></div>
+      <div class="content-overlay">
+        <div class="astronaut-viewport">
+          <div class="film-strip">
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut1.svg" alt="Frame 1" class="astronaut-img" />
+            </div>
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut2.svg" alt="Frame 2" class="astronaut-img" />
+            </div>
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut3.svg" alt="Frame 3" class="astronaut-img" />
+            </div>
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut4.svg" alt="Frame 4" class="astronaut-img" />
+            </div>
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut5.svg" alt="Frame 5" class="astronaut-img" />
+            </div>
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut6.svg" alt="Frame 6" class="astronaut-img" />
+            </div>
+            <div class="astronaut-frame">
+              <img src="/assets/loading/astronaut7.svg" alt="Frame 7" class="astronaut-img" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 确保 DOM 完全加载后再执行 Canvas 和动画逻辑
+      document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('starfield-canvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = document.querySelector('.astronaut-viewport');
+        const cursor = document.getElementById('cursor');
+
+        let animationFrameId;
+        const stars = [];
+        const starCount = 2000; // 超高密度
+        // 核心修正：将鼠标初始位置设置为 (0, 0)，使宇航员默认指向左上角
+        const mouse = { x: 0, y: 0 };
+
+        // --- 鼠标移动处理 ---
+        window.addEventListener('mousemove', event => {
+          mouse.x = event.clientX;
+          mouse.y = event.clientY;
+        });
+
+        const setup = () => {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = `${window.innerWidth}px`;
+          canvas.style.height = `${window.innerHeight}px`;
+          ctx.scale(dpr, dpr);
+
+          stars.length = 0;
+          for (let i = 0; i < starCount; i++) {
+            stars.push({
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              z: Math.random() * canvas.width,
+            });
+          }
+        };
+
+        const draw = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // 核心修正：从 CSS 变量中读取星星颜色
+          const starColor = getComputedStyle(document.documentElement)
+            .getPropertyValue('--splash-foreground')
+            .trim();
+          ctx.fillStyle = starColor;
+
+          // 根据鼠标与中心的距离计算速度因子
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+          const distance = Math.hypot(mouse.x - centerX, mouse.y - centerY);
+          const maxDistance = Math.hypot(centerX, centerY);
+          const speedFactor = 1 + (distance / maxDistance) * 15; // 距离越远，速度因子越大，最大可达16倍
+
+          // 计算归一化的推力方向
+          const dirX = (mouse.x - centerX) / distance || 0;
+          const dirY = (mouse.y - centerY) / distance || 0;
+
+          stars.forEach(star => {
+            ctx.beginPath();
+            // 基础视差速度
+            const parallaxSpeed = 0.1 + (star.z / canvas.width) * 0.5;
+
+            // 最终速度是基础速度和距离因子的乘积
+            const totalSpeed = parallaxSpeed * speedFactor;
+
+            // 星星的移动方向由推力决定
+            star.x -= dirX * totalSpeed;
+            star.y -= dirY * totalSpeed;
+
+            // 如果星星移出屏幕，则重置到另一侧
+            if (star.x < 0) star.x = canvas.width;
+            if (star.x > canvas.width) star.x = 0;
+            if (star.y < 0) star.y = canvas.height;
+            if (star.y > canvas.height) star.y = 0;
+
+            const size = star.z / canvas.width;
+            ctx.arc(star.x, star.y, size * 2, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        };
+
+        const updateAstronautAndCursor = () => {
+          // 更新宇航员方向
+          if (viewport) {
+            const viewportRect = viewport.getBoundingClientRect();
+            const viewportCenterX = viewportRect.left + viewportRect.width / 2;
+            const viewportCenterY = viewportRect.top + viewportRect.height / 2;
+            const angleRad = Math.atan2(mouse.y - viewportCenterY, mouse.x - viewportCenterX);
+            // 核心修正：增加 45 度以抵消图片自带的向左 45 度倾斜
+            const angleDeg = angleRad * (180 / Math.PI) + 135; // 90 + 45 = 135
+            viewport.style.transform = `rotate(${angleDeg}deg)`;
+          }
+
+          // 更新自定义光标位置
+          if (cursor) {
+            cursor.style.left = `${mouse.x}px`;
+            cursor.style.top = `${mouse.y}px`;
+          }
+        };
+
+        const animate = () => {
+          draw();
+          updateAstronautAndCursor();
+          animationFrameId = requestAnimationFrame(animate);
+        };
+
+        setup();
+        animate();
+        window.addEventListener('resize', setup);
+
+        // --- 语言检测与重定向逻辑 ---
+        const getLocale = () => {
+          const browserLangs = navigator.languages || [navigator.language || 'en'];
+          const supportedLangs = ['en', 'zh'];
+          for (const lang of browserLangs) {
+            const baseLang = lang.split('-')[0];
+            if (supportedLangs.includes(baseLang)) {
+              return baseLang;
+            }
+          }
+          return 'zh';
+        };
+
+        // 核心修正：重定向延迟保持不变
+        setTimeout(() => {
+          const locale = getLocale();
+          window.location.replace(`/${locale}`);
+        }, 1500);
+      });
+    </script>
+  </body>
+</html>

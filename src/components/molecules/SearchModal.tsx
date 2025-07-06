@@ -6,7 +6,7 @@ import { Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BlogPostMetadata, TocEntry } from '@/lib/posts';
-import NProgress from 'nprogress'; // 核心新增：导入 NProgress
+import NProgress from 'nprogress';
 
 // 定义搜索结果的接口
 interface SearchResult extends BlogPostMetadata {
@@ -17,6 +17,9 @@ interface SearchResult extends BlogPostMetadata {
   matchedOffset?: number;
 }
 
+// 核心修正：更新 Props 接口以接收一个字典对象。
+// 这解决了父组件 PageContainer 传递未定义 prop 的 TypeScript 错误，
+// 并使该组件能够显示国际化的文本。
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,18 +28,18 @@ interface SearchModalProps {
     plainTextContent: string;
     headings: TocEntry[];
   }[];
+  dictionary: {
+    placeholder: string;
+    no_results: string;
+  };
 }
 
 /**
  * SearchModal 组件：提供一个模态框，包含搜索输入框和实时搜索结果列表。
  *
- * 核心修正：
- * 在通过键盘回车键触发的程序化导航 (`router.push`) 前，
- * 手动调用 `NProgress.start()`，以确保进度条能够正确触发。
- *
  * @param {SearchModalProps} props - 组件属性。
  */
-const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData, dictionary }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -163,7 +166,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
             const targetHash = getTargetHash(result);
             const destination = `/blog/${result.slug}${targetHash}`;
 
-            // 核心新增：在导航前手动启动进度条
             NProgress.start();
             router.push(destination);
             onClose();
@@ -205,7 +207,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
           <input
             ref={inputRef}
             type="text"
-            placeholder="搜索文章内容..."
+            // 核心修正：使用来自字典的占位符文本
+            placeholder={dictionary.placeholder}
             className="search-input"
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -246,7 +249,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData })
 
         {query.trim() !== '' && results.length === 0 && (
           <div className="search-no-results">
-            <p>没有找到与 &quot;{query}&quot; 相关的文章。</p>
+            {/* 核心修正：使用来自字典的“无结果”文本，并替换查询变量 */}
+            <p>{dictionary.no_results.replace('{query}', query)}</p>
           </div>
         )}
       </div>

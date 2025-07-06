@@ -1,7 +1,6 @@
 // src/components/templates/BlogPostContent.tsx
 'use client';
 
-// 核心修正：导入 useMemo
 import React, {
   useRef,
   useState,
@@ -16,35 +15,37 @@ import { jsx, jsxs } from 'react/jsx-runtime';
 import { useToast } from '@/contexts/ToastContext';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
-import { type TocEntry } from '@/lib/posts';
+import { type BlogPost, type TocEntry } from '@/lib/posts';
 import TableOfContents from '@/components/organisms/TableOfContents';
 import { type Root as HastRoot } from 'hast';
 import { unified } from 'unified';
-// 核心修正：导入 RehypeReactOptions 类型
 import rehypeReact, { type Options as RehypeReactOptions } from 'rehype-react';
 import PostImage from '@/components/atoms/PostImage';
 import ImagePreview from '@/components/molecules/ImagePreview';
 import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper';
 import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
 import BackButton from '@/components/atoms/BackButton';
+import { type Locale } from '@/i18n-config';
 
+// 核心修正：更新 Props 接口
 interface BlogPostContentProps {
-  post: {
-    title?: string;
-    author?: string;
-    date?: string;
-    content: HastRoot;
-    slug: string;
-  };
+  post: BlogPost;
   headings: TocEntry[];
-  // 核心新增：接收动态的备用链接
   dynamicFallbackHref: string;
+  dictionary: {
+    // 明确接收字典对象
+    back_button: string;
+    toc_title: string;
+  };
+  lang: Locale; // 明确接收当前语言
 }
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({
   post,
   headings,
   dynamicFallbackHref,
+  dictionary, // 使用字典
+  lang,
 }) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -87,8 +88,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
     };
   }, [showToast]);
 
-  // 核心修正：使用 useMemo 来记忆 rehype 的配置。
-  // 这可以防止在父组件重新渲染时，不必要地重新创建此对象。
   const rehypeOptions = useMemo(
     () => ({
       createElement,
@@ -110,13 +109,11 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
       },
     }),
     [handleImageClick]
-  ); // 依赖于稳定的 handleImageClick
+  );
 
-  // 核心修正：修复 'Unexpected any' 错误，为 rehypeReact 的第二个参数提供正确的类型。
-  // rehypeReact 的第二个参数期望一个 RehypeReactOptions 类型。
   const contentReact = useMemo(() => {
     return unified()
-      .use(rehypeReact, rehypeOptions as RehypeReactOptions) // 明确指定类型
+      .use(rehypeReact, rehypeOptions as RehypeReactOptions)
       .stringify(post.content);
   }, [post.content, rehypeOptions]);
 
@@ -124,15 +121,15 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
   const author = post.author || '匿名作者';
   const dateObj = post.date ? new Date(post.date) : null;
   const displayDate =
-    dateObj && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString('zh-CN') : '未知日期';
+    dateObj && !isNaN(dateObj.getTime()) ? dateObj.toLocaleDateString(lang) : '未知日期';
 
   return (
     <>
       <div className="container mx-auto px-4 py-12">
         <div className="blog-layout">
           <article className="w-full max-w-3xl">
-            {/* 核心修正：将动态的 fallbackHref 传递给 BackButton */}
-            <BackButton fallbackHref={dynamicFallbackHref} />
+            {/* 核心修正：将字典文本传递给 BackButton */}
+            <BackButton fallbackHref={dynamicFallbackHref} label={dictionary.back_button} />
 
             <Heading level={1} className="text-4xl font-extrabold text-neutral-900 mb-4">
               {title}
@@ -153,10 +150,12 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
             </div>
           </article>
 
+          {/* 核心修正：将字典文本传递给 TableOfContents */}
           <TableOfContents
             headings={headings}
             isOpen={isTocOpen}
             onClose={() => setIsTocOpen(false)}
+            title={dictionary.toc_title}
           />
         </div>
       </div>

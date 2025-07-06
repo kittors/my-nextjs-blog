@@ -1,0 +1,44 @@
+{
+  "header": {
+    "tags": "博文分类",
+    "source_code": "查看源码",
+    "toggle_theme": "切换主题",
+    "language_switcher_label": "语言"
+  },
+  "footer": {
+    "copyright": "&copy; {year} 我的 Next.js 博客. 保留所有权利。"
+  },
+  "tags_page": {
+    "title": "博文分类",
+    "description": "在这里，您可以通过标签来发现和筛选感兴趣的文章。",
+    "search_placeholder": "搜索标签...",
+    "show_all": "查看全部 {count} 个标签",
+    "all_tags_label": "全部",
+    "collapse_tags": "收起部分标签"
+  },
+  "post": {
+    "back_button": "返回所有文章",
+    "toc_title": "文章大纲"
+  },
+  "language_switcher": {
+    "label": "Language",
+    "en": "English",
+    "zh": "简体中文"
+  },
+  "search": {
+    "placeholder": "搜索文章内容...",
+    "no_results": "没有找到与 “{query}” 相关的文章。"
+  },
+  "errors": {
+    "post_not_found": "文章未找到",
+    "post_not_found_description": "抱歉，您请求的文章不存在。",
+    "back_to_home": "返回首页"
+  },
+  "blog_list": {
+    "no_posts": "暂无博客文章。",
+    "latest_posts_heading": "最新博客文章"
+  },
+  "blog_post_list": {
+    "no_posts_found": "在此分类下没有找到相关的文章。"
+  }
+}

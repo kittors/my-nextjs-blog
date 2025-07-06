@@ -12,14 +12,15 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { SearchablePostData } from '@/lib/posts';
 import { SearchModalProvider } from '@/contexts/SearchModalContext';
 import NProgress from 'nprogress';
-// 核心修正：移除了未使用的 `usePathname` 导入，以解决构建错误。
-// import { usePathname } from 'next/navigation';
+import { type Locale } from '@/i18n-config';
 
 interface PageContainerProps {
   children: React.ReactNode;
   allPostsForSearch: SearchablePostData[];
   initialTheme: 'light' | 'dark';
   userOS: 'mac' | 'other';
+  lang: Locale;
+  dictionary: any; // 接收字典
 }
 
 const heightToPaddingMap: { [key: string]: string } = {
@@ -33,11 +34,11 @@ const PageContainer: React.FC<PageContainerProps> = ({
   allPostsForSearch,
   initialTheme,
   userOS,
+  lang,
+  dictionary, // 使用字典
 }) => {
   const { header: headerConfig, footer: footerConfig, search: searchConfig } = appConfig;
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  // 核心修正：移除了未使用的 `pathname` 变量，这解决了 `@typescript-eslint/no-unused-vars` ESLint 错误，使代码更整洁。
-  // const pathname = usePathname();
 
   let paddingTopClass = '';
   if (headerConfig.isFixed && headerConfig.height) {
@@ -75,7 +76,6 @@ const PageContainer: React.FC<PageContainerProps> = ({
             NProgress.start();
           }
         } catch (error) {
-          // 如果 URL 无效（例如 'mailto:'），则忽略
           console.warn('捕获到无效的 a 标签 href:', anchor.href);
         }
       }
@@ -87,6 +87,9 @@ const PageContainer: React.FC<PageContainerProps> = ({
       document.removeEventListener('click', handleAnchorClick);
     };
   }, []);
+
+  // 从字典中获取页脚文本并替换变量
+  const footerText = dictionary.footer.copyright.replace('{year}', new Date().getFullYear());
 
   return (
     <ThemeProvider initialTheme={initialTheme}>
@@ -102,13 +105,15 @@ const PageContainer: React.FC<PageContainerProps> = ({
               logoPosition={headerConfig.logoPosition}
               isBlur={headerConfig.isBlur}
               userOS={userOS}
+              lang={lang}
+              dictionary={dictionary.header} // 传递 Header 相关的字典部分
             />
 
             <main className={`flex-grow ${paddingTopClass}`}>{children}</main>
 
             <Footer
               isVisible={footerConfig.isVisible}
-              text={footerConfig.text}
+              text={footerText} // 使用翻译后的文本
               backgroundColor={footerConfig.backgroundColor}
               textColor={footerConfig.textColor}
             />
@@ -118,6 +123,7 @@ const PageContainer: React.FC<PageContainerProps> = ({
             isOpen={isSearchModalOpen}
             onClose={() => setIsSearchModalOpen(false)}
             postsData={allPostsForSearch}
+            dictionary={dictionary.search} // 传递 Search 相关的字典部分
           />
         </SearchModalProvider>
       </ToastProvider>

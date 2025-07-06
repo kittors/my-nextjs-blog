@@ -4,16 +4,21 @@
 import React, { useState, useMemo } from 'react';
 import Tag from '@/components/atoms/Tag';
 import { type TagInfo } from '@/lib/posts';
-import { Search, X } from 'lucide-react'; // 核心新增：导入 X 图标
+import { Search, X } from 'lucide-react';
 
-// 定义 TagCloud 组件的 Props 类型
+// 核心修正：更新 Props 接口，添加新的字典键
 interface TagCloudProps {
   tags: TagInfo[];
   activeTag: string | null;
   onTagClick: (tag: string | null) => void;
+  dictionary: {
+    search_placeholder: string;
+    show_all: string;
+    all_tags_label: string; // 核心新增：用于“全部”标签的文本
+    collapse_tags: string; // 核心新增：用于“收起部分标签”的文本
+  };
 }
 
-// 预定义的颜色类名，用于给标签上色
 const colorClasses = [
   'tag-color-1',
   'tag-color-2',
@@ -29,13 +34,12 @@ const colorClasses = [
  * TagCloud 组件：一个分子级别的 UI 组件，用于显示、搜索和过滤标签。
  *
  * 核心修正：
- * 1. 在搜索框内增加了一个清除按钮（X）。
- * 2. 此按钮仅在用户输入了搜索词时可见。
- * 3. 点击此按钮会立即清空搜索框，提升了用户操作的便捷性。
+ * 1. “全部”标签的文本现在从 `dictionary.all_tags_label` 获取。
+ * 2. “收起部分标签”的文本现在从 `dictionary.collapse_tags` 获取。
  *
  * @param {TagCloudProps} props - 组件属性。
  */
-const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
+const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick, dictionary }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -45,10 +49,11 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
 
   const displayedTags = isExpanded ? filteredTags : filteredTags.slice(0, 10);
 
-  // 新增：处理清除搜索的函数
   const handleClearSearch = () => {
     setSearchTerm('');
   };
+
+  const showAllText = dictionary.show_all.replace('{count}', filteredTags.length.toString());
 
   return (
     <div className="tag-cloud-container">
@@ -56,12 +61,11 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
         <Search className="search-icon" size={18} />
         <input
           type="text"
-          placeholder="搜索标签..."
+          placeholder={dictionary.search_placeholder}
           className="tag-search-input"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
         />
-        {/* 仅在 searchTerm 有值时渲染清除按钮 */}
         {searchTerm && (
           <button
             onClick={handleClearSearch}
@@ -74,7 +78,7 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
       </div>
       <div className="tags-wrapper">
         <Tag
-          label="全部"
+          label={dictionary.all_tags_label}
           count={tags.length}
           onClick={() => onTagClick(null)}
           isActive={activeTag === null}
@@ -94,7 +98,7 @@ const TagCloud: React.FC<TagCloudProps> = ({ tags, activeTag, onTagClick }) => {
       {filteredTags.length > 10 && (
         <div className="tag-expand-button-wrapper">
           <button onClick={() => setIsExpanded(!isExpanded)} className="tag-expand-button">
-            {isExpanded ? '收起部分标签' : `查看全部 ${filteredTags.length} 个标签`}
+            {isExpanded ? dictionary.collapse_tags : showAllText}
           </button>
         </div>
       )}

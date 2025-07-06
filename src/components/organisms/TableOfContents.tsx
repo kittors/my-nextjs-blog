@@ -6,22 +6,17 @@ import { type TocEntry } from '@/lib/posts';
 import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
-// 定义组件的 Props 接口
+// 核心修正：更新 Props 接口
 interface TableOfContentsProps {
   headings: TocEntry[];
-  isOpen: boolean; // 控制移动端抽屉是否打开
-  onClose: () => void; // 关闭抽屉的回调函数
+  isOpen: boolean;
+  onClose: () => void;
+  title: string; // 接收来自字典的标题文本
 }
 
 const HEADER_OFFSET = 80;
 
-/**
- * 节流函数：确保一个函数在指定的时间间隔内最多只执行一次。
- * @param callback 要执行的函数。
- * @param delay 时间间隔（毫秒）。
- * @returns 返回一个节流后的新函数。
- */
-// 核心修正：为 callback 参数添加明确的类型，并使用 unknown[] 避免 'Unexpected any'。
+// ... (throttle and debounce functions remain the same)
 const throttle = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
   let lastCall = 0;
   return (...args: T) => {
@@ -32,15 +27,6 @@ const throttle = <T extends unknown[]>(callback: (...args: T) => void, delay: nu
     }
   };
 };
-
-/**
- * 核心修正：添加 Debounce 函数
- * 在事件触发后延迟执行，如果在延迟期间再次触发，则重置计时器。
- * @param callback 要执行的函数。
- * @param delay 时间间隔（毫秒）。
- * @returns 返回一个去抖动后的新函数。
- */
-// 核心修正：为 callback 参数添加明确的类型，并使用 unknown[] 避免 'Unexpected any'。
 const debounce = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
   let timeoutId: NodeJS.Timeout;
   return (...args: T) => {
@@ -52,12 +38,10 @@ const debounce = <T extends unknown[]>(callback: (...args: T) => void, delay: nu
 };
 
 /**
- * TableOfContents 组件（已重构）：
- * 负责渲染文章大纲，并根据用户的滚动位置动态高亮当前章节。
- * 核心修正：引入了防抖函数，在滚动停止后进行最终的精确状态校准。
+ * TableOfContents 组件
  * @param {TableOfContentsProps} props - 组件属性。
  */
-const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onClose }) => {
+const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onClose, title }) => {
   const [activeId, setActiveId] = useState<string>('');
   const isMobile = useIsMobile();
   const observer = useRef<IntersectionObserver | null>(null);
@@ -66,10 +50,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
   const tocListWrapperRef = useRef<HTMLDivElement | null>(null);
   const tocContainerRef = useRef<HTMLElement | null>(null);
 
-  // 核心修正：为 throttledSetActiveId 明确类型
   const throttledSetActiveId = useRef(throttle((id: string) => setActiveId(id), 300)).current;
 
-  // 当抽屉在移动端打开时，禁止背景页面滚动
   useEffect(() => {
     if (isOpen && isMobile) {
       document.body.style.overflow = 'hidden';
@@ -81,7 +63,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     };
   }, [isOpen, isMobile]);
 
-  // IntersectionObserver 的回调函数，用于确定哪个标题在视口中
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       if (isClickScrolling.current) return;
@@ -115,7 +96,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     [headings, throttledSetActiveId]
   );
 
-  // 设置 IntersectionObserver 并观察所有标题元素
   useEffect(() => {
     observer.current = new IntersectionObserver(handleObserver, {
       rootMargin: `-${HEADER_OFFSET}px 0px 0px 0px`,
@@ -126,19 +106,14 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     return () => observer.current?.disconnect();
   }, [headings, handleObserver]);
 
-  // 核心修正：在滚动停止后进行最终的精确检查
-  // 明确 debouncedFinalCheck 的类型
   const debouncedFinalCheck = useRef(
     debounce(() => {
       if (isClickScrolling.current) return;
-
       const atBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 2;
-
       if (atBottom && headings.length > 0) {
         setActiveId(headings[headings.length - 1].id);
         return;
       }
-
       let finalActiveId = '';
       for (const heading of headings) {
         const element = document.getElementById(heading.id);
@@ -146,13 +121,12 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
           finalActiveId = heading.id;
         }
       }
-
       if (finalActiveId) {
         setActiveId(finalActiveId);
       } else if (headings.length > 0) {
         setActiveId(headings[0].id);
       }
-    }, 150) // 150ms 无滚动事件后触发
+    }, 150)
   ).current;
 
   useEffect(() => {
@@ -160,7 +134,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     return () => window.removeEventListener('scroll', debouncedFinalCheck);
   }, [debouncedFinalCheck]);
 
-  // 当 activeId 变化时，自动滚动大纲列表以确保激活项可见
   useEffect(() => {
     if (activeId && tocListWrapperRef.current && !isClickScrolling.current) {
       const activeLink = tocListWrapperRef.current.querySelector(`a.active`) as HTMLElement | null;
@@ -173,19 +146,16 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
     }
   }, [activeId]);
 
-  // 实时更新浏览器地址栏中的 URL 锚点（hash）
   useEffect(() => {
     if (activeId && !isClickScrolling.current) {
       history.replaceState(null, '', `#${activeId}`);
     }
   }, [activeId]);
 
-  // 处理链接点击事件
   const handleLinkClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     isClickScrolling.current = true;
     setActiveId(id);
-
     const targetElement = document.getElementById(id);
     if (targetElement) {
       window.scrollTo({ top: targetElement.offsetTop - HEADER_OFFSET, behavior: 'smooth' });
@@ -214,7 +184,8 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
         aria-hidden={!isOpen && isMobile}
       >
         <div className="toc-header-sticky">
-          <h3>文章大纲</h3>
+          {/* 核心修正：使用 title prop 代替硬编码文本 */}
+          <h3>{title}</h3>
           <button onClick={onClose} className="toc-close-button" aria-label="关闭大纲">
             <X size={24} />
           </button>
