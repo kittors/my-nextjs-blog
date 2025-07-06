@@ -62,6 +62,7 @@ const Header: React.FC<HeaderProps> = ({
     label: dictionary.language_switcher_label,
     en: appConfig.language.languageLabels.en,
     zh: appConfig.language.languageLabels.zh,
+    ja: appConfig.language.languageLabels.ja,
   };
 
   if (!isVisible) {

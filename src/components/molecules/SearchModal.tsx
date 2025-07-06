@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BlogPostMetadata, TocEntry } from '@/lib/posts';
 import NProgress from 'nprogress';
+import { usePathname } from 'next/navigation'; // 核心新增: 导入 usePathname
 
 // 定义搜索结果的接口
 interface SearchResult extends BlogPostMetadata {
@@ -46,6 +47,10 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData, d
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname(); // 核心新增: 获取当前路径
+
+  // 核心新增: 从当前路径中提取语言前缀
+  const currentLang = pathname.split('/')[1];
 
   const getTargetHash = useCallback((result: SearchResult): string => {
     let targetHash = '';
@@ -164,7 +169,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData, d
           if (activeIndex !== -1 && results[activeIndex]) {
             const result = results[activeIndex];
             const targetHash = getTargetHash(result);
-            const destination = `/blog/${result.slug}${targetHash}`;
+            // 核心修正: 在导航路径中添加语言前缀
+            const destination = `/${currentLang}/blog/${result.slug}${targetHash}`;
 
             NProgress.start();
             router.push(destination);
@@ -178,7 +184,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData, d
           break;
       }
     },
-    [isOpen, activeIndex, results, onClose, router, getTargetHash]
+    [isOpen, activeIndex, results, onClose, router, getTargetHash, currentLang] // 核心新增: 添加 currentLang 到依赖数组
   );
 
   useEffect(() => {
@@ -223,7 +229,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, postsData, d
             {results.map((result, index) => (
               <Link
                 key={result.slug}
-                href={`/blog/${result.slug}${getTargetHash(result)}`}
+                // 核心修正: 在导航路径中添加语言前缀
+                href={`/${currentLang}/blog/${result.slug}${getTargetHash(result)}`}
                 onClick={onClose}
                 className={`search-result-item ${index === activeIndex ? 'active' : ''}`}
               >
