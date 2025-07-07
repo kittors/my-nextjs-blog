@@ -41,8 +41,6 @@ export default async function NotFound() {
     }
   }
 
-  console.log(lang);
-
   // 如果 URL 中没有可识别的语言，则自动使用默认语言。
   // 这是预期的回退行为。
 

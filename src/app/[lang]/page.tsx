@@ -4,52 +4,41 @@ import { getSortedPostsMetadata } from '@/lib/posts';
 import BlogList from '@/components/organisms/BlogList';
 import Heading from '@/components/atoms/Heading';
 import Text from '@/components/atoms/Text';
-// 核心修正：从 src/lib/config 导入 appConfig 和 Locale 类型
 import { appConfig, type Locale } from '@/lib/config';
 import TypingEffect from '@/components/atoms/TypingEffect';
 import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
-import { getDictionary } from '@/lib/dictionary'; // 导入 getDictionary 函数
+import { getDictionary } from '@/lib/dictionary';
 
-/**
- * Home Page 组件：博客的首页。
- * 现在它是一个服务器组件，能感知当前的语言环境。
- *
- * 核心修正：
- * 为了解决构建时的 TypeScript 类型错误，我们将 `props` 参数类型明确设置为 `any`。
- * 这将允许 TypeScript 编译器跳过对该参数的类型检查，从而使构建成功。
- *
- * @param {any} props - 包含路由参数的对象（类型检查已绕过）。
- */
-export default async function HomePage(props: any) {
-  // 核心修正：将 props 类型设置为 any
-  // 现在可以安全地解构 params，因为 props 已被声明为 any
-  const { params } = props;
-  const { lang } = params;
-  // 核心修正：将 lang 参数传递给数据获取函数
+interface HomePageProps {
+  params: { lang: Locale };
+}
+
+export default async function HomePage({ params }: HomePageProps) {
+  // 核心修正：根据 Next.js 15 的规范，在使用 params 的属性之前，必须先 `await` 它。
+  const { lang } = await params;
+
+  // 现在可以安全地使用已解析的 `lang` 变量
   const allPosts = getSortedPostsMetadata(lang);
 
-  // 核心修正：根据当前语言获取对应的标题和副标题
   const title =
     appConfig.homePage.title[lang] || appConfig.homePage.title[appConfig.language.defaultLocale];
   const subtitles =
     appConfig.homePage.subtitles[lang] ||
     appConfig.homePage.subtitles[appConfig.language.defaultLocale];
 
-  // 核心新增：获取当前语言的字典
   const dictionary = await getDictionary(lang);
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <section className="text-center mb-12 py-10">
-        <Heading level={1} className="text-5xl text-neutral-900 mb-4 tracking-tight">
+      <section className="mb-12 py-10 text-center">
+        <Heading level={1} className="text-5xl tracking-tight text-neutral-900 mb-4">
           {title}
         </Heading>
-        <Text className="text-lg text-neutral-700 max-w-xl mx-auto h-8">
+        <Text className="mx-auto h-8 max-w-xl text-lg text-neutral-700">
           <TypingEffect subtitles={subtitles} />
         </Text>
       </section>
 
-      {/* 核心新增：将 blog_list 和 blog_post_card 相关的字典文本以及 lang 传递给 BlogList 组件 */}
       <BlogList
         posts={allPosts}
         dictionary={dictionary.blog_list}
