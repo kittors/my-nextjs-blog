@@ -30,6 +30,8 @@
   "errors": {
     "post_not_found": "Post Not Found",
     "post_not_found_description": "Sorry, the post you are looking for does not exist.",
+    "page_not_found": "Page Not Found",
+    "page_not_found_description": "Sorry, the page you are looking for does not exist.",
     "back_to_home": "Back to Home"
   },
   "blog_list": {

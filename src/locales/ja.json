@@ -30,6 +30,8 @@
   "errors": {
     "post_not_found": "記事が見つかりません",
     "post_not_found_description": "申し訳ありません、お探しの記事は存在しません。",
+    "page_not_found": "ページが見つかりません",
+    "page_not_found_description": "申し訳ありません、お探しのページは存在しません。",
     "back_to_home": "ホームに戻る"
   },
   "blog_list": {

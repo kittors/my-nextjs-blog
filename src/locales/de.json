@@ -30,6 +30,8 @@
   "errors": {
     "post_not_found": "Beitrag nicht gefunden",
     "post_not_found_description": "Entschuldigung, der gesuchte Beitrag existiert nicht.",
+    "page_not_found": "Seite nicht gefunden",
+    "page_not_found_description": "Entschuldigung, die gesuchte Seite existiert nicht.",
     "back_to_home": "Zurück zur Startseite"
   },
   "blog_list": {
