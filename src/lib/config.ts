@@ -55,7 +55,7 @@ export interface HomePageConfig {
 // 核心新增：定义语言配置的接口
 export interface LanguageConfig {
   // 核心新增：直接在此处定义支持的语言列表，取代 src/i18n-config.ts
-  locales: readonly ['en', 'zh', 'ja']; // 明确列出所有支持的语言
+  locales: readonly ['en', 'zh', 'ja', 'de']; // 明确列出所有支持的语言
   defaultLocale: 'zh'; // 默认语言
   languageLabels: { [key: string]: string };
 }
@@ -89,6 +89,7 @@ export const appConfig: AppConfig = {
         zh: '我的博客',
         en: 'My Blog',
         ja: '私のブログ',
+        de: 'Mein Persönlicher Blog',
       },
       width: 'auto',
     },
@@ -122,6 +123,7 @@ export const appConfig: AppConfig = {
       zh: '我的个人博客',
       en: 'My Personal Blog',
       ja: '私の個人ブログ',
+      de: 'Mein Persönlicher Blog',
     },
     subtitles: {
       zh: [
@@ -142,17 +144,24 @@ export const appConfig: AppConfig = {
         '好奇心を持ち続け、学び続けよう。',
         'A Coder, A Writer, A Thinker.',
       ],
+      de: [
+        'Meine Gedanken, Technologie und mein Leben teilen.',
+        'Code verändert die Welt, Ideen erhellen die Zukunft.',
+        'Bleiben Sie neugierig, lernen Sie weiter.',
+        'Ein Coder, ein Schriftsteller, ein Denker.',
+      ],
     },
   },
   // 核心新增：语言相关的配置
   language: {
     // 核心修正：直接在此处定义支持的语言列表，取代 src/i18n-config.ts
-    locales: ['en', 'zh', 'ja'], // 明确列出所有支持的语言
+    locales: ['en', 'zh', 'ja', 'de'], // 明确列出所有支持的语言
     defaultLocale: 'zh', // 默认语言
     languageLabels: {
       en: 'English',
       zh: '简体中文',
       ja: '日本語',
+      de: 'Deutsch',
     },
   },
 };

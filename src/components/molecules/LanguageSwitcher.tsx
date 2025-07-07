@@ -12,10 +12,7 @@ import { Languages } from 'lucide-react';
 interface LanguageSwitcherProps {
   lang: Locale;
   dictionary: {
-    label: string;
-    en: string;
-    zh: string;
-    ja: string; // 核心修正：添加 ja 类型
+    label: string; // 只需要语言切换器的通用标签，具体的语言名称从 appConfig 获取
   };
 }
 
@@ -24,6 +21,11 @@ interface LanguageSwitcherProps {
  *
  * 它负责渲染一个语言选择的下拉菜单，并处理语言切换时的路由逻辑。
  * 目前，它通过替换 URL 中的语言前缀来工作。
+ *
+ * 核心优化：
+ * 语言的显示名称（如 "English", "简体中文"）现在直接从 `appConfig.language.languageLabels` 获取，
+ * 不再依赖于 `dictionary` prop。这消除了在每个 `locales` JSON 文件中重复定义语言名称的需要，
+ * 从而简化了添加新语言时的配置。
  *
  * @param {LanguageSwitcherProps} props - 组件属性。
  */
@@ -67,8 +69,8 @@ export default function LanguageSwitcher({ lang, dictionary }: LanguageSwitcherP
           className={`dropdown-item w-full text-left justify-start ${lang === locale ? 'active-language-item' : ''}`}
           disabled={lang === locale}
         >
-          {/* 从字典中获取语言的完整名称 */}
-          {dictionary[locale as keyof typeof dictionary]}
+          {/* 核心优化：直接从 appConfig.language.languageLabels 获取语言的完整名称 */}
+          {appConfig.language.languageLabels[locale]}
         </button>
       ))}
     </DropdownMenu>

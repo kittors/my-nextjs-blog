@@ -50,19 +50,10 @@ const Header: React.FC<HeaderProps> = ({
 
   const hotkeyText = userOS === 'mac' ? '⌘K' : 'Ctrl+K';
 
-  // 核心修正：修复传递给 LanguageSwitcher 的 dictionary 对象的类型不匹配问题。
-  // LanguageSwitcher 组件期望一个具有明确 `en` 和 `zh` 属性的字典对象。
-  // 然而，在 `src/lib/config.ts` 中，`appConfig.language.languageLabels` 的类型被定义为
-  // 一个通用的索引签名 `{[key: string]: string}`，这导致 TypeScript 无法在通过扩展运算符(...)进行组合时
-  // 确认 `en` 和 `zh` 属性的存在。
-  // 通过在此处显式地从 `appConfig` 中提取 `en` 和 `zh` 的值来构建新的字典对象，
-  // 我们可以为 TypeScript 提供一个具体的、符合预期的类型 `{ label: string; en: string; zh: string; }`，
-  // 从而解决类型错误，同时保持了代码的健壮性和清晰性。
+  // 核心优化：languageSwitcherDictionary 现在只传递 label，
+  // 具体的语言名称将由 LanguageSwitcher 组件直接从 appConfig 获取。
   const languageSwitcherDictionary = {
     label: dictionary.language_switcher_label,
-    en: appConfig.language.languageLabels.en,
-    zh: appConfig.language.languageLabels.zh,
-    ja: appConfig.language.languageLabels.ja,
   };
 
   if (!isVisible) {

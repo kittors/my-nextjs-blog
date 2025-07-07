@@ -1,0 +1,52 @@
+{
+  "header": {
+    "tags": "Tags",
+    "source_code": "Quellcode",
+    "toggle_theme": "Thema wechseln",
+    "language_switcher_label": "Sprache"
+  },
+  "footer": {
+    "copyright": "&copy; {year} Mein Next.js Blog. Alle Rechte vorbehalten."
+  },
+  "tags_page": {
+    "title": "Tags",
+    "description": "Hier können Sie Artikel nach ihren Tags finden und filtern.",
+    "search_placeholder": "Tags suchen...",
+    "show_all": "Alle {count} Tags anzeigen",
+    "all_tags_label": "Alle",
+    "collapse_tags": "Tags einklappen"
+  },
+  "post": {
+    "back_button": "Zurück zu allen Beiträgen",
+    "toc_title": "Inhaltsverzeichnis"
+  },
+  "language_switcher": {
+    "label": "Sprache"
+  },
+  "search": {
+    "placeholder": "Inhalt suchen...",
+    "no_results": "Keine Artikel für „{query}“ gefunden."
+  },
+  "errors": {
+    "post_not_found": "Beitrag nicht gefunden",
+    "post_not_found_description": "Entschuldigung, der gesuchte Beitrag existiert nicht.",
+    "back_to_home": "Zurück zur Startseite"
+  },
+  "blog_list": {
+    "no_posts": "Keine Blogbeiträge gefunden.",
+    "latest_posts_heading": "Neueste Blogbeiträge"
+  },
+  "blog_post_list": {
+    "no_posts_found": "Keine verwandten Artikel in dieser Kategorie gefunden."
+  },
+  "blog_post_card": {
+    "author_label": "Autor",
+    "date_label": "Datum",
+    "unknown_date": "Unbekanntes Datum"
+  },
+  "post_content": {
+    "author_label": "Autor",
+    "date_label": "Datum",
+    "unknown_date": "Unbekanntes Datum"
+  }
+}
