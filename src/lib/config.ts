@@ -115,7 +115,7 @@ export const appConfig: AppConfig = {
   },
   github: {
     isVisible: true,
-    url: '[https://github.com/kittors](https://github.com/kittors)',
+    url: 'https://github.com/kittors/my-nextjs-blog',
   },
   // 核心修正：首页多语言配置
   homePage: {
