@@ -9,15 +9,15 @@ import TypingEffect from '@/components/atoms/TypingEffect';
 import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
 import { getDictionary } from '@/lib/dictionary';
 
+// 核心修正：将 params 的类型修正为 Promise 对象。
 interface HomePageProps {
-  params: { lang: Locale };
+  params: Promise<{ lang: Locale }>;
 }
 
 export default async function HomePage({ params }: HomePageProps) {
-  // 核心修正：根据 Next.js 15 的规范，在使用 params 的属性之前，必须先 `await` 它。
+  // 由于类型已修正，现在可以安全地 await params
   const { lang } = await params;
 
-  // 现在可以安全地使用已解析的 `lang` 变量
   const allPosts = getSortedPostsMetadata(lang);
 
   const title =

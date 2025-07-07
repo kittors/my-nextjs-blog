@@ -16,16 +16,16 @@ export const metadata: Metadata = {
 type Theme = 'light' | 'dark';
 type UserOS = 'mac' | 'other';
 
+// 核心修正：将 params 的类型修正为 Promise 对象。
 interface LangLayoutProps {
   children: React.ReactNode;
-  params: { lang: Locale };
+  params: Promise<{ lang: Locale }>;
 }
 
 export default async function LangLayout({ children, params }: LangLayoutProps) {
-  // 核心修正：根据 Next.js 15 的规范，在使用 params 的属性之前，必须先 `await` 它。
+  // 由于类型已修正，现在可以安全地 await params
   const { lang } = await params;
 
-  // 现在可以安全地使用已解析的 `lang` 变量
   const allPostsForSearch = await getAllPostsForSearch(lang);
   const dictionary = await getDictionary(lang);
 

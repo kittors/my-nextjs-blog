@@ -5,17 +5,15 @@ import TagsPageClient from '@/components/templates/TagsPageClient';
 import { getDictionary } from '@/lib/dictionary';
 import { type Locale } from '@/lib/config';
 
+// 核心修正：将 params 的类型修正为 Promise 对象。
 interface TagsPageProps {
-  params: { lang: Locale };
+  params: Promise<{ lang: Locale }>;
 }
 
 export default async function TagsPage({ params }: TagsPageProps) {
-  // 核心修正：根据 Next.js 15 的规范，在使用 params 的属性之前，必须先 `await` 它。
-  // 这解决了 "params should be awaited before using its properties" 的运行时错误，
-  // 从而确保了页面的稳定渲染，并从根本上解决了 404 页面的语言状态问题。
+  // 由于类型已修正，现在可以安全地 await params
   const { lang } = await params;
 
-  // 现在可以安全地使用已解析的 `lang` 变量
   const allPosts = getSortedPostsMetadata(lang);
   const allTags = getAllTags(lang);
   const dictionary = await getDictionary(lang);

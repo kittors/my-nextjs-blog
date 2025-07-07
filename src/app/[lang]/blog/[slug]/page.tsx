@@ -14,15 +14,16 @@ export async function generateStaticParams() {
   return params;
 }
 
+// 核心修正：将 params 的类型从一个普通对象修正为 Promise 对象，
+// 以匹配 Next.js 15 的异步特性，从而解决构建时的类型错误。
 interface BlogPostPageProps {
-  params: { slug: string; lang: Locale };
+  params: Promise<{ slug: string; lang: Locale }>;
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  // 核心修正：根据 Next.js 15 的规范，在使用 params 的属性之前，必须先 `await` 它。
+  // 由于类型已修正，现在可以安全地 await params
   const { slug, lang } = await params;
 
-  // 现在可以安全地使用已解析的 `slug` 和 `lang` 变量
   const post = await getPostBySlug(slug, lang);
 
   if (!post) {
