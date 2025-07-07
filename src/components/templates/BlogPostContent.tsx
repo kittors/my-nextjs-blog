@@ -24,22 +24,18 @@ import ImagePreview from '@/components/molecules/ImagePreview';
 import LazyLoadWrapper from '@/components/atoms/LazyLoadWrapper';
 import GlobalActionMenu from '@/components/molecules/GlobalActionMenu';
 import BackButton from '@/components/atoms/BackButton';
-// 核心修正：从 src/lib/config 导入 Locale 类型
 import { type Locale } from '@/lib/config';
 
-// 核心修正：更新 Props 接口
 interface BlogPostContentProps {
   post: BlogPost;
   headings: TocEntry[];
   dynamicFallbackHref: string;
   dictionary: {
-    // 明确接收字典对象
     back_button: string;
     toc_title: string;
   };
-  lang: Locale; // 明确接收当前语言
+  lang: Locale;
   postContentDictionary: {
-    // 核心新增：接收 post_content 字典
     author_label: string;
     date_label: string;
     unknown_date: string;
@@ -50,14 +46,27 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
   post,
   headings,
   dynamicFallbackHref,
-  dictionary, // 使用字典
+  dictionary,
   lang,
-  postContentDictionary, // 核心新增：使用 postContentDictionary
+  postContentDictionary,
 }) => {
   const articleContentRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
   const [previewImageSrc, setPreviewImageSrc] = useState<string | null>(null);
   const [isTocOpen, setIsTocOpen] = useState(false);
+
+  // 核心修正：使用 useEffect 将当前文章的翻译信息写入 localStorage。
+  // 这使得 LanguageSwitcher 组件可以访问到这些信息，以实现智能导航。
+  useEffect(() => {
+    if (post.translations) {
+      localStorage.setItem('postTranslations', JSON.stringify(post.translations));
+    }
+
+    // 组件卸载时（即用户离开此文章页面时），清理 localStorage。
+    return () => {
+      localStorage.removeItem('postTranslations');
+    };
+  }, [post.translations]); // 当翻译信息变化时重新执行
 
   const handleImageClick = useCallback((src: string) => {
     setPreviewImageSrc(src);
@@ -127,7 +136,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
   const title = post.title || '无标题文章';
   const author = post.author || '匿名作者';
   const dateObj = post.date ? new Date(post.date) : null;
-  // 核心修正：使用 postContentDictionary 中的文本作为未知日期的占位符
   const displayDate =
     dateObj && !isNaN(dateObj.getTime())
       ? dateObj.toLocaleDateString(lang)
@@ -138,7 +146,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
       <div className="container mx-auto px-4 py-12">
         <div className="blog-layout">
           <article className="w-full max-w-3xl">
-            {/* 核心修正：将字典文本传递给 BackButton */}
             <BackButton fallbackHref={dynamicFallbackHref} label={dictionary.back_button} />
 
             <Heading level={1} className="text-4xl font-extrabold text-neutral-900 mb-4">
@@ -147,11 +154,9 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
 
             <div className="text-neutral-500 text-sm mb-8 border-b border-neutral-200 pb-4">
               <Text as="span" className="mr-4">
-                {/* 核心修正：使用 postContentDictionary 中的文本 */}
                 {postContentDictionary.author_label}: {author}
               </Text>
               <Text as="span">
-                {/* 核心修正：使用 postContentDictionary 中的文本 */}
                 {postContentDictionary.date_label}: {displayDate}
               </Text>
             </div>
@@ -164,7 +169,6 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({
             </div>
           </article>
 
-          {/* 核心修正：将字典文本传递给 TableOfContents */}
           <TableOfContents
             headings={headings}
             isOpen={isTocOpen}

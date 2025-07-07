@@ -3,44 +3,67 @@
 
 import React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-// 核心修正：从 src/lib/config 导入 appConfig 和 Locale 类型
 import { appConfig, type Locale } from '@/lib/config';
 import DropdownMenu from '@/components/molecules/DropdownMenu';
 import { Languages } from 'lucide-react';
 
-// 定义 LanguageSwitcher 的 Props 接口
 interface LanguageSwitcherProps {
   lang: Locale;
   dictionary: {
-    label: string; // 只需要语言切换器的通用标签，具体的语言名称从 appConfig 获取
+    label: string;
   };
 }
 
 /**
- * LanguageSwitcher 组件：一个原子级别的 UI 组件，用于切换网站语言。
+ * LanguageSwitcher 组件（最终版）：
  *
- * 它负责渲染一个语言选择的下拉菜单，并处理语言切换时的路由逻辑。
- * 目前，它通过替换 URL 中的语言前缀来工作。
+ * 核心架构：
+ * 此组件现在通过 localStorage 与 BlogPostContent 组件通信，以实现智能的、
+ * 上下文感知的语言切换，同时保证了流畅的客户端路由体验。
  *
- * 核心优化：
- * 语言的显示名称（如 "English", "简体中文"）现在直接从 `appConfig.language.languageLabels` 获取，
- * 不再依赖于 `dictionary` prop。这消除了在每个 `locales` JSON 文件中重复定义语言名称的需要，
- * 从而简化了添加新语言时的配置。
- *
- * @param {LanguageSwitcherProps} props - 组件属性。
+ * 新逻辑：
+ * 1.  当用户切换语言时，首先检查 localStorage 中是否存在 'postTranslations'。
+ * 2.  如果存在（意味着当前在博客文章页）：
+ * a. 尝试查找目标语言的翻译版本。
+ * b. 如果找到，则无缝导航到该翻译版本的文章 URL。
+ * c. 如果未找到，则优雅地导航到目标语言的主页。
+ * 3.  如果不存在（意味着不在博客文章页）：
+ * a. 则执行标准的回退逻辑，即替换当前 URL 的语言部分。
  */
 export default function LanguageSwitcher({ lang, dictionary }: LanguageSwitcherProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const handleLanguageChange = (newLocale: Locale) => {
-    if (!pathname) return;
-    const segments = pathname.split('/');
-    segments[1] = newLocale;
-    const newPath = segments.join('/');
-    // 使用 router.replace() 而不是 router.push()，
-    // 这样切换语言不会在浏览器历史记录中创建新条目。
-    router.replace(newPath);
+    const storedTranslationsRaw = localStorage.getItem('postTranslations');
+
+    // 场景一: 在博客文章页面 (localStorage 中有翻译信息)
+    if (storedTranslationsRaw) {
+      try {
+        const translations: { lang: string; slug: string }[] = JSON.parse(storedTranslationsRaw);
+        const targetTranslation = translations.find(t => t.lang === newLocale);
+
+        if (targetTranslation) {
+          // 找到了对应的翻译文章，直接跳转
+          router.replace(`/${newLocale}/blog/${targetTranslation.slug}`);
+        } else {
+          // 当前文章没有目标语言的翻译，跳转到该语言的首页
+          router.replace(`/${newLocale}`);
+        }
+      } catch (e) {
+        console.error('解析 localStorage 中的翻译信息失败:', e);
+        // 解析失败时，也安全地跳转到首页
+        router.replace(`/${newLocale}`);
+      }
+    }
+    // 场景二: 不在博客文章页面
+    else {
+      if (!pathname) return;
+      const segments = pathname.split('/');
+      segments[1] = newLocale;
+      const newPath = segments.join('/');
+      router.replace(newPath);
+    }
   };
 
   return (
@@ -57,19 +80,13 @@ export default function LanguageSwitcher({ lang, dictionary }: LanguageSwitcherP
         </button>
       }
     >
-      {/* 核心修正：使用 appConfig.language.locales 替代 i18n.locales */}
       {appConfig.language.locales.map(locale => (
         <button
           key={locale}
           onClick={() => handleLanguageChange(locale)}
-          // 核心修正：为菜单项提供更清晰的样式，并正确禁用当前语言
-          // 将激活状态的类从 Tailwind 的 'font-semibold text-primary' 更改为自定义的 'active-language-item'。
-          // 'active-language-item' 类已在 src/styles/components/dropdown-menu.css 中定义，
-          // 包含亮色和暗色模式下的样式。
           className={`dropdown-item w-full text-left justify-start ${lang === locale ? 'active-language-item' : ''}`}
           disabled={lang === locale}
         >
-          {/* 核心优化：直接从 appConfig.language.languageLabels 获取语言的完整名称 */}
           {appConfig.language.languageLabels[locale]}
         </button>
       ))}
