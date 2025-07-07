@@ -6,51 +6,212 @@ import { type TocEntry } from '@/lib/posts';
 import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
-// 核心修正：更新 Props 接口
 interface TableOfContentsProps {
   headings: TocEntry[];
   isOpen: boolean;
   onClose: () => void;
-  title: string; // 接收来自字典的标题文本
+  title: string;
 }
 
 const HEADER_OFFSET = 80;
+const ANIMATION_DELAY = 30; // 逐个高亮动画之间的延迟（毫秒）
 
-// ... (throttle and debounce functions remain the same)
 const throttle = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
   let lastCall = 0;
+  let timeoutId: NodeJS.Timeout;
   return (...args: T) => {
     const now = new Date().getTime();
     if (now - lastCall >= delay) {
       lastCall = now;
       callback(...args);
+    } else {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        lastCall = now;
+        callback(...args);
+      }, delay);
     }
-  };
-};
-const debounce = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
-  let timeoutId: NodeJS.Timeout;
-  return (...args: T) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      callback(...args);
-    }, delay);
   };
 };
 
 /**
- * TableOfContents 组件
+ * TableOfContents 组件 (最终优化版)
+ *
+ * 核心架构优化：引入“高亮动画队列”机制，并增加“智能初始化”逻辑。
+ * 此版本旨在实现极致平滑的“逐个”高亮体验，并解决页面刷新时的定位问题。
+ *
+ * 工作原理：
+ * 1.  **智能初始化**: 组件挂载时，会首先检查 URL hash。如果 hash 存在且有效，则直接高亮对应标题。
+ * 如果 hash 不存在，则会根据当前的滚动位置计算出应高亮的标题，并立即设置，确保刷新后状态正确，无多余动画。
+ * 2.  **状态追踪**: 组件不仅追踪当前高亮的 `activeId`，还通过 `lastActiveIndexRef` 记录上一次高亮的标题索引。
+ * 3.  **差值计算**: 在节流的滚动事件中，计算出“上一次高亮”与“当前应该高亮”的标题之间的索引差值。
+ * 4.  **动画队列**: 将所有被“跳过”的标题索引按顺序生成一个队列。
+ * 5.  **逐帧动画**: 启动一个递归的 `setTimeout` 循环，以极短的间隔（`ANIMATION_DELAY`）逐个处理队列中的标题，
+ * 将它们依次设置为高亮状态。这创造出一种平滑、连续、可感知的高亮“追赶”动画。
+ * 6.  **交互锁定**: 在用户点击目录项或动画正在进行时，会暂时锁定滚动监听的更新，以防止冲突。
+ *
  * @param {TableOfContentsProps} props - 组件属性。
  */
 const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onClose, title }) => {
   const [activeId, setActiveId] = useState<string>('');
   const isMobile = useIsMobile();
-  const observer = useRef<IntersectionObserver | null>(null);
-  const headingStatesRef = useRef<Map<string, boolean>>(new Map());
   const isClickScrolling = useRef(false);
+  const animationQueueRef = useRef<string[]>([]);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActiveIndexRef = useRef<number>(-1);
   const tocListWrapperRef = useRef<HTMLDivElement | null>(null);
-  const tocContainerRef = useRef<HTMLElement | null>(null);
+  const headingElementsRef = useRef<{ id: string; element: HTMLElement }[]>([]);
 
-  const throttledSetActiveId = useRef(throttle((id: string) => setActiveId(id), 300)).current;
+  // 核心修正：智能初始化逻辑
+  useEffect(() => {
+    headingElementsRef.current = headings
+      .map(({ id }) => {
+        const element = document.getElementById(id);
+        return element ? { id, element } : null;
+      })
+      .filter((item): item is { id: string; element: HTMLElement } => item !== null);
+
+    // 定义一个函数来计算并设置初始状态
+    const initializeState = () => {
+      let initialActiveIndex = -1;
+      const hash = window.location.hash.substring(1);
+
+      // 优先使用 URL hash 定位
+      if (hash) {
+        initialActiveIndex = headingElementsRef.current.findIndex(h => h.id === hash);
+      }
+
+      // 如果没有有效的 hash，则根据滚动位置计算
+      if (initialActiveIndex === -1) {
+        const scrollY = window.scrollY;
+        for (let i = headingElementsRef.current.length - 1; i >= 0; i--) {
+          const { element } = headingElementsRef.current[i];
+          if (element.offsetTop <= scrollY + HEADER_OFFSET) {
+            initialActiveIndex = i;
+            break;
+          }
+        }
+      }
+
+      // 如果仍然没有找到，则默认为第一个标题
+      if (initialActiveIndex === -1 && headingElementsRef.current.length > 0) {
+        initialActiveIndex = 0;
+      }
+
+      if (initialActiveIndex !== -1) {
+        const initialId = headingElementsRef.current[initialActiveIndex].id;
+        setActiveId(initialId);
+        lastActiveIndexRef.current = initialActiveIndex;
+      }
+    };
+
+    // 延迟执行初始化，以确保页面完全渲染和滚动位置恢复
+    const initTimeout = setTimeout(initializeState, 100);
+
+    return () => clearTimeout(initTimeout);
+  }, [headings]);
+
+  const runAnimationQueue = useCallback(() => {
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+
+    const nextId = animationQueueRef.current.shift();
+    if (nextId) {
+      setActiveId(nextId);
+      animationTimeoutRef.current = setTimeout(runAnimationQueue, ANIMATION_DELAY);
+    }
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (isClickScrolling.current || animationQueueRef.current.length > 0) return;
+
+    const scrollY = window.scrollY;
+    let newActiveIndex = -1;
+
+    const atBottom = window.innerHeight + scrollY >= document.body.offsetHeight - 5;
+    if (atBottom && headingElementsRef.current.length > 0) {
+      newActiveIndex = headingElementsRef.current.length - 1;
+    } else {
+      for (let i = headingElementsRef.current.length - 1; i >= 0; i--) {
+        const { element } = headingElementsRef.current[i];
+        if (element.offsetTop <= scrollY + HEADER_OFFSET) {
+          newActiveIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (newActiveIndex !== -1 && newActiveIndex !== lastActiveIndexRef.current) {
+      const lastIndex = lastActiveIndexRef.current;
+      const newQueue: string[] = [];
+      if (newActiveIndex > lastIndex) {
+        for (let i = lastIndex + 1; i <= newActiveIndex; i++) {
+          newQueue.push(headingElementsRef.current[i].id);
+        }
+      } else {
+        for (let i = lastIndex - 1; i >= newActiveIndex; i--) {
+          newQueue.push(headingElementsRef.current[i].id);
+        }
+      }
+
+      animationQueueRef.current = newQueue;
+      lastActiveIndexRef.current = newActiveIndex;
+      runAnimationQueue();
+    } else if (newActiveIndex === -1 && lastActiveIndexRef.current !== -1) {
+      setActiveId('');
+      lastActiveIndexRef.current = -1;
+    }
+  }, [runAnimationQueue]);
+
+  useEffect(() => {
+    const throttledScrollHandler = throttle(handleScroll, 100);
+    window.addEventListener('scroll', throttledScrollHandler);
+    return () => {
+      window.removeEventListener('scroll', throttledScrollHandler);
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, [handleScroll]);
+
+  useEffect(() => {
+    if (activeId && tocListWrapperRef.current) {
+      const activeLink = tocListWrapperRef.current.querySelector(`a.active`) as HTMLElement | null;
+      if (activeLink) {
+        tocListWrapperRef.current.scrollTo({
+          top: activeLink.offsetTop - tocListWrapperRef.current.clientHeight / 2,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [activeId]);
+
+  const handleLinkClick = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+    animationQueueRef.current = [];
+    isClickScrolling.current = true;
+    setActiveId(id);
+
+    const targetIndex = headingElementsRef.current.findIndex(h => h.id === id);
+    if (targetIndex !== -1) {
+      lastActiveIndexRef.current = targetIndex;
+    }
+
+    const targetElement = document.getElementById(id);
+    if (targetElement) {
+      window.scrollTo({ top: targetElement.offsetTop - HEADER_OFFSET, behavior: 'smooth' });
+      history.pushState(null, '', `#${id}`);
+    }
+    if (isMobile) onClose();
+
+    setTimeout(() => {
+      isClickScrolling.current = false;
+    }, 800);
+  };
 
   useEffect(() => {
     if (isOpen && isMobile) {
@@ -62,110 +223,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
       document.body.style.overflow = '';
     };
   }, [isOpen, isMobile]);
-
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      if (isClickScrolling.current) return;
-      entries.forEach(entry => headingStatesRef.current.set(entry.target.id, entry.isIntersecting));
-
-      let currentActiveId = '';
-      let minDistanceFromRootTop = Infinity;
-
-      for (const heading of headings) {
-        if (headingStatesRef.current.get(heading.id)) {
-          const targetElement = document.getElementById(heading.id);
-          if (targetElement) {
-            const dist = targetElement.getBoundingClientRect().top - HEADER_OFFSET;
-            if (dist >= 0 && dist < minDistanceFromRootTop) {
-              minDistanceFromRootTop = dist;
-              currentActiveId = heading.id;
-            }
-          }
-        }
-      }
-
-      if (!currentActiveId) {
-        const intersecting = headings.filter(h => headingStatesRef.current.get(h.id));
-        if (intersecting.length > 0) currentActiveId = intersecting[0].id;
-      }
-
-      if (currentActiveId) {
-        throttledSetActiveId(currentActiveId);
-      }
-    },
-    [headings, throttledSetActiveId]
-  );
-
-  useEffect(() => {
-    observer.current = new IntersectionObserver(handleObserver, {
-      rootMargin: `-${HEADER_OFFSET}px 0px 0px 0px`,
-      threshold: 0.1,
-    });
-    const elements = headings.map(({ id }) => document.getElementById(id)).filter(Boolean);
-    elements.forEach(el => observer.current?.observe(el!));
-    return () => observer.current?.disconnect();
-  }, [headings, handleObserver]);
-
-  const debouncedFinalCheck = useRef(
-    debounce(() => {
-      if (isClickScrolling.current) return;
-      const atBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 2;
-      if (atBottom && headings.length > 0) {
-        setActiveId(headings[headings.length - 1].id);
-        return;
-      }
-      let finalActiveId = '';
-      for (const heading of headings) {
-        const element = document.getElementById(heading.id);
-        if (element && element.getBoundingClientRect().top < HEADER_OFFSET + 20) {
-          finalActiveId = heading.id;
-        }
-      }
-      if (finalActiveId) {
-        setActiveId(finalActiveId);
-      } else if (headings.length > 0) {
-        setActiveId(headings[0].id);
-      }
-    }, 150)
-  ).current;
-
-  useEffect(() => {
-    window.addEventListener('scroll', debouncedFinalCheck);
-    return () => window.removeEventListener('scroll', debouncedFinalCheck);
-  }, [debouncedFinalCheck]);
-
-  useEffect(() => {
-    if (activeId && tocListWrapperRef.current && !isClickScrolling.current) {
-      const activeLink = tocListWrapperRef.current.querySelector(`a.active`) as HTMLElement | null;
-      if (activeLink) {
-        tocListWrapperRef.current.scrollTo({
-          top: activeLink.offsetTop - tocListWrapperRef.current.clientHeight / 2,
-          behavior: 'smooth',
-        });
-      }
-    }
-  }, [activeId]);
-
-  useEffect(() => {
-    if (activeId && !isClickScrolling.current) {
-      history.replaceState(null, '', `#${activeId}`);
-    }
-  }, [activeId]);
-
-  const handleLinkClick = (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    isClickScrolling.current = true;
-    setActiveId(id);
-    const targetElement = document.getElementById(id);
-    if (targetElement) {
-      window.scrollTo({ top: targetElement.offsetTop - HEADER_OFFSET, behavior: 'smooth' });
-      history.pushState(null, '', `#${id}`);
-    }
-    if (isMobile) onClose();
-    setTimeout(() => {
-      isClickScrolling.current = false;
-    }, 800);
-  };
 
   if (headings.length === 0) {
     return isMobile ? null : <div className="hidden lg:block w-[280px] flex-shrink-0"></div>;
@@ -180,11 +237,9 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, isOpen, onC
       />
       <aside
         className={`toc-container ${isMobile && isOpen ? 'open' : ''}`}
-        ref={tocContainerRef}
         aria-hidden={!isOpen && isMobile}
       >
         <div className="toc-header-sticky">
-          {/* 核心修正：使用 title prop 代替硬编码文本 */}
           <h3>{title}</h3>
           <button onClick={onClose} className="toc-close-button" aria-label="关闭大纲">
             <X size={24} />
