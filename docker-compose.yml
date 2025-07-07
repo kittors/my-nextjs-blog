@@ -1,0 +1,26 @@
+# docker-compose.yml
+version: '3.8' # 指定 Compose 文件格式版本，3.8 是常用且功能全面的版本
+
+services:
+  nextjs-blog:
+    build:
+      context: . # 构建上下文为当前目录，即 my-nextjs-blog 目录
+      dockerfile: Dockerfile # 指定 Dockerfile 的路径，我们稍后会创建它
+    ports:
+      - '3000:3000' # 将容器的 3000 端口映射到宿主机的 3000 端口
+    restart: always # 容器退出时总是重启
+    environment:
+      # Next.js 环境变量，根据你的项目需要添加
+      # 例如：NEXT_PUBLIC_API_URL: "http://localhost:8080/api"
+      NODE_ENV: production # 确保 Next.js 在生产模式下运行
+    # volumes:
+    #   - ./posts:/app/posts # 如果你希望在运行时动态更新 posts 内容，可以挂载
+    #   - ./public:/app/public # 如果你希望在运行时动态更新 public 目录内容，可以挂载
+    # 注意：对于 Next.js 生产构建，通常不需要挂载源代码，因为构建产物是静态的。
+    # 挂载 posts 和 public 目录仅在你需要在不重新构建镜像的情况下更新内容时有用。
+    # 如果内容是静态的且在构建时确定，则无需挂载。
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '5'
